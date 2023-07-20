@@ -1,12 +1,15 @@
 package com.main.skillexchangeapi.domain.entities;
 
+import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Data
+@Builder
 public class MatchServicio {
-    private final Long id;
+    private final UUID id;
     private Servicio servicio;
     private Usuario cliente;
     private Date fecha;

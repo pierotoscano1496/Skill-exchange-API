@@ -1,11 +1,15 @@
 package com.main.skillexchangeapi.domain.entities;
 
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
+@Builder
 public class Servicio {
-    private final Long id;
+    private final UUID id;
     private SkillUsuario skillUsuario;
     private String descripcion;
     private double precio;

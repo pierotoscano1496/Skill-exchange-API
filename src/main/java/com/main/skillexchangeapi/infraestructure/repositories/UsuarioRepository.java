@@ -1,34 +1,27 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.Categoria;
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
-import com.main.skillexchangeapi.domain.logical.UsuarioContentRegister;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.UUID;
 
 @Repository
 public class UsuarioRepository implements IUsuarioRepository {
@@ -50,17 +43,19 @@ public class UsuarioRepository implements IUsuarioRepository {
             Usuario usuario = null;
 
             while (resultSet.next()) {
-                usuario = new Usuario(resultSet.getLong("id"));
-                usuario.setDni(resultSet.getString("dni"));
-                usuario.setCarnetExtranjeria(resultSet.getString("carnet_extranjeria"));
-                usuario.setTipoDocumento(resultSet.getString("tipo_documento"));
-                usuario.setNombres(resultSet.getNString("nombres"));
-                usuario.setApellidos(resultSet.getNString("apellidos"));
-                usuario.setFechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate());
-                usuario.setPerfilLinkedin(resultSet.getString("perfil_linkedin"));
-                usuario.setPerfilFacebook(resultSet.getString("perfil_facebook"));
-                usuario.setPerfilInstagram(resultSet.getString("perfil_instagram"));
-                usuario.setPerfilTiktok(resultSet.getString("perfil_tiktok"));
+                usuario = Usuario.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .dni(resultSet.getString("dni"))
+                        .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
+                        .tipoDocumento(resultSet.getString("tipo_documento"))
+                        .nombres(resultSet.getNString("nombres"))
+                        .apellidos(resultSet.getNString("apellidos"))
+                        .fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate())
+                        .perfilLinkedin(resultSet.getString("perfil_linkedin"))
+                        .perfilFacebook(resultSet.getString("perfil_facebook"))
+                        .perfilInstagram(resultSet.getString("perfil_instagram"))
+                        .perfilTiktok(resultSet.getString("perfil_tiktok"))
+                        .build();
 
                 break;
             }
@@ -87,11 +82,12 @@ public class UsuarioRepository implements IUsuarioRepository {
             UsuarioPersonalInfo usuarioPersonalInfo = null;
 
             while (resultSet.next()) {
-                usuarioPersonalInfo = new UsuarioPersonalInfo();
-                usuarioPersonalInfo.setCorreo(resultSet.getString("correo"));
-                usuarioPersonalInfo.setNombres(resultSet.getNString("nombres"));
-                usuarioPersonalInfo.setApellidos(resultSet.getNString("apellidos"));
-                usuarioPersonalInfo.setClave(resultSet.getNString("clave"));
+                usuarioPersonalInfo = UsuarioPersonalInfo.builder()
+                        .correo(resultSet.getString("correo"))
+                        .nombres(resultSet.getNString("nombres"))
+                        .apellidos(resultSet.getNString("apellidos"))
+                        .clave(resultSet.getNString("clave"))
+                        .build();
 
                 break;
             }
@@ -131,18 +127,20 @@ public class UsuarioRepository implements IUsuarioRepository {
             if (errorMessage.isEmpty()) {
                 Usuario usuarioRegistered = null;
                 if (resultSet.first()) {
-                    usuarioRegistered = new Usuario(resultSet.getLong("id"));
-                    usuarioRegistered.setDni(resultSet.getString("dni"));
-                    usuarioRegistered.setCarnetExtranjeria(resultSet.getString("carnet_extranjeria"));
-                    usuarioRegistered.setTipoDocumento(resultSet.getString("tipo_documento"));
-                    usuarioRegistered.setCorreo(resultSet.getString("correo"));
-                    usuarioRegistered.setNombres(resultSet.getString("nombres"));
-                    usuarioRegistered.setApellidos(resultSet.getString("apellidos"));
-                    usuarioRegistered.setFechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate());
-                    usuarioRegistered.setPerfilLinkedin(resultSet.getString("perfil_linkedin"));
-                    usuarioRegistered.setPerfilFacebook(resultSet.getString("perfil_facebook"));
-                    usuarioRegistered.setPerfilInstagram(resultSet.getString("perfil_instagram"));
-                    usuarioRegistered.setPerfilTiktok(resultSet.getString("perfil_tiktok"));
+                    usuarioRegistered = Usuario.builder()
+                            .id(UUID.fromString(resultSet.getString("id")))
+                            .dni(resultSet.getString("dni"))
+                            .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
+                            .tipoDocumento(resultSet.getString("tipo_documento"))
+                            .correo(resultSet.getString("correo"))
+                            .nombres(resultSet.getString("nombres"))
+                            .apellidos(resultSet.getString("apellidos"))
+                            .fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate())
+                            .perfilLinkedin(resultSet.getString("perfil_linkedin"))
+                            .perfilFacebook(resultSet.getString("perfil_facebook"))
+                            .perfilInstagram(resultSet.getString("perfil_instagram"))
+                            .perfilTiktok(resultSet.getString("perfil_tiktok"))
+                            .build();
                 }
                 resultSet.close();
 
@@ -156,15 +154,15 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
-    public ArrayList<SkillUsuario> asignarSkills(Long id, ArrayList<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException {
+    public ArrayList<SkillUsuario> asignarSkills(UUID id, ArrayList<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException {
         ArrayList<SkillUsuario> skillsUsuarioRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL asignar_skill_to_usuario(?, ?, ?)}");) {
-            skillsUsuarioRegistered.forEach(skillUsuario -> {
+            skillsUsuario.forEach(skillUsuario -> {
                 try {
-                    statement.setLong("p_id_usuario", id);
-                    statement.setLong("p_id_skill", skillUsuario.getSkill().getId());
+                    statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(id));
+                    statement.setBytes("p_id_skill", UuidManager.UuidToBytes(skillUsuario.getSkill().getId()));
                     statement.setInt("p_nivel_conocimiento", skillUsuario.getNivelConocimiento());
 
                     ResultSet resultSet = statement.getResultSet();
@@ -172,10 +170,14 @@ public class UsuarioRepository implements IUsuarioRepository {
                     SkillUsuario skillUsuarioRegistered = null;
 
                     if (resultSet.first()) {
-                        skillUsuarioRegistered = new SkillUsuario();
-                        skillUsuarioRegistered.setIdSkill(resultSet.getLong("id_skill"));
-                        skillUsuarioRegistered.setIdUsuario(resultSet.getLong("id_usuario"));
-                        skillUsuarioRegistered.setNivelConocimiento(resultSet.getInt("nivel_conocimiento"));
+                        Skill skill = Skill.builder()
+                                .id(UUID.fromString(resultSet.getString("id_skill")))
+                                .build();
+
+                        skillUsuarioRegistered = SkillUsuario.builder()
+                                .skill(skill)
+                                .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
+                                .build();
                     }
 
                     resultSet.close();
@@ -201,26 +203,35 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
-    public ArrayList<SkillUsuario> obtenerSkills(Long id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public ArrayList<SkillUsuario> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL obtener_skills_from_usuario(?)}");) {
-            statement.setLong("p_id_usuario", id);
+            statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(id));
 
             ResultSet resultSet = statement.executeQuery();
             ArrayList<SkillUsuario> skillsUsuario = new ArrayList<>();
 
             while (resultSet.next()) {
-                SkillUsuario skillUsuario = new SkillUsuario();
-                skillUsuario.setNivelConocimiento(resultSet.getInt("nivel_conocimiento"));
+                Categoria categoria = Categoria.builder()
+                        .id(UUID.fromString(resultSet.getString("id_categoria")))
+                        .nombre(resultSet.getString("nombre_categoria"))
+                        .build();
 
-                Categoria categoria = new Categoria(resultSet.getLong("id_categoria"));
-                categoria.setNombre(resultSet.getString("nombre_categoria"));
+                Skill skill = Skill.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .nombre(resultSet.getString("nombre"))
+                        .categoria(categoria)
+                        .build();
 
-                Skill skill = new Skill(resultSet.getLong("id"));
-                skill.setNombre("nombre");
-                skill.setCategoria(categoria);
+                Usuario usuario = Usuario.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .build();
 
-                skillUsuario.setSkill(skill);
+                SkillUsuario skillUsuario = SkillUsuario.builder()
+                        .usuario(usuario)
+                        .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
+                        .skill(skill)
+                        .build();
 
                 skillsUsuario.add(skillUsuario);
             }
@@ -234,6 +245,38 @@ public class UsuarioRepository implements IUsuarioRepository {
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se pudieron buscar los planes");
+        }
+    }
+
+    @Override
+    public PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
+            statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
+            statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
+            statement.setBoolean("p_is_active", planUsuario.isActive());
+            statement.setDouble("p_monto", planUsuario.getMonto());
+            statement.setString("p_moneda", planUsuario.getMoneda());
+
+            ResultSet resultSet = statement.executeQuery();
+            if (resultSet.next()) {
+                Plan plan = Plan.builder()
+                        .id(UUID.fromString(resultSet.getString("id_plan")))
+                        .build();
+
+                PlanUsuario planUsuarioRegistered = PlanUsuario.builder()
+                        .plan(plan)
+                        .isActive(resultSet.getBoolean("is_active"))
+                        .moneda(resultSet.getString("moneda"))
+                        .monto(resultSet.getDouble("monto"))
+                        .build();
+
+                return planUsuarioRegistered;
+            } else {
+                throw new NotCreatedException("Error durante la asignación del plan");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
