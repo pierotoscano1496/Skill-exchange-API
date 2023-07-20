@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Repository
 public class PlanRepository implements IPlanRepository {
@@ -27,10 +28,13 @@ public class PlanRepository implements IPlanRepository {
             ArrayList<Plan> planes = new ArrayList<>();
 
             while (resultSet.next()) {
-                Plan plan = new Plan(resultSet.getLong("id"));
-                plan.setTipo(resultSet.getString("tipo"));
-                plan.setFree(resultSet.getBoolean("is_free"));
-                plan.setCodigo(resultSet.getString("codigo"));
+
+                Plan plan = Plan.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .tipo(resultSet.getString("tipo"))
+                        .isFree(resultSet.getBoolean("is_free"))
+                        .codigo(resultSet.getString("codigo"))
+                        .build();
 
                 planes.add(plan);
             }
@@ -61,10 +65,12 @@ public class PlanRepository implements IPlanRepository {
             Plan plan = null;
 
             while (resultSet.next()) {
-                plan = new Plan(resultSet.getLong("id"));
-                plan.setTipo(resultSet.getString("tipo"));
-                plan.setFree(resultSet.getBoolean("is_free"));
-                plan.setCodigo(resultSet.getString("codigo"));
+                plan = Plan.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .tipo(resultSet.getString("tipo"))
+                        .isFree(resultSet.getBoolean("is_free"))
+                        .codigo(resultSet.getString("codigo"))
+                        .build();
 
                 break;
             }

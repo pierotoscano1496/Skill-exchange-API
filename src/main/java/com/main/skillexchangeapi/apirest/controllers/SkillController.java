@@ -1,5 +1,7 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.main.skillexchangeapi.app.requests.CreateSkillRequest;
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.application.services.SkillService;
 import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -19,9 +21,9 @@ public class SkillController {
     private SkillService service;
 
     @PostMapping
-    public Skill registrar(@RequestBody Skill skill) {
+    public SkillResponse registrar(@RequestBody CreateSkillRequest requestBody) {
         try {
-            return service.registrar(skill);
+            return service.registrar(requestBody);
         } catch (NotCreatedException | DatabaseNotWorkingException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

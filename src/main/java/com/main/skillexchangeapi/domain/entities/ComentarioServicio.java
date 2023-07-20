@@ -1,10 +1,14 @@
 package com.main.skillexchangeapi.domain.entities;
 
+import lombok.Builder;
 import lombok.Data;
 
+import java.util.UUID;
+
 @Data
+@Builder
 public class ComentarioServicio {
-    private final Long id;
+    private final UUID id;
     private Usuario comentarista;
     private String comentario;
     private int likes;

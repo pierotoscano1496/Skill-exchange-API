@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IPlanUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.entities.Usuario;
@@ -14,6 +15,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.UUID;
 
 @Repository
 public class PlanUsuarioRepository implements IPlanUsuarioRepository {
@@ -24,8 +26,8 @@ public class PlanUsuarioRepository implements IPlanUsuarioRepository {
     public PlanUsuario registrar(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}");) {
-            statement.setLong("p_id_plan", planUsuario.getPlan().getId());
-            statement.setLong("p_id_usuario", planUsuario.getUsuario().getId());
+            statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
+            statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
             statement.setBoolean("p_is_active", planUsuario.isActive());
             statement.setDouble("p_monto", planUsuario.getMonto());
             statement.setString("p_moneda", planUsuario.getMoneda());
@@ -35,12 +37,21 @@ public class PlanUsuarioRepository implements IPlanUsuarioRepository {
             PlanUsuario planUsuarioRegistered = null;
 
             if (resultSet.first()) {
-                planUsuarioRegistered = new PlanUsuario();
-                planUsuarioRegistered.setUsuario(new Usuario(resultSet.getLong("id_usuario")));
-                planUsuarioRegistered.setPlan(new Plan(resultSet.getLong("id_plan")));
-                planUsuarioRegistered.setActive(resultSet.getBoolean("is_active"));
-                planUsuarioRegistered.setMonto(resultSet.getDouble("monto"));
-                planUsuarioRegistered.setMoneda(resultSet.getString("moneda"));
+                Usuario usuario = Usuario.builder()
+                        .id(UUID.fromString(resultSet.getString("id_usuario")))
+                        .build();
+
+                Plan plan = Plan.builder()
+                        .id(UUID.fromString(resultSet.getString("id_plan")))
+                        .build();
+
+                planUsuarioRegistered = PlanUsuario.builder()
+                        .usuario(usuario)
+                        .plan(plan)
+                        .isActive(resultSet.getBoolean("is_active"))
+                        .monto(resultSet.getDouble("monto"))
+                        .moneda(resultSet.getString("moneda"))
+                        .build();
             }
 
             resultSet.close();

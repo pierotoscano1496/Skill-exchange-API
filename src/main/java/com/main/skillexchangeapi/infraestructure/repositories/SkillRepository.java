@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.entities.Categoria;
 import com.main.skillexchangeapi.domain.entities.Plan;
@@ -18,6 +19,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 @Repository
 public class SkillRepository implements ISkillRepository {
@@ -29,17 +31,22 @@ public class SkillRepository implements ISkillRepository {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_skill(?, ?)}");) {
             statement.setString("p_nombre", skill.getNombre());
-            statement.setLong("p_id_categoria", skill.getCategoria().getId());
+            statement.setBytes("p_id_categoria", UuidManager.UuidToBytes(skill.getCategoria().getId()));
 
             ResultSet resultSet = statement.getResultSet();
 
             Skill skillRegistered = null;
 
             if (resultSet.first()) {
-                skillRegistered = new Skill(resultSet.getLong("id"));
-                skillRegistered.setNombre(resultSet.getString("nombre"));
+                skillRegistered = Skill.builder()
+                        .id(UUID.fromString(resultSet.getString("id")))
+                        .nombre(resultSet.getString("nombre"))
+                        .build();
 
-                Categoria categoria = new Categoria(resultSet.getLong("id_categoria"));
+                Categoria categoria = Categoria.builder()
+                        .id(UUID.fromString(resultSet.getString("id_categoria")))
+                        .build();
+
                 skillRegistered.setCategoria(categoria);
             }
 
