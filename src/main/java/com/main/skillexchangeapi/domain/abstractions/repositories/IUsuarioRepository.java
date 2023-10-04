@@ -12,6 +12,7 @@ import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public interface IUsuarioRepository {
@@ -20,10 +21,6 @@ public interface IUsuarioRepository {
     UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
-
-    ArrayList<SkillUsuario> asignarSkills(UUID id, ArrayList<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException;
-
-    ArrayList<SkillUsuario> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException;
 }

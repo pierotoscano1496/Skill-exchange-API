@@ -11,4 +11,8 @@ public class UuidManager {
 
         return byteBuffer.array();
     }
+
+    public static byte[] generateRandomBinaryUuid() {
+        return UuidManager.UuidToBytes(UUID.randomUUID());
+    }
 }

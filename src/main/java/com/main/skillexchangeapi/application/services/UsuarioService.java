@@ -1,9 +1,14 @@
 package com.main.skillexchangeapi.application.services;
 
+import com.main.skillexchangeapi.app.requests.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Plan;
+import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
@@ -16,17 +21,36 @@ import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService implements IUsuarioService {
     @Autowired
     private IUsuarioRepository repository;
 
+    @Autowired
+    private ISkillUsuarioRepository skillUsuarioRepository;
+
     @Override
-    public Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
-        return repository.login(credenciales);
+    public UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
+        Usuario usuario = repository.login(credenciales);
+
+        return UsuarioResponse.builder()
+                .id(usuario.getId())
+                .dni(usuario.getDni())
+                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                .tipoDocumento(usuario.getTipoDocumento())
+                .nombres(usuario.getNombres())
+                .apellidos(usuario.getApellidos())
+                .fechaNacimiento(usuario.getFechaNacimiento())
+                .correo(usuario.getCorreo())
+                .perfilLinkedin(usuario.getPerfilLinkedin())
+                .perfilFacebook(usuario.getPerfilFacebook())
+                .perfilInstagram(usuario.getPerfilInstagram())
+                .perfilTiktok(usuario.getPerfilTiktok())
+                .build();
     }
 
     @Override
@@ -35,18 +59,55 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        return repository.registrar(usuario);
+    public UsuarioResponse registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+        Usuario usuarioRegistered = repository.registrar(usuario);
+
+        return UsuarioResponse.builder()
+                .id(usuario.getId())
+                .dni(usuario.getDni())
+                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                .tipoDocumento(usuario.getTipoDocumento())
+                .nombres(usuario.getNombres())
+                .apellidos(usuario.getApellidos())
+                .fechaNacimiento(usuario.getFechaNacimiento())
+                .correo(usuario.getCorreo())
+                .perfilLinkedin(usuario.getPerfilLinkedin())
+                .perfilFacebook(usuario.getPerfilFacebook())
+                .perfilInstagram(usuario.getPerfilInstagram())
+                .perfilTiktok(usuario.getPerfilTiktok())
+                .build();
     }
 
     @Override
-    public ArrayList<SkillUsuario> asignarSkills(UUID id, ArrayList<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException {
-        return repository.asignarSkills(id, skillsUsuario);
+    public List<UsuarioSkillsResponse> asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
+        Usuario usuario = Usuario.builder()
+                .id(id)
+                .build();
+
+        List<SkillUsuario> skillsUsuario = requestBody.stream().map(s -> SkillUsuario.builder()
+                .skill(Skill.builder()
+                        .id(s.getIdSkill())
+                        .build())
+                .usuario(usuario)
+                .nivelConocimiento(s.getNivelConocimiento())
+                .build()).collect(Collectors.toList());
+
+        return skillUsuarioRepository.registrarMultiple(skillsUsuario)
+                .stream().map(s -> UsuarioSkillsResponse.builder()
+                        .idSkill(s.getSkill().getId())
+                        .nivelConocimiento(s.getNivelConocimiento())
+                        .build()).collect(Collectors.toList());
     }
 
     @Override
-    public ArrayList<SkillUsuario> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.obtenerSkills(id);
+    public List<UsuarioSkillsResponse> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return skillUsuarioRepository.obtenerByIdUsuario(id)
+                .stream().map(s -> UsuarioSkillsResponse.builder()
+                        .idSkill(s.getSkill().getId())
+                        .nombreSkill(s.getSkill().getNombre())
+                        .nombreCategoria(s.getSkill().getCategoria().getNombre())
+                        .nivelConocimiento(s.getNivelConocimiento())
+                        .build()).collect(Collectors.toList());
     }
 
     @Override
