@@ -21,6 +21,7 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -107,6 +108,7 @@ public class UsuarioRepository implements IUsuarioRepository {
     public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+            statement.setBytes("p_id", UuidManager.generateRandomBinaryUuid());
             statement.setString("p_dni", usuario.getDni());
             statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
             statement.setString("p_tipo_documento", usuario.getTipoDocumento());
@@ -150,101 +152,6 @@ public class UsuarioRepository implements IUsuarioRepository {
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó el usuario");
-        }
-    }
-
-    @Override
-    public ArrayList<SkillUsuario> asignarSkills(UUID id, ArrayList<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException {
-        ArrayList<SkillUsuario> skillsUsuarioRegistered = new ArrayList<>();
-
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL asignar_skill_to_usuario(?, ?, ?)}");) {
-            skillsUsuario.forEach(skillUsuario -> {
-                try {
-                    statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(id));
-                    statement.setBytes("p_id_skill", UuidManager.UuidToBytes(skillUsuario.getSkill().getId()));
-                    statement.setInt("p_nivel_conocimiento", skillUsuario.getNivelConocimiento());
-
-                    ResultSet resultSet = statement.getResultSet();
-
-                    SkillUsuario skillUsuarioRegistered = null;
-
-                    if (resultSet.first()) {
-                        Skill skill = Skill.builder()
-                                .id(UUID.fromString(resultSet.getString("id_skill")))
-                                .build();
-
-                        skillUsuarioRegistered = SkillUsuario.builder()
-                                .skill(skill)
-                                .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
-                                .build();
-                    }
-
-                    resultSet.close();
-
-                    if (skillUsuarioRegistered != null) {
-                        skillsUsuarioRegistered.add(skillUsuarioRegistered);
-                    } else {
-                        throw new NotCreatedException("No se creó el skill");
-                    }
-                } catch (SQLException | NotCreatedException e) {
-                    skillsUsuarioRegistered.clear();
-                }
-            });
-
-            if (!skillsUsuarioRegistered.isEmpty()) {
-                return skillsUsuarioRegistered;
-            } else {
-                throw new NotCreatedException("No se crearon los skills");
-            }
-        } catch (SQLException e) {
-            throw new DatabaseNotWorkingException("No se crearon los skills");
-        }
-    }
-
-    @Override
-    public ArrayList<SkillUsuario> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_skills_from_usuario(?)}");) {
-            statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(id));
-
-            ResultSet resultSet = statement.executeQuery();
-            ArrayList<SkillUsuario> skillsUsuario = new ArrayList<>();
-
-            while (resultSet.next()) {
-                Categoria categoria = Categoria.builder()
-                        .id(UUID.fromString(resultSet.getString("id_categoria")))
-                        .nombre(resultSet.getString("nombre_categoria"))
-                        .build();
-
-                Skill skill = Skill.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .nombre(resultSet.getString("nombre"))
-                        .categoria(categoria)
-                        .build();
-
-                Usuario usuario = Usuario.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .build();
-
-                SkillUsuario skillUsuario = SkillUsuario.builder()
-                        .usuario(usuario)
-                        .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
-                        .skill(skill)
-                        .build();
-
-                skillsUsuario.add(skillUsuario);
-            }
-
-            resultSet.close();
-
-            if (!skillsUsuario.isEmpty()) {
-                return skillsUsuario;
-            } else {
-                throw new ResourceNotFoundException("No hay planes");
-            }
-        } catch (SQLException e) {
-            throw new DatabaseNotWorkingException("No se pudieron buscar los planes");
         }
     }
 

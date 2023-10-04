@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -21,11 +22,11 @@ public class PlanRepository implements IPlanRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
-    public ArrayList<Plan> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<Plan> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL obtener_planes()}");
              ResultSet resultSet = statement.executeQuery()) {
-            ArrayList<Plan> planes = new ArrayList<>();
+            List<Plan> planes = new ArrayList<>();
 
             while (resultSet.next()) {
 

@@ -8,5 +8,5 @@ import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import java.util.ArrayList;
 
 public interface ISkillRepository {
-    public Skill registrar(Skill skill) throws DatabaseNotWorkingException, NotCreatedException;
+    Skill registrar(Skill skill) throws DatabaseNotWorkingException, NotCreatedException;
 }
