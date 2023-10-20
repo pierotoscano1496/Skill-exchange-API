@@ -63,18 +63,18 @@ public class UsuarioService implements IUsuarioService {
         Usuario usuarioRegistered = repository.registrar(usuario);
 
         return UsuarioResponse.builder()
-                .id(usuario.getId())
-                .dni(usuario.getDni())
-                .carnetExtranjeria(usuario.getCarnetExtranjeria())
-                .tipoDocumento(usuario.getTipoDocumento())
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .fechaNacimiento(usuario.getFechaNacimiento())
-                .correo(usuario.getCorreo())
-                .perfilLinkedin(usuario.getPerfilLinkedin())
-                .perfilFacebook(usuario.getPerfilFacebook())
-                .perfilInstagram(usuario.getPerfilInstagram())
-                .perfilTiktok(usuario.getPerfilTiktok())
+                .id(usuarioRegistered.getId())
+                .dni(usuarioRegistered.getDni())
+                .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
+                .tipoDocumento(usuarioRegistered.getTipoDocumento())
+                .nombres(usuarioRegistered.getNombres())
+                .apellidos(usuarioRegistered.getApellidos())
+                .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
+                .correo(usuarioRegistered.getCorreo())
+                .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
+                .perfilFacebook(usuarioRegistered.getPerfilFacebook())
+                .perfilInstagram(usuarioRegistered.getPerfilInstagram())
+                .perfilTiktok(usuarioRegistered.getPerfilTiktok())
                 .build();
     }
 
