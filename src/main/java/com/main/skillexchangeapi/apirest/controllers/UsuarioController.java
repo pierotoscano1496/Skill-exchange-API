@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IPlanService;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Plan;
@@ -28,7 +29,7 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario registrar(@RequestBody Usuario usuario) {
+    public UsuarioResponse registrar(@RequestBody Usuario usuario) {
         try {
             return service.registrar(usuario);
         } catch (NotCreatedException | EncryptionAlghorithmException | DatabaseNotWorkingException e) {
