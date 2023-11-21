@@ -6,12 +6,13 @@ import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(value = "plan-usuario", produces = "application/json")
-@CrossOrigin(origins = "${url.allowed.host}")
+//@CrossOrigin(origins = "${url.allowed.host}")
 public class PlanUsuarioController {
     @Autowired
     private IPlanUsuarioService service;
@@ -21,9 +22,10 @@ public class PlanUsuarioController {
     }
 
     @PostMapping
-    public PlanUsuario registrar(@RequestBody PlanUsuario planUsuario) {
+    public ResponseEntity<PlanUsuario> registrar(@RequestBody PlanUsuario planUsuario) {
         try {
-            return service.registrar(planUsuario);
+            PlanUsuario planUsuarioRegistered = service.registrar(planUsuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(planUsuarioRegistered);
         } catch (NotCreatedException | DatabaseNotWorkingException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

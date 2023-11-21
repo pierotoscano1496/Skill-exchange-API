@@ -2,13 +2,10 @@ package com.main.skillexchangeapi.infraestructure.repositories;
 
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
-import com.main.skillexchangeapi.domain.entities.Categoria;
 import com.main.skillexchangeapi.domain.entities.Plan;
-import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
-import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
-import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -16,21 +13,15 @@ import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Repository
 public class UsuarioRepository implements IUsuarioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
 
     @Override
     public Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException {
@@ -107,8 +98,9 @@ public class UsuarioRepository implements IUsuarioRepository {
     @Override
     public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
-            statement.setBytes("p_id", UuidManager.generateRandomBinaryUuid());
+             CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+            byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
+            statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
             statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
             statement.setString("p_tipo_documento", usuario.getTipoDocumento());
@@ -116,21 +108,23 @@ public class UsuarioRepository implements IUsuarioRepository {
             statement.setString("p_nombres", usuario.getNombres());
             statement.setString("p_apellidos", usuario.getApellidos());
             statement.setDate("p_fecha_nacimiento", java.sql.Date.valueOf(usuario.getFechaNacimiento()));
-            statement.setString("p_perfil_linkedin", usuario.getCarnetExtranjeria());
-            statement.setString("p_perfil_facebook", usuario.getCarnetExtranjeria());
-            statement.setString("p_perfil_instagram", usuario.getCarnetExtranjeria());
-            statement.setString("p_perfil_tiktok", usuario.getCarnetExtranjeria());
-            statement.setString("p_clave", passwordEncoder.encode(usuario.getClave()));
-            statement.registerOutParameter("error_message", Types.VARCHAR);
+            statement.setString("p_perfil_linkedin", usuario.getPerfilLinkedin());
+            statement.setString("p_perfil_facebook", usuario.getPerfilFacebook());
+            statement.setString("p_perfil_instagram", usuario.getPerfilInstagram());
+            statement.setString("p_perfil_tiktok", usuario.getPerfilTiktok());
+            statement.setString("p_clave", usuario.getClave());
+            statement.registerOutParameter("status_message", Types.VARCHAR);
+
+            statement.execute();
 
             ResultSet resultSet = statement.getResultSet();
 
-            String errorMessage = statement.getNString("error_message");
-            if (errorMessage.isEmpty()) {
+            String statusMessage = statement.getString("status_message");
+            if (statusMessage.equals("Usuario registrado")) {
                 Usuario usuarioRegistered = null;
-                if (resultSet.first()) {
+                while (resultSet.next()) {
                     usuarioRegistered = Usuario.builder()
-                            .id(UUID.fromString(resultSet.getString("id")))
+                            //.id(UUID.fromString(resultSet.getString("id")))
                             .dni(resultSet.getString("dni"))
                             .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
                             .tipoDocumento(resultSet.getString("tipo_documento"))
@@ -143,12 +137,13 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .perfilInstagram(resultSet.getString("perfil_instagram"))
                             .perfilTiktok(resultSet.getString("perfil_tiktok"))
                             .build();
+                    break;
                 }
                 resultSet.close();
 
                 return usuarioRegistered;
             } else {
-                throw new NotCreatedException(errorMessage);
+                throw new NotCreatedException(statusMessage);
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó el usuario");

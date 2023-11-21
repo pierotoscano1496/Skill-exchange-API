@@ -1,6 +1,6 @@
 package com.main.skillexchangeapi.app.security;
 
-import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 

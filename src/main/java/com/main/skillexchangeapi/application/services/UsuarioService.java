@@ -12,13 +12,14 @@ import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
-import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,6 +33,9 @@ public class UsuarioService implements IUsuarioService {
 
     @Autowired
     private ISkillUsuarioRepository skillUsuarioRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
@@ -60,6 +64,10 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public UsuarioResponse registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+        // Cifrar clave de usuario
+        String claveCifrada = passwordEncoder.encode(usuario.getClave());
+        usuario.setClave(claveCifrada);
+
         Usuario usuarioRegistered = repository.registrar(usuario);
 
         return UsuarioResponse.builder()

@@ -6,8 +6,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CoomandLineAppStartupRunner implements CommandLineRunner {
+    /*
     @Value("${url.allowed.host}")
     private String allowedHost;
+    */
 
     @Value("${url.server}")
     private String urlServer;
@@ -15,7 +17,7 @@ public class CoomandLineAppStartupRunner implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         try {
-            System.out.println("Allowed URL for consume: " + allowedHost);
+            //System.out.println("Allowed URL for consume: " + allowedHost);
             System.out.println("Servidor corriendo en: " + urlServer);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.app.utils;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.UUID;
 
 public class UuidManager {
@@ -12,7 +13,26 @@ public class UuidManager {
         return byteBuffer.array();
     }
 
-    public static byte[] generateRandomBinaryUuid() {
-        return UuidManager.UuidToBytes(UUID.randomUUID());
+    public static UUID bytesToUuid(byte[] bytes) {
+        ByteBuffer buffer = ByteBuffer.wrap(bytes);
+        long firstLong = buffer.getLong();
+        long secondLong = buffer.getLong();
+
+        return new UUID(firstLong, secondLong);
+    }
+
+    public static UUID randomUuid() {
+        return UUID.randomUUID();
+    }
+
+    public static byte[] randomUuidToBytes() {
+        UUID uuid = UUID.randomUUID();
+        byte[] uuidBytes = new byte[16];
+        ByteBuffer.wrap(uuidBytes)
+                .order(ByteOrder.BIG_ENDIAN)
+                .putLong(uuid.getMostSignificantBits())
+                .putLong(uuid.getLeastSignificantBits());
+
+        return uuidBytes;
     }
 }

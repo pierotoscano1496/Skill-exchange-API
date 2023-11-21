@@ -1,6 +1,5 @@
 package com.main.skillexchangeapi.app.security;
 
-import com.main.skillexchangeapi.application.services.UserDetailsServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -15,30 +14,36 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 public class SecurityConfig {
     @Autowired
     private JWTAuthorizationFilter jwtAuthorizationFilter;
 
+    @Autowired
+    private UserDetailsService userDetailsService;
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity,
                                     AuthenticationManager authenticationManager) throws Exception {
         JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter();
         jwtAuthenticationFilter.setAuthenticationManager(authenticationManager);
-        jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
+        jwtAuthenticationFilter.setFilterProcessesUrl("/auth/login");
 
         return httpSecurity
                 .csrf().disable()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.POST,"/api/usuario").permitAll()
+                        //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
+                        //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/simple-check").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic()
                 .and()
                 .addFilter(jwtAuthenticationFilter)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
-                .sessionManagement(session-> session
+                .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
@@ -46,14 +51,9 @@ public class SecurityConfig {
     @Bean
     AuthenticationManager authManager(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-                .userDetailsService(userDetailsService())
+                .userDetailsService(userDetailsService)
                 .passwordEncoder(passwordEncoder())
                 .and().build();
-    }
-
-    @Bean
-    UserDetailsServiceImpl userDetailsService() {
-        return new UserDetailsServiceImpl();
     }
 
     @Bean
