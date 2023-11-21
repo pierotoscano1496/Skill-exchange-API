@@ -1,8 +1,8 @@
-package com.main.skillexchangeapi.application.services;
+package com.main.skillexchangeapi.app.security.services;
 
 import com.main.skillexchangeapi.app.security.UserDetailsImpl;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
-import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;

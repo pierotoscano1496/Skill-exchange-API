@@ -1,4 +1,4 @@
-package com.main.skillexchangeapi.domain.entities.security;
+package com.main.skillexchangeapi.app.security.entities;
 
 import lombok.Builder;
 import lombok.Getter;

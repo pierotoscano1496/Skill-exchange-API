@@ -6,7 +6,7 @@ import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
-import com.main.skillexchangeapi.domain.entities.security.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
