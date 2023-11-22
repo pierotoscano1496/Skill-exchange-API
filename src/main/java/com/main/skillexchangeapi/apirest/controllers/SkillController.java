@@ -16,7 +16,6 @@ import java.util.ArrayList;
 
 @RestController
 @RequestMapping(value = "skill", produces = "application/json")
-//@CrossOrigin(origins = "${url.allowed.host}")
 public class SkillController {
     @Autowired
     private SkillService service;

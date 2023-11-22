@@ -1,12 +1,14 @@
 package com.main.skillexchangeapi.app.responses;
 
 import lombok.Builder;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Setter
+@Getter
 @Builder
 public class UsuarioResponse {
     private final UUID id;

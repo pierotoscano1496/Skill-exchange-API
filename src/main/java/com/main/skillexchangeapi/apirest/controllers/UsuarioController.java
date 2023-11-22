@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.services.IPlanService;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Plan;
@@ -17,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController

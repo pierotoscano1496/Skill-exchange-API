@@ -32,11 +32,11 @@ public class SecurityConfig {
         jwtAuthenticationFilter.setFilterProcessesUrl("/auth/login");
 
         return httpSecurity
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
                         //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/simple-check").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic()
