@@ -7,6 +7,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.util.Arrays;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @SpringBootTest
 public class TestUuidManager {
     @Test
@@ -24,10 +26,10 @@ public class TestUuidManager {
     }
 
     @Test
-    void checkUUIDRandom() {
+    void chechIfRandomUuidHas16Lengh() {
         UUID uuid = UUID.randomUUID();
         byte[] bytes = UuidManager.UuidToBytes(uuid);
-        System.out.println(Arrays.toString(bytes));
+        assertTrue(bytes.length == 16);
     }
 
 }
