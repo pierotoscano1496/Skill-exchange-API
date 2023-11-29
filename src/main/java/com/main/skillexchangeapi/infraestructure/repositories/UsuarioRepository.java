@@ -124,7 +124,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                 Usuario usuarioRegistered = null;
                 while (resultSet.next()) {
                     usuarioRegistered = Usuario.builder()
-                            //.id(UUID.fromString(resultSet.getString("id")))
+                            .id(UUID.fromString(resultSet.getString("id")))
                             .dni(resultSet.getString("dni"))
                             .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
                             .tipoDocumento(resultSet.getString("tipo_documento"))
