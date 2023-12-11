@@ -126,3 +126,71 @@ CREATE TABLE recurso_multimedia_servicio (
   FOREIGN KEY (id_servicio) REFERENCES servicio (id)
 );
 
+-- Procedures
+
+CREATE PROCEDURE login(
+	in p_correo varchar(200),
+	in p_clave varchar(256)
+)
+begin
+	select * from usuario where clave = p_clave and correo = p_correo;
+end;
+
+CREATE PROCEDURE obtener_planes()
+begin
+	select * from plan;
+end;
+
+CREATE PROCEDURE obtener_plan_by_codigo(in p_codigo varchar(100))
+begin
+	select * from plan where codigo = p_codigo;
+end;
+
+CREATE PROCEDURE obtener_skills_from_usuario(in p_id_usuario int)
+begin
+	select s.*,
+	c.nombre as nombre_categoria,
+	su.nivel_conocimiento
+	from skill_usuario su
+	inner join skill s on su.id_skill = s.id
+	inner join categoria c on c.id = s.id_categoria
+	where su.id_usuario = p_id_usuario;
+end;
+
+CREATE PROCEDURE registrar_plan_usuario(
+	in p_id_plan int,
+	in p_id_usuario int,
+	in p_is_active boolean,
+	in p_monto decimal(6,2),
+	in p_moneda varchar(100)
+)
+begin
+	insert into plan_usuario (id_plan, id_usuario, is_active, monto, moneda)
+	values (p_id_plan, p_id_usuario, p_is_active, p_monto, p_moneda);
+
+	select * from plan_usuario where id_plan = p_id_plan and id_usuario = p_id_usuario;
+end;
+
+CREATE PROCEDURE registrar_skill(in p_nombre varchar(200), in p_id_categoria int)
+begin
+	insert into skill(nombre, id_categoria) values(p_nombre, p_id_categoria);
+
+	select * from skill where id = last_insert_id();
+end;
+
+CREATE PROCEDURE registrar_skill_usuario(in p_id_skill int, in p_id_usuario int, in p_nivel_conocimiento int)
+begin
+	insert into skill_usuario(id_skill, id_usuario, nivel_conocimiento) values(p_id_skill, p_id_usuario, p_nivel_conocimiento);
+
+	select * from skill_usuario where id_skill = p_id_skill and id_usuario = p_id_usuario;
+end;
+
+CREATE PROCEDURE ver_cosas()
+begin
+	select * from heroku_cd849ec8e70361a.usuario;
+END;
+
+CREATE PROCEDURE whatever(in id int)
+begin
+	select * from usuario where id=id;
+END;
