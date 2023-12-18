@@ -15,6 +15,7 @@ import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.UUID;
 
@@ -25,38 +26,24 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL login(?, ?)}");) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL login(?, ?)}");) {
             statement.setString("p_correo", credenciales.getEmail());
             statement.setString("p_clave", credenciales.getClave());
 
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
 
-            Usuario usuario = null;
+                while (resultSet.next()) {
+                    usuario = Usuario.builder().id(UUID.fromString(resultSet.getString("id"))).dni(resultSet.getString("dni")).carnetExtranjeria(resultSet.getString("carnet_extranjeria")).tipoDocumento(resultSet.getString("tipo_documento")).nombres(resultSet.getNString("nombres")).apellidos(resultSet.getNString("apellidos")).fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate()).perfilLinkedin(resultSet.getString("perfil_linkedin")).perfilFacebook(resultSet.getString("perfil_facebook")).perfilInstagram(resultSet.getString("perfil_instagram")).perfilTiktok(resultSet.getString("perfil_tiktok")).build();
 
-            while (resultSet.next()) {
-                usuario = Usuario.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .dni(resultSet.getString("dni"))
-                        .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
-                        .tipoDocumento(resultSet.getString("tipo_documento"))
-                        .nombres(resultSet.getNString("nombres"))
-                        .apellidos(resultSet.getNString("apellidos"))
-                        .fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate())
-                        .perfilLinkedin(resultSet.getString("perfil_linkedin"))
-                        .perfilFacebook(resultSet.getString("perfil_facebook"))
-                        .perfilInstagram(resultSet.getString("perfil_instagram"))
-                        .perfilTiktok(resultSet.getString("perfil_tiktok"))
-                        .build();
+                    break;
+                }
 
-                break;
-            }
-            resultSet.close();
-
-            if (usuario != null) {
-                return usuario;
-            } else {
-                throw new ResourceNotFoundException("Usuario no existe");
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
@@ -65,30 +52,23 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
             statement.setString("p_correo", correo);
 
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                UsuarioPersonalInfo usuarioPersonalInfo = null;
 
-            UsuarioPersonalInfo usuarioPersonalInfo = null;
+                while (resultSet.next()) {
+                    usuarioPersonalInfo = UsuarioPersonalInfo.builder().correo(resultSet.getString("correo")).nombres(resultSet.getNString("nombres")).apellidos(resultSet.getNString("apellidos")).clave(resultSet.getNString("clave")).build();
 
-            while (resultSet.next()) {
-                usuarioPersonalInfo = UsuarioPersonalInfo.builder()
-                        .correo(resultSet.getString("correo"))
-                        .nombres(resultSet.getNString("nombres"))
-                        .apellidos(resultSet.getNString("apellidos"))
-                        .clave(resultSet.getNString("clave"))
-                        .build();
+                    break;
+                }
 
-                break;
-            }
-            resultSet.close();
-
-            if (usuarioPersonalInfo != null) {
-                return usuarioPersonalInfo;
-            } else {
-                throw new ResourceNotFoundException("Usuario no existe");
+                if (usuarioPersonalInfo != null) {
+                    return usuarioPersonalInfo;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
@@ -97,8 +77,7 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
             byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
             statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
@@ -117,33 +96,21 @@ public class UsuarioRepository implements IUsuarioRepository {
 
             statement.execute();
 
-            ResultSet resultSet = statement.getResultSet();
+            try (ResultSet resultSet = statement.getResultSet()) {
+                String statusMessage = statement.getString("status_message");
+                if (statusMessage.equals("Usuario registrado")) {
+                    Usuario usuarioRegistered = null;
+                    while (resultSet.next()) {
+                        UUID uuid = UuidManager.bytesToUuid(resultSet.getBytes("id"));
 
-            String statusMessage = statement.getString("status_message");
-            if (statusMessage.equals("Usuario registrado")) {
-                Usuario usuarioRegistered = null;
-                while (resultSet.next()) {
-                    usuarioRegistered = Usuario.builder()
-                            .id(UUID.fromString(resultSet.getString("id")))
-                            .dni(resultSet.getString("dni"))
-                            .carnetExtranjeria(resultSet.getString("carnet_extranjeria"))
-                            .tipoDocumento(resultSet.getString("tipo_documento"))
-                            .correo(resultSet.getString("correo"))
-                            .nombres(resultSet.getString("nombres"))
-                            .apellidos(resultSet.getString("apellidos"))
-                            .fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate())
-                            .perfilLinkedin(resultSet.getString("perfil_linkedin"))
-                            .perfilFacebook(resultSet.getString("perfil_facebook"))
-                            .perfilInstagram(resultSet.getString("perfil_instagram"))
-                            .perfilTiktok(resultSet.getString("perfil_tiktok"))
-                            .build();
-                    break;
+                        usuarioRegistered = Usuario.builder().id(uuid).dni(resultSet.getString("dni")).carnetExtranjeria(resultSet.getString("carnet_extranjeria")).tipoDocumento(resultSet.getString("tipo_documento")).correo(resultSet.getString("correo")).nombres(resultSet.getString("nombres")).apellidos(resultSet.getString("apellidos")).fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate()).perfilLinkedin(resultSet.getString("perfil_linkedin")).perfilFacebook(resultSet.getString("perfil_facebook")).perfilInstagram(resultSet.getString("perfil_instagram")).perfilTiktok(resultSet.getString("perfil_tiktok")).build();
+                        break;
+                    }
+
+                    return usuarioRegistered;
+                } else {
+                    throw new NotCreatedException(statusMessage);
                 }
-                resultSet.close();
-
-                return usuarioRegistered;
-            } else {
-                throw new NotCreatedException(statusMessage);
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó el usuario");
@@ -152,33 +119,37 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
             statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
             statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
             statement.setBoolean("p_is_active", planUsuario.isActive());
             statement.setDouble("p_monto", planUsuario.getMonto());
             statement.setString("p_moneda", planUsuario.getMoneda());
 
-            ResultSet resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                Plan plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("id_plan")))
-                        .build();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Plan plan = Plan.builder().id(UUID.fromString(resultSet.getString("id_plan"))).build();
 
-                PlanUsuario planUsuarioRegistered = PlanUsuario.builder()
-                        .plan(plan)
-                        .isActive(resultSet.getBoolean("is_active"))
-                        .moneda(resultSet.getString("moneda"))
-                        .monto(resultSet.getDouble("monto"))
-                        .build();
+                    PlanUsuario planUsuarioRegistered = PlanUsuario.builder().plan(plan).isActive(resultSet.getBoolean("is_active")).moneda(resultSet.getString("moneda")).monto(resultSet.getDouble("monto")).build();
 
-                return planUsuarioRegistered;
-            } else {
-                throw new NotCreatedException("Error durante la asignación del plan");
+                    return planUsuarioRegistered;
+                } else {
+                    throw new NotCreatedException("Error durante la asignación del plan");
+                }
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int deleteAll() throws DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+             Statement statement = connection.createStatement()) {
+            return statement.executeUpdate("DELETE FROM USUARIO");
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al eliminar los usuarios");
         }
     }
 }

@@ -1,7 +1,15 @@
 package com.main.skillexchangeapi.repositories;
 
+import com.main.skillexchangeapi.app.utils.UuidManager;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
+import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
+import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+import com.main.skillexchangeapi.infraestructure.repositories.UsuarioRepository;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -14,7 +22,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import javax.sql.DataSource;
+import java.nio.ByteBuffer;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -24,6 +34,9 @@ import java.sql.SQLException;
 public class UsuarioRepositoryTester extends MySQLContainer<UsuarioRepositoryTester> {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    @Autowired
+    private IUsuarioRepository repository;
 
     @Autowired
     private MockMvc mockMvc;
@@ -64,13 +77,33 @@ public class UsuarioRepositoryTester extends MySQLContainer<UsuarioRepositoryTes
         }
     }
 
-    /*@Test
-    public void userRegisteredHasOwn16BytesId() {
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/usuario")
-                .content(asJsonString))
+    @Test
+    public void userRegisteredHasOwn16BytesId() throws DatabaseNotWorkingException, EncryptionAlghorithmException, NotCreatedException {
+        Usuario usuario = Usuario.builder()
+                .id(null)
+                .dni("98765432")
+                .carnetExtranjeria(null)
+                .tipoDocumento("dni")
+                .correo("yop@mail.com")
+                .nombres("Juan")
+                .apellidos("Perez")
+                .fechaNacimiento(Date.valueOf("1990-10-11").toLocalDate())
+                .perfilLinkedin("linkedin.com")
+                .perfilFacebook("facebook.com")
+                .perfilInstagram("ig.com")
+                .perfilTiktok("tiktok.com")
+                .clave("clave123")
+                .build();
+
+        Usuario usuarioRegistered = repository.registrar(usuario);
+        System.out.println(usuarioRegistered.getId());
+
+        byte[] userIdBytes = UuidManager.UuidToBytes(usuarioRegistered.getId());
+
+        Assert.assertEquals(16, userIdBytes.length);
     }
 
+    /*
     public static String asJsonString(final Object object) {
         try {
             return new ObjectMapper().writeValueAsString(object)

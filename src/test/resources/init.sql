@@ -1,196 +1,277 @@
-CREATE TABLE categoria (
-  id binary(16) NOT NULL,
-  nombre varchar(200) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE CATEGORIA (
+  NOMBRE VARCHAR(200) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE info_app_transaccion (
-  id binary(16) NOT NULL,
-  cod_usuario blob NOT NULL,
-  medio varchar(100) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE INFO_APP_TRANSACCION (
+  COD_USUARIO BLOB NOT NULL,
+  MEDIO VARCHAR(100) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE info_bancaria (
-  id binary(16) NOT NULL,
-  cod_interbancario blob NOT NULL,
-  num_tarjeta blob NOT NULL,
-  banco varchar(200) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE INFO_BANCARIA (
+  COD_INTERBANCARIO BLOB NOT NULL,
+  NUM_TARJETA BLOB NOT NULL,
+  BANCO VARCHAR(200) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE modalidad_pago (
-  id binary(16) NOT NULL,
-  nombre varchar(100) NOT NULL,
-  descripcion varchar(200) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE MODALIDAD_PAGO (
+  NOMBRE VARCHAR(100) NOT NULL,
+  DESCRIPCION VARCHAR(200) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE plan (
-  id binary(16) NOT NULL,
-  tipo varchar(100) NOT NULL,
-  is_free tinyint(1) NOT NULL,
-  codigo varchar(100) NOT NULL,
-  nombre varchar(100) NOT NULL,
-  monto_basico decimal(6,2) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE PLAN (
+  TIPO VARCHAR(100) NOT NULL,
+  IS_FREE TINYINT(1) NOT NULL,
+  CODIGO VARCHAR(100) NOT NULL,
+  NOMBRE VARCHAR(100) NOT NULL,
+  MONTO_BASICO DECIMAL(6,2) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE usuario (
-  id binary(16) NOT NULL,
-  dni varchar(100) NOT NULL,
-  carnet_extranjeria varchar(100) NOT NULL,
-  tipo_documento varchar(100) NOT NULL,
-  nombres varchar(200) NOT NULL,
-  apellidos varchar(200) NOT NULL,
-  fecha_nacimiento date NOT NULL,
-  perfil_linkedin varchar(500) DEFAULT NULL,
-  perfil_facebook varchar(500) DEFAULT NULL,
-  perfil_instagram varchar(500) DEFAULT NULL,
-  perfil_tiktok varchar(500) DEFAULT NULL,
-  clave varchar(60) NOT NULL,
-  correo varchar(200) NOT NULL,
-  PRIMARY KEY (id)
+CREATE TABLE SKILL_USUARIO (
+  NIVEL_CONOCIMIENTO INT(11) NOT NULL,
+  ID_USUARIO BINARY(16) NOT NULL,
+  ID_SKILL BINARY(16) NOT NULL,
+  PRIMARY KEY (ID_SKILL,ID_USUARIO)
 );
 
-CREATE TABLE info_financiera (
-  id binary(16) NOT NULL,
-  clave blob NOT NULL,
-  id_usuario binary(16) NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (id_usuario) REFERENCES usuario (id)
+CREATE TABLE USUARIO (
+  DNI VARCHAR(100),
+  CARNET_EXTRANJERIA VARCHAR(100),
+  TIPO_DOCUMENTO VARCHAR(100) NOT NULL,
+  NOMBRES VARCHAR(200) NOT NULL,
+  APELLIDOS VARCHAR(200) NOT NULL,
+  FECHA_NACIMIENTO DATE NOT NULL,
+  PERFIL_LINKEDIN VARCHAR(500) DEFAULT NULL,
+  PERFIL_FACEBOOK VARCHAR(500) DEFAULT NULL,
+  PERFIL_INSTAGRAM VARCHAR(500) DEFAULT NULL,
+  PERFIL_TIKTOK VARCHAR(500) DEFAULT NULL,
+  CLAVE VARCHAR(60) NOT NULL,
+  CORREO VARCHAR(200) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  PRIMARY KEY (ID)
 );
 
-CREATE TABLE plan_usuario (
-  id_plan binary(16) NOT NULL,
-  id_usuario binary(16) NOT NULL,
-  is_active tinyint(1) NOT NULL,
-  monto decimal(6,2) NOT NULL,
-  moneda varchar(100) NOT NULL,
-  PRIMARY KEY (id_plan, id_usuario),
-  FOREIGN KEY (id_plan) REFERENCES plan (id),
-  FOREIGN KEY (id_usuario) REFERENCES usuario (id)
+CREATE TABLE INFO_FINANCIERA (
+  CLAVE BLOB NOT NULL,
+  ID BINARY(16) NOT NULL,
+  ID_USUARIO BINARY(16) NOT NULL,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ID_USUARIO) REFERENCES USUARIO (ID)
 );
 
-CREATE TABLE skill (
-  id binary(16) NOT NULL,
-  nombre varchar(200) NOT NULL,
-  id_categoria binary(16) NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (id_categoria) REFERENCES categoria(id)
+CREATE TABLE PLAN_USUARIO (
+  IS_ACTIVE TINYINT(1) NOT NULL,
+  MONTO DECIMAL(6,2) NOT NULL,
+  MONEDA VARCHAR(100) NOT NULL,
+  ID_PLAN BINARY(16) NOT NULL,
+  ID_USUARIO BINARY(16) NOT NULL,
+  PRIMARY KEY (ID_PLAN,ID_USUARIO),
+  FOREIGN KEY (ID_PLAN) REFERENCES PLAN (ID),
+  FOREIGN KEY (ID_USUARIO) REFERENCES USUARIO (ID)
 );
 
-CREATE TABLE skill_usuario (
-  id_skill binary(16) NOT NULL,
-  id_usuario binary(16) NOT NULL,
-  nivel_conocimiento int(11) NOT NULL,
-  PRIMARY KEY (id_skill,id_usuario),
-  FOREIGN KEY (id_skill) REFERENCES skill(id),
-  FOREIGN KEY (id_usuario) REFERENCES usuario(id)
+CREATE TABLE SKILL (
+  NOMBRE VARCHAR(200) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  ID_CATEGORIA BINARY(16) NOT NULL,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ID_CATEGORIA) REFERENCES CATEGORIA (ID)
 );
 
-CREATE TABLE servicio (
-  id binary(16) NOT NULL,
-  descripcion varchar(500) NOT NULL,
-  precio decimal(20,2) NOT NULL,
-  id_usuario binary(16) NOT NULL,
-  id_modalidad_pago binary(16) NOT NULL,
-  id_skill binary(16) NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (id_usuario) REFERENCES usuario (id),
-  FOREIGN KEY (id_modalidad_pago) REFERENCES modalidad_pago (id),
-  FOREIGN KEY (id_skill) REFERENCES skill (id)
+CREATE TABLE SERVICIO (
+  DESCRIPCION VARCHAR(500) NOT NULL,
+  PRECIO DECIMAL(20,2) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  ID_USUARIO BINARY(16) NOT NULL,
+  ID_SKILL BINARY(16) NOT NULL,
+  ID_MODALIDAD_PAGO BINARY(16) NOT NULL,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ID_USUARIO) REFERENCES USUARIO (ID),
+  FOREIGN KEY (ID_MODALIDAD_PAGO) REFERENCES MODALIDAD_PAGO (ID),
+  FOREIGN KEY (ID_SKILL) REFERENCES SKILL (ID)
 );
 
-CREATE TABLE match_servicio (
-  id binary(16) NOT NULL,
-  fecha datetime NOT NULL,
-  fecha_inicio datetime NOT NULL,
-  fecha_cierre datetime DEFAULT NULL,
-  estado int(11) NOT NULL,
-  puntuacion int(11) NOT NULL,
-  costo decimal(20,2) NOT NULL,
-  id_servicio binary(16) NOT NULL,
-  id_cliente binary(16) NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (id_servicio) REFERENCES servicio (id),
-  FOREIGN KEY (id_cliente) REFERENCES usuario (id)
+CREATE TABLE MATCH_SERVICIO (
+  FECHA DATETIME NOT NULL,
+  FECHA_INICIO DATETIME NOT NULL,
+  FECHA_CIERRE DATETIME DEFAULT NULL,
+  ESTADO INT(11) NOT NULL,
+  PUNTUACION INT(11) NOT NULL,
+  COSTO DECIMAL(20,2) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  ID_SERVICIO BINARY(16) NOT NULL,
+  ID_CLIENTE BINARY(16) NOT NULL,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ID_SERVICIO) REFERENCES SERVICIO (ID),
+  FOREIGN KEY (ID_CLIENTE) REFERENCES USUARIO (ID)
 );
 
-CREATE TABLE recurso_multimedia_servicio (
-  id binary(16) NOT NULL,
-  url varchar(1000) NOT NULL,
-  medio varchar(100) NOT NULL,
-  id_servicio binary(16) NOT NULL,
-  PRIMARY KEY (id),
-  FOREIGN KEY (id_servicio) REFERENCES servicio (id)
+CREATE TABLE RECURSO_MULTIMEDIA_SERVICIO (
+  URL VARCHAR(1000) NOT NULL,
+  MEDIO VARCHAR(100) NOT NULL,
+  ID BINARY(16) NOT NULL,
+  ID_SERVICIO BINARY(16) NOT NULL,
+  PRIMARY KEY (ID),
+  FOREIGN KEY (ID_SERVICIO) REFERENCES SERVICIO (ID)
 );
 
--- Procedures
+-- STORED PROCEDURES
 
-CREATE PROCEDURE login(
-	in p_correo varchar(200),
-	in p_clave varchar(256)
+DROP PROCEDURE IF EXISTS get_usercred_by_correo;
+
+CREATE PROCEDURE get_usercred_by_correo(
+	IN p_correo VARCHAR(200)
 )
-begin
-	select * from usuario where clave = p_clave and correo = p_correo;
-end;
-
-CREATE PROCEDURE obtener_planes()
-begin
-	select * from plan;
-end;
-
-CREATE PROCEDURE obtener_plan_by_codigo(in p_codigo varchar(100))
-begin
-	select * from plan where codigo = p_codigo;
-end;
-
-CREATE PROCEDURE obtener_skills_from_usuario(in p_id_usuario int)
-begin
-	select s.*,
-	c.nombre as nombre_categoria,
-	su.nivel_conocimiento
-	from skill_usuario su
-	inner join skill s on su.id_skill = s.id
-	inner join categoria c on c.id = s.id_categoria
-	where su.id_usuario = p_id_usuario;
-end;
-
-CREATE PROCEDURE registrar_plan_usuario(
-	in p_id_plan int,
-	in p_id_usuario int,
-	in p_is_active boolean,
-	in p_monto decimal(6,2),
-	in p_moneda varchar(100)
-)
-begin
-	insert into plan_usuario (id_plan, id_usuario, is_active, monto, moneda)
-	values (p_id_plan, p_id_usuario, p_is_active, p_monto, p_moneda);
-
-	select * from plan_usuario where id_plan = p_id_plan and id_usuario = p_id_usuario;
-end;
-
-CREATE PROCEDURE registrar_skill(in p_nombre varchar(200), in p_id_categoria int)
-begin
-	insert into skill(nombre, id_categoria) values(p_nombre, p_id_categoria);
-
-	select * from skill where id = last_insert_id();
-end;
-
-CREATE PROCEDURE registrar_skill_usuario(in p_id_skill int, in p_id_usuario int, in p_nivel_conocimiento int)
-begin
-	insert into skill_usuario(id_skill, id_usuario, nivel_conocimiento) values(p_id_skill, p_id_usuario, p_nivel_conocimiento);
-
-	select * from skill_usuario where id_skill = p_id_skill and id_usuario = p_id_usuario;
-end;
-
-CREATE PROCEDURE ver_cosas()
-begin
-	select * from heroku_cd849ec8e70361a.usuario;
+BEGIN
+	SELECT CORREO, CLAVE, NOMBRES, APELLIDOS FROM USUARIO WHERE CORREO = p_correo;
 END;
 
-CREATE PROCEDURE whatever(in id int)
-begin
-	select * from usuario where id=id;
+DROP PROCEDURE IF EXISTS login;
+
+CREATE PROCEDURE login(
+	IN p_correo VARCHAR(200),
+	IN p_clave VARCHAR(256)
+)
+BEGIN
+	SELECT * FROM USUARIO WHERE CLAVE = p_clave AND CORREO = p_correo;
+END;
+
+DROP PROCEDURE IF EXISTS obtener_planes;
+
+CREATE PROCEDURE obtener_planes()
+BEGIN
+	SELECT * FROM PLAN;
+END;
+
+DROP PROCEDURE IF EXISTS obtener_plan_by_codigo;
+
+CREATE PROCEDURE obtener_plan_by_codigo(
+    IN p_codigo VARCHAR(100)
+)
+BEGIN
+	SELECT * FROM PLAN WHERE CODIGO = p_codigo;
+END;
+
+DROP PROCEDURE IF EXISTS obtener_skills_from_usuario;
+
+CREATE PROCEDURE obtener_skills_from_usuario(
+    IN p_id_usuario INT
+)
+BEGIN
+	SELECT S.*,
+	C.NOMBRE AS NOMBRE_CATEGORIA,
+	SU.NIVEL_CONOCIMIENTO
+	FROM SKILL_USUARIO SU
+	INNER JOIN SKILL S ON SU.ID_SKILL = S.ID
+	INNER JOIN CATEGORIA C ON C.ID = S.ID_CATEGORIA
+	WHERE SU.ID_USUARIO = p_id_usuario;
+END;
+
+DROP PROCEDURE IF EXISTS registrar_plan_usuario;
+
+CREATE PROCEDURE registrar_plan_usuario(
+	IN p_id_plan INT,
+	IN p_id_usuario INT,
+	IN p_is_active BOOLEAN,
+	IN p_monto DECIMAL(6,2),
+	IN p_moneda VARCHAR(100)
+)
+BEGIN
+	INSERT INTO PLAN_USUARIO (ID_PLAN, ID_USUARIO, IS_ACTIVE, MONTO, MONEDA)
+	VALUES (p_id_plan, p_id_usuario, p_is_active, p_monto, p_moneda);
+
+	SELECT * FROM PLAN_USUARIO WHERE ID_PLAN = p_id_plan AND ID_USUARIO = p_id_usuario;
+END;
+
+DROP PROCEDURE IF EXISTS registrar_skill;
+
+CREATE PROCEDURE registrar_skill(
+    IN p_nombre VARCHAR(200),
+    IN p_id_categoria INT
+)
+BEGIN
+	INSERT INTO SKILL(NOMBRE, ID_CATEGORIA) VALUES(p_nombre, p_id_categoria);
+
+	SELECT * FROM SKILL WHERE ID = LAST_INSERT_ID();
+END;
+
+DROP PROCEDURE IF EXISTS registrar_skill_usuario;
+
+CREATE PROCEDURE registrar_skill_usuario(
+    IN p_id_skill INT,
+    IN p_id_usuario INT,
+    IN p_nivel_conocimiento INT
+)
+BEGIN
+	INSERT INTO SKILL_USUARIO(ID_SKILL, ID_USUARIO, NIVEL_CONOCIMIENTO) VALUES(p_id_skill, p_id_usuario, p_nivel_conocimiento);
+
+	SELECT * FROM SKILL_USUARIO WHERE ID_SKILL = p_id_skill AND ID_USUARIO = p_id_usuario;
+END;
+
+DROP PROCEDURE IF EXISTS registrar_usuario;
+
+CREATE PROCEDURE registrar_usuario(
+    IN p_id BINARY(16),
+	IN p_dni VARCHAR(100),
+	IN p_carnet_extranjeria VARCHAR(100),
+	IN p_tipo_documento VARCHAR(100),
+    IN p_correo VARCHAR(200),
+	IN p_nombres VARCHAR(200),
+	IN p_apellidos VARCHAR(200),
+	IN p_fecha_nacimiento DATE,
+	IN p_perfil_linkedin VARCHAR(500),
+	IN p_perfil_facebook VARCHAR(500),
+	IN p_perfil_instagram VARCHAR(500),
+	IN p_perfil_tiktok VARCHAR(500),
+	IN p_clave VARCHAR(500),
+	OUT status_message VARCHAR(500)
+)
+BEGIN
+    DECLARE documento_existente INT;
+
+    IF (p_tipo_documento IS NOT NULL) THEN
+
+        IF (p_tipo_documento = 'dni') THEN
+            SELECT COUNT(*) INTO documento_existente FROM USUARIO WHERE DNI = p_dni AND TIPO_DOCUMENTO = 'dni';
+        ELSE -- carnet_extranjeria
+            SELECT COUNT(*) INTO documento_existente FROM USUARIO WHERE CARNET_EXTRANJERIA = p_carnet_extranjeria AND TIPO_DOCUMENTO = 'carnet_extranjeria';
+        END IF;
+
+        IF (documento_existente = 0) THEN
+            INSERT INTO USUARIO (ID, DNI, CARNET_EXTRANJERIA, TIPO_DOCUMENTO, CORREO, NOMBRES, APELLIDOS, FECHA_NACIMIENTO, PERFIL_LINKEDIN, PERFIL_FACEBOOK, PERFIL_INSTAGRAM, PERFIL_TIKTOK, CLAVE)
+            VALUES (p_id, p_dni, p_carnet_extranjeria, p_tipo_documento, p_correo, p_nombres, p_apellidos, p_fecha_nacimiento, p_perfil_linkedin, p_perfil_facebook, p_perfil_instagram, p_perfil_tiktok, p_clave);
+
+            SELECT * FROM USUARIO WHERE ID = p_id;
+            SET STATUS_MESSAGE = 'Usuario registrado';
+        ELSE
+            SET STATUS_MESSAGE = 'Usuario ya existe';
+        END IF;
+    ELSE
+        SET STATUS_MESSAGE = 'No hay tipo de documento';
+    END IF;
+END;
+
+DROP PROCEDURE IF EXISTS ver_cosas;
+
+CREATE PROCEDURE ver_cosas()
+BEGIN
+	SELECT * FROM HEROKU_CD849EC8E70361A.USUARIO;
+END;
+
+DROP PROCEDURE IF EXISTS whatever;
+
+CREATE PROCEDURE whatever(
+    IN ID INT
+)
+BEGIN
+	SELECT * FROM USUARIO WHERE ID=ID;
 END;

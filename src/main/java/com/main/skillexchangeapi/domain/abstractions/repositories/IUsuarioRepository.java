@@ -17,4 +17,6 @@ public interface IUsuarioRepository {
     Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
 
     PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException;
+
+    int deleteAll() throws DatabaseNotWorkingException;
 }
