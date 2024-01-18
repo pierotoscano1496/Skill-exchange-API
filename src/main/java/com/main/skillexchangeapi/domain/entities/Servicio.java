@@ -11,6 +11,7 @@ import java.util.UUID;
 public class Servicio {
     private final UUID id;
     private SkillUsuario skillUsuario;
+    private String titulo;
     private String descripcion;
     private double precio;
     private ModalidadPago modalidadPago;

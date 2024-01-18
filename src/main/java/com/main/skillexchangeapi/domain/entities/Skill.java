@@ -9,6 +9,6 @@ import java.util.UUID;
 @Builder
 public class Skill {
     private final UUID id;
-    private String nombre;
-    private Categoria categoria;
+    private String descripcion;
+    private SubCategoria subCategoria;
 }

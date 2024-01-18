@@ -4,6 +4,7 @@ import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.Categoria;
 import com.main.skillexchangeapi.domain.entities.Skill;
+import com.main.skillexchangeapi.domain.entities.SubCategoria;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -43,13 +44,10 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
                     SkillUsuario skillUsuarioRegistered = null;
 
                     if (resultSet.first()) {
-                        Skill skill = Skill.builder()
-                                .id(UUID.fromString(resultSet.getString("id_skill")))
-                                .build();
-
                         skillUsuarioRegistered = SkillUsuario.builder()
-                                .skill(skill)
-                                .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
+                                .skill(skillUsuario.getSkill())
+                                .usuario(skillUsuario.getUsuario())
+                                .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
                                 .build();
                     }
 
@@ -86,18 +84,22 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
 
             while (resultSet.next()) {
                 Categoria categoria = Categoria.builder()
-                        .id(UUID.fromString(resultSet.getString("id_categoria")))
-                        .nombre(resultSet.getString("nombre_categoria"))
+                        .nombre(resultSet.getString("NOMBRE_CATEGORIA"))
                         .build();
 
-                Skill skill = Skill.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .nombre(resultSet.getString("nombre"))
+                SubCategoria subCategoria=SubCategoria.builder()
+                        .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
                         .categoria(categoria)
                         .build();
 
+                Skill skill = Skill.builder()
+                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .subCategoria(subCategoria)
+                        .build();
+
                 SkillUsuario skillUsuario = SkillUsuario.builder()
-                        .nivelConocimiento(resultSet.getInt("nivel_conocimiento"))
+                        .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
                         .skill(skill)
                         .build();
 

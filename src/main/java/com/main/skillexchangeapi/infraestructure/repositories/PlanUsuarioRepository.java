@@ -37,20 +37,12 @@ public class PlanUsuarioRepository implements IPlanUsuarioRepository {
             PlanUsuario planUsuarioRegistered = null;
 
             if (resultSet.first()) {
-                Usuario usuario = Usuario.builder()
-                        .id(UUID.fromString(resultSet.getString("id_usuario")))
-                        .build();
-
-                Plan plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("id_plan")))
-                        .build();
-
                 planUsuarioRegistered = PlanUsuario.builder()
-                        .usuario(usuario)
-                        .plan(plan)
-                        .isActive(resultSet.getBoolean("is_active"))
-                        .monto(resultSet.getDouble("monto"))
-                        .moneda(resultSet.getString("moneda"))
+                        .usuario(planUsuario.getUsuario())
+                        .plan(planUsuario.getPlan())
+                        .isActive(resultSet.getBoolean("IS_ACTIVE"))
+                        .monto(resultSet.getDouble("MONTO"))
+                        .moneda(resultSet.getString("MONEDA"))
                         .build();
             }
 

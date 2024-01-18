@@ -11,5 +11,5 @@ import java.util.UUID;
 public class Categoria {
     private final UUID id;
     private String nombre;
-    private ArrayList<Skill> skills;
+    private ArrayList<SubCategoria> subCategorias;
 }
