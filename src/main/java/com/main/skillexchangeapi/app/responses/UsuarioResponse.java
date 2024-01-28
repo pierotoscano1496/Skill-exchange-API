@@ -15,6 +15,8 @@ public class UsuarioResponse {
     private String dni;
     private String carnetExtranjeria;
     private String tipoDocumento;
+    private String tipo;
+    private String introduccion;
     private String correo;
     private String nombres;
     private String apellidos;

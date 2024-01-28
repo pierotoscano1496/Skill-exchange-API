@@ -9,8 +9,9 @@ import java.util.UUID;
 @Builder
 public class UsuarioSkillsResponse {
     private UUID idSkill;
-    private String nombreSkill;
+    private String descripcionSkill;
     private int nivelConocimiento;
+    private String nombreSubCategoria;
     private String nombreCategoria;
     private String descripcion;
 }

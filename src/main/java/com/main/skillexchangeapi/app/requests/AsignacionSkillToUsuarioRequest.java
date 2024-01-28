@@ -6,7 +6,7 @@ import java.util.UUID;
 
 @Getter
 public class AsignacionSkillToUsuarioRequest {
-    private UUID idSkill;
+    private UUID idSkill; // null para los nuevos skills
     private int nivelConocimiento;
     private String descripcion;
 }

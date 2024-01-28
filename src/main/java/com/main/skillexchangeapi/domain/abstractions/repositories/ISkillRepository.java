@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories;
 
 import com.main.skillexchangeapi.domain.entities.Skill;
+import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;

@@ -32,11 +32,12 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
         List<SkillUsuario> skillsUsuarioRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_skill_usuario(?, ?, ?)}");) {
+             CallableStatement statement = connection.prepareCall("{CALL registrar_skill_usuario(?, ?, ?, ?)}");) {
             skillsUsuario.forEach(skillUsuario -> {
                 try {
                     statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(skillUsuario.getUsuario().getId()));
                     statement.setBytes("p_id_skill", UuidManager.UuidToBytes(skillUsuario.getSkill().getId()));
+                    statement.setString("p_descripcion", skillUsuario.getDescripcion());
                     statement.setInt("p_nivel_conocimiento", skillUsuario.getNivelConocimiento());
 
                     ResultSet resultSet = statement.getResultSet();
@@ -48,6 +49,7 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
                                 .skill(skillUsuario.getSkill())
                                 .usuario(skillUsuario.getUsuario())
                                 .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
+                                .descripcion(resultSet.getString("DESCRIPCION"))
                                 .build();
                     }
 
@@ -56,7 +58,7 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
                     if (skillUsuarioRegistered != null) {
                         skillsUsuarioRegistered.add(skillUsuarioRegistered);
                     } else {
-                        throw new NotCreatedException("No se creó el skill");
+                        throw new NotCreatedException("No se asignó el skill para el usuario");
                     }
                 } catch (SQLException | NotCreatedException e) {
                     skillsUsuarioRegistered.clear();

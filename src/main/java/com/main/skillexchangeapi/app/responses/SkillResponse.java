@@ -10,6 +10,6 @@ import java.util.UUID;
 @Builder
 public class SkillResponse {
     private UUID id;
-    private String nombre;
+    private String descripcion;
     private UUID idCcategoria;
 }

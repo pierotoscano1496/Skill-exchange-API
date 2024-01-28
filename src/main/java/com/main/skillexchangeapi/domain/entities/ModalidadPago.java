@@ -9,6 +9,8 @@ import java.util.UUID;
 @Builder
 public class ModalidadPago {
     private final UUID id;
-    private String nombre;
-    private String descripcion;
+    private String tipo;
+    private String cuentaBancaria;
+    private String numeroCelular;
+    private Servicio servicio;
 }

@@ -30,7 +30,6 @@ public class ServicioRepository implements IServicioRepository {
             statement.setObject("p_id", UuidManager.UuidToBytes(servicio.getId()));
             statement.setObject("p_id_usuario", UuidManager.UuidToBytes(servicio.getSkillUsuario().getUsuario().getId()));
             statement.setObject("p_id_skill", UuidManager.UuidToBytes(servicio.getSkillUsuario().getSkill().getId()));
-            statement.setObject("p_id_modalidad_pago", UuidManager.UuidToBytes(servicio.getModalidadPago().getId()));
 
             ResultSet resultSet = statement.getResultSet();
 
@@ -43,7 +42,6 @@ public class ServicioRepository implements IServicioRepository {
                         .descripcion(resultSet.getString("DESCRIPCION"))
                         .precio(resultSet.getDouble("PRECIO"))
                         .skillUsuario(servicio.getSkillUsuario())
-                        .modalidadPago(servicio.getModalidadPago())
                         .build();
             }
 

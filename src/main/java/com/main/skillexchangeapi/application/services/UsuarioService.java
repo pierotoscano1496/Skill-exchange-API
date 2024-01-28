@@ -63,27 +63,12 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public UsuarioResponse registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+    public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
         // Cifrar clave de usuario
         String claveCifrada = passwordEncoder.encode(usuario.getClave());
         usuario.setClave(claveCifrada);
 
-        Usuario usuarioRegistered = repository.registrar(usuario);
-
-        return UsuarioResponse.builder()
-                .id(usuarioRegistered.getId())
-                .dni(usuarioRegistered.getDni())
-                .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
-                .tipoDocumento(usuarioRegistered.getTipoDocumento())
-                .nombres(usuarioRegistered.getNombres())
-                .apellidos(usuarioRegistered.getApellidos())
-                .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
-                .correo(usuarioRegistered.getCorreo())
-                .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
-                .perfilFacebook(usuarioRegistered.getPerfilFacebook())
-                .perfilInstagram(usuarioRegistered.getPerfilInstagram())
-                .perfilTiktok(usuarioRegistered.getPerfilTiktok())
-                .build();
+        return repository.registrar(usuario);
     }
 
     @Override
@@ -98,12 +83,16 @@ public class UsuarioService implements IUsuarioService {
                         .build())
                 .usuario(usuario)
                 .nivelConocimiento(s.getNivelConocimiento())
+                .descripcion(s.getDescripcion())
                 .build()).collect(Collectors.toList());
 
         return skillUsuarioRepository.registrarMultiple(skillsUsuario)
                 .stream().map(s -> UsuarioSkillsResponse.builder()
                         .idSkill(s.getSkill().getId())
+                        .nombreCategoria(s.getSkill().getSubCategoria().getCategoria().getNombre())
+                        .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
                         .nivelConocimiento(s.getNivelConocimiento())
+                        .descripcionSkill(s.getDescripcion())
                         .build()).collect(Collectors.toList());
     }
 
@@ -112,8 +101,9 @@ public class UsuarioService implements IUsuarioService {
         return skillUsuarioRepository.obtenerByIdUsuario(id)
                 .stream().map(s -> UsuarioSkillsResponse.builder()
                         .idSkill(s.getSkill().getId())
-                        .nombreSkill(s.getSkill().getNombre())
-                        .nombreCategoria(s.getSkill().getCategoria().getNombre())
+                        .descripcionSkill(s.getSkill().getDescripcion())
+                        .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
+                        .nombreCategoria(s.getSkill().getSubCategoria().getCategoria().getNombre())
                         .nivelConocimiento(s.getNivelConocimiento())
                         .build()).collect(Collectors.toList());
     }

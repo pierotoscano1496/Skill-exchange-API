@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Getter
 public class CreateSkillRequest {
-    private String nombre;
-    private UUID idCategoria;
+    private String descripcion;
+    private UUID idSubcategoria;
 }
