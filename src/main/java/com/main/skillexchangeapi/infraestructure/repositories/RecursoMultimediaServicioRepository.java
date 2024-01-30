@@ -29,7 +29,6 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
 
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_recurso_multimedia_servicio(?, ?, ?, ?)}")) {
-            connection.setAutoCommit(false);
 
             for (RecursoMultimediaServicio recursoMultimediaServicio : recursosMultimediaServicio) {
                 try {
@@ -38,25 +37,25 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
                     statement.setString("p_medio", recursoMultimediaServicio.getMedio());
                     statement.setObject("p_id_servicio", UuidManager.UuidToBytes(recursoMultimediaServicio.getServicio().getId()));
 
-                    try (ResultSet resultSet = statement.getResultSet()) {
+                    try (ResultSet resultSet = statement.executeQuery()) {
                         RecursoMultimediaServicio recursoMultimediaServicioRegistered = null;
 
-                        if (resultSet.first()) {
+                        while (resultSet.next()) {
                             recursoMultimediaServicioRegistered = RecursoMultimediaServicio.builder()
-                                    .id(UUID.fromString(resultSet.getString("ID")))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                                     .url(resultSet.getString("URL"))
                                     .medio(resultSet.getString("MEDIO"))
                                     .servicio(Servicio.builder()
-                                            .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                             .build())
                                     .build();
+
+                            break;
                         }
 
                         if (recursoMultimediaServicioRegistered != null) {
                             recursosMultimediaServicioRegistered.add(recursoMultimediaServicioRegistered);
                         }
-                    } catch (SQLException e) {
-                        throw new DatabaseNotWorkingException(e.getMessage());
                     }
                 } catch (SQLException e) {
                     throw new DatabaseNotWorkingException(e.getMessage());

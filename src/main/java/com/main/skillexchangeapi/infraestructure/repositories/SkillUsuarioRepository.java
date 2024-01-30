@@ -33,39 +33,37 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
 
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_skill_usuario(?, ?, ?, ?)}");) {
-            skillsUsuario.forEach(skillUsuario -> {
+            for (SkillUsuario skillUsuario : skillsUsuario) {
                 try {
                     statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(skillUsuario.getUsuario().getId()));
                     statement.setBytes("p_id_skill", UuidManager.UuidToBytes(skillUsuario.getSkill().getId()));
                     statement.setString("p_descripcion", skillUsuario.getDescripcion());
                     statement.setInt("p_nivel_conocimiento", skillUsuario.getNivelConocimiento());
 
-                    ResultSet resultSet = statement.getResultSet();
+                    try (ResultSet resultSet = statement.executeQuery()) {
+                        SkillUsuario skillUsuarioRegistered = null;
 
-                    SkillUsuario skillUsuarioRegistered = null;
+                        while (resultSet.next()) {
+                            skillUsuarioRegistered = SkillUsuario.builder()
+                                    .skill(skillUsuario.getSkill())
+                                    .usuario(skillUsuario.getUsuario())
+                                    .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
+                                    .descripcion(resultSet.getString("DESCRIPCION"))
+                                    .build();
 
-                    if (resultSet.first()) {
-                        skillUsuarioRegistered = SkillUsuario.builder()
-                                .skill(skillUsuario.getSkill())
-                                .usuario(skillUsuario.getUsuario())
-                                .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
-                                .descripcion(resultSet.getString("DESCRIPCION"))
-                                .build();
+                            break;
+                        }
+
+                        if (skillUsuarioRegistered != null) {
+                            skillsUsuarioRegistered.add(skillUsuarioRegistered);
+                        }
                     }
-
-                    resultSet.close();
-
-                    if (skillUsuarioRegistered != null) {
-                        skillsUsuarioRegistered.add(skillUsuarioRegistered);
-                    } else {
-                        throw new NotCreatedException("No se asignó el skill para el usuario");
-                    }
-                } catch (SQLException | NotCreatedException e) {
+                } catch (SQLException e) {
                     skillsUsuarioRegistered.clear();
                 }
-            });
+            }
 
-            if (!skillsUsuarioRegistered.isEmpty()) {
+            if (skillsUsuarioRegistered.size() == skillsUsuario.size()) {
                 return skillsUsuarioRegistered;
             } else {
                 throw new NotCreatedException("No se crearon los skills");
@@ -89,7 +87,7 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
                         .nombre(resultSet.getString("NOMBRE_CATEGORIA"))
                         .build();
 
-                SubCategoria subCategoria=SubCategoria.builder()
+                SubCategoria subCategoria = SubCategoria.builder()
                         .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
                         .categoria(categoria)
                         .build();

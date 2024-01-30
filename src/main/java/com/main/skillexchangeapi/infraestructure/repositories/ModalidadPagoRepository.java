@@ -65,7 +65,6 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
 
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
-            connection.setAutoCommit(false);
 
             for (ModalidadPago modalidadPago : modalidadesPago) {
                 try {
@@ -75,26 +74,26 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                     statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
                     statement.setObject("p_id_servicio", UuidManager.UuidToBytes(modalidadPago.getServicio().getId()));
 
-                    try (ResultSet resultSet = statement.getResultSet()) {
+                    try (ResultSet resultSet = statement.executeQuery()) {
                         ModalidadPago modalidadPagoRegistered = null;
 
-                        if (resultSet.first()) {
+                        while (resultSet.next()) {
                             modalidadPagoRegistered = ModalidadPago.builder()
-                                    .id(UUID.fromString(resultSet.getString("ID")))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                                     .tipo(resultSet.getString("TIPO"))
                                     .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                                     .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                                     .servicio(Servicio.builder()
-                                            .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                             .build())
                                     .build();
+
+                            break;
                         }
 
                         if (modalidadPagoRegistered != null) {
                             modalidadesPagoRegistered.add(modalidadPagoRegistered);
                         }
-                    } catch (SQLException e) {
-                        throw new DatabaseNotWorkingException(e.getMessage());
                     }
                 } catch (SQLException e) {
                     throw new DatabaseNotWorkingException(e.getMessage());

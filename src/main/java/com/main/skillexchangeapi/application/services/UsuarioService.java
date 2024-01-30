@@ -1,9 +1,11 @@
 package com.main.skillexchangeapi.application.services;
 
-import com.main.skillexchangeapi.app.requests.AsignacionSkillToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
+import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
@@ -72,28 +74,32 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public List<UsuarioSkillsResponse> asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        Usuario usuario = Usuario.builder()
-                .id(id)
-                .build();
-
+    public UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
         List<SkillUsuario> skillsUsuario = requestBody.stream().map(s -> SkillUsuario.builder()
                 .skill(Skill.builder()
                         .id(s.getIdSkill())
                         .build())
-                .usuario(usuario)
+                .usuario(Usuario.builder()
+                        .id(id)
+                        .build())
                 .nivelConocimiento(s.getNivelConocimiento())
                 .descripcion(s.getDescripcion())
                 .build()).collect(Collectors.toList());
 
-        return skillUsuarioRepository.registrarMultiple(skillsUsuario)
-                .stream().map(s -> UsuarioSkillsResponse.builder()
-                        .idSkill(s.getSkill().getId())
-                        .nombreCategoria(s.getSkill().getSubCategoria().getCategoria().getNombre())
-                        .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
-                        .nivelConocimiento(s.getNivelConocimiento())
-                        .descripcionSkill(s.getDescripcion())
-                        .build()).collect(Collectors.toList());
+        List<SkillUsuario> skillsUsuarioRegistered = skillUsuarioRepository.registrarMultiple(skillsUsuario);
+
+        List<SkillAsignado> skillAsignadosRegistered = skillsUsuarioRegistered.stream().map(su ->
+                        SkillAsignado.builder()
+                                .id(su.getSkill().getId())
+                                .nivelConocimiento(su.getNivelConocimiento())
+                                .descripcion(su.getDescripcion())
+                                .build())
+                .toList();
+
+        return UsuarioSkillsAsignadosResponse.builder()
+                .id(id)
+                .skillsAsignados(skillAsignadosRegistered)
+                .build();
     }
 
     @Override

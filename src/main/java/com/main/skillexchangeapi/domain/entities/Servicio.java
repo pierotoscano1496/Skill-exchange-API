@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -15,5 +16,6 @@ public class Servicio {
     private String titulo;
     private String descripcion;
     private double precio;
-    private ArrayList<ModalidadPago> modalidadesPago;
+    private List<ModalidadPago> modalidadesPago;
+    private List<RecursoMultimediaServicio> recursosMultimediaServicio;
 }

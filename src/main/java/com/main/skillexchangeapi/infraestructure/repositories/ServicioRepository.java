@@ -24,36 +24,36 @@ public class ServicioRepository implements IServicioRepository {
     public Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_servicio(?, ?, ?, ?, ?, ?)}")) {
-            statement.setString("p_titulo",servicio.getTitulo());
+            statement.setString("p_titulo", servicio.getTitulo());
             statement.setString("p_descripcion", servicio.getDescripcion());
             statement.setDouble("p_precio", servicio.getPrecio());
-            statement.setObject("p_id", UuidManager.UuidToBytes(servicio.getId()));
+            statement.setObject("p_id", UuidManager.UuidToBytes(UUID.randomUUID()));
             statement.setObject("p_id_usuario", UuidManager.UuidToBytes(servicio.getSkillUsuario().getUsuario().getId()));
             statement.setObject("p_id_skill", UuidManager.UuidToBytes(servicio.getSkillUsuario().getSkill().getId()));
 
-            ResultSet resultSet = statement.getResultSet();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Servicio servicioRegistered = null;
 
-            Servicio servicioRegistered = null;
+                while (resultSet.next()) {
+                    servicioRegistered = Servicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .titulo(resultSet.getString("TITULO"))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .precio(resultSet.getDouble("PRECIO"))
+                            .skillUsuario(servicio.getSkillUsuario())
+                            .build();
 
-            if (resultSet.first()) {
-                servicioRegistered = Servicio.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
-                        .titulo(resultSet.getString("TITULO"))
-                        .descripcion(resultSet.getString("DESCRIPCION"))
-                        .precio(resultSet.getDouble("PRECIO"))
-                        .skillUsuario(servicio.getSkillUsuario())
-                        .build();
-            }
+                    break;
+                }
 
-            resultSet.close();
-
-            if (servicioRegistered != null) {
-                return servicioRegistered;
-            } else {
-                throw new NotCreatedException("No se creó el servicio");
+                if (servicioRegistered != null) {
+                    return servicioRegistered;
+                } else {
+                    throw new NotCreatedException("No se creó el servicio");
+                }
             }
         } catch (SQLException e) {
-            throw new NotCreatedException("No se creó el servicio");
+            throw new DatabaseNotWorkingException("No se creó el servicio");
         }
     }
 }
