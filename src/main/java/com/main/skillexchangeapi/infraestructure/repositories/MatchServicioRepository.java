@@ -31,7 +31,6 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             statement.setDate("p_fecha", java.sql.Date.valueOf(match.getFecha()));
             statement.setDate("p_fecha_inicio", java.sql.Date.valueOf(match.getFechaInicio()));
             statement.setDate("p_fecha_cierre", java.sql.Date.valueOf(match.getFechaCierre()));
-            statement.setString("p_estado", match.getEstado());
             statement.setDouble("p_costo", match.getCosto());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(match.getCliente().getId()));
@@ -96,6 +95,39 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se actualizó el estado del match");
+        }
+    }
+
+    @Override
+    public MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("{CALL puntuar_servicio (?, ?)}")) {
+            statement.setObject("p_id", UuidManager.UuidToBytes(id));
+            statement.setInt("p_puntuacion", puntuacion);
+
+            try (ResultSet resultSet = statement.getResultSet()) {
+                if (resultSet.first()) {
+                    return MatchServicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .fecha(resultSet.getDate("FECHA").toLocalDate())
+                            .fechaInicio(resultSet.getDate("FECHA_INICIO").toLocalDate())
+                            .fechaCierre(resultSet.getDate("FECHA_CIERRE").toLocalDate())
+                            .estado(resultSet.getString("ESTADO"))
+                            .puntuacion(resultSet.getInt("PUNTUACION"))
+                            .costo(resultSet.getDouble("COSTO"))
+                            .servicio(Servicio.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
+                                    .build())
+                            .cliente(Usuario.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
+                                    .build())
+                            .build();
+                } else {
+                    throw new NotUpdatedException("No se logró puntuar el match");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("No se logró puntuar el match");
         }
     }
 }

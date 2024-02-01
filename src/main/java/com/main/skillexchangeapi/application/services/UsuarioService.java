@@ -2,9 +2,12 @@ package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
+import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
@@ -65,12 +68,44 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+    public UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
         // Cifrar clave de usuario
-        String claveCifrada = passwordEncoder.encode(usuario.getClave());
-        usuario.setClave(claveCifrada);
+        String claveCifrada = passwordEncoder.encode(requestBody.getClave());
+        requestBody.setClave(claveCifrada);
 
-        return repository.registrar(usuario);
+        Usuario usuarioRegistered = repository.registrar(Usuario.builder()
+                .dni(requestBody.getDni())
+                .carnetExtranjeria(requestBody.getCarnetExtranjeria())
+                .tipoDocumento(requestBody.getTipoDocumento())
+                .correo(requestBody.getCorreo())
+                .nombres(requestBody.getNombres())
+                .apellidos(requestBody.getApellidos())
+                .tipo(requestBody.getTipo())
+                .fechaNacimiento(requestBody.getFechaNacimiento())
+                .clave(requestBody.getClave())
+                .perfilLinkedin(requestBody.getPerfilLinkedin())
+                .perfilFacebook(requestBody.getPerfilFacebook())
+                .perfilInstagram(requestBody.getPerfilInstagram())
+                .perfilTiktok(requestBody.getPerfilTiktok())
+                .introduccion(requestBody.getIntroduccion())
+                .build());
+
+        return UsuarioRegisteredResponse.builder()
+                .id(usuarioRegistered.getId())
+                .dni(usuarioRegistered.getDni())
+                .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
+                .tipoDocumento(usuarioRegistered.getTipoDocumento())
+                .correo(usuarioRegistered.getCorreo())
+                .nombres(usuarioRegistered.getNombres())
+                .apellidos(usuarioRegistered.getApellidos())
+                .tipo(usuarioRegistered.getTipo())
+                .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
+                .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
+                .perfilFacebook(usuarioRegistered.getPerfilFacebook())
+                .perfilInstagram(usuarioRegistered.getPerfilInstagram())
+                .perfilTiktok(usuarioRegistered.getPerfilTiktok())
+                .introduccion(usuarioRegistered.getIntroduccion())
+                .build();
     }
 
     @Override
@@ -115,23 +150,25 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public PlanUsuario asignarPlan(UUID id, SetPlanToUsuarioRequest requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        Plan plan = Plan.builder()
-                .id(requestBody.getIdPlan())
-                .build();
-
-        Usuario usuario = Usuario.builder()
-                .id(id)
-                .build();
-
-        PlanUsuario planUsuario = PlanUsuario.builder()
-                .plan(plan)
-                .usuario(usuario)
+    public PlanAsignado asignarPlan(UUID id, SetPlanToUsuarioRequest requestBody) throws DatabaseNotWorkingException, NotCreatedException {
+        PlanUsuario planUsuarioAsignado = repository.asignarPlan(PlanUsuario.builder()
+                .plan(Plan.builder()
+                        .id(requestBody.getIdPlan())
+                        .build())
+                .usuario(Usuario.builder()
+                        .id(id)
+                        .build())
                 .isActive(requestBody.isActive())
                 .monto(requestBody.getMonto())
                 .moneda(requestBody.getMoneda())
-                .build();
+                .build());
 
-        return repository.asignarPlan(planUsuario);
+        return PlanAsignado.builder()
+                .idPlan(planUsuarioAsignado.getPlan().getId())
+                .idUsuario(planUsuarioAsignado.getUsuario().getId())
+                .isActive(planUsuarioAsignado.isActive())
+                .monto(planUsuarioAsignado.getMonto())
+                .moneda(planUsuarioAsignado.getMoneda())
+                .build();
     }
 }

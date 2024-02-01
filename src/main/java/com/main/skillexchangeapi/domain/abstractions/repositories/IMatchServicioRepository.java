@@ -11,4 +11,6 @@ public interface IMatchServicioRepository {
     MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
 
     MatchServicio actualizarEstado(UUID id, String estado) throws DatabaseNotWorkingException, NotUpdatedException;
+
+    MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
 }

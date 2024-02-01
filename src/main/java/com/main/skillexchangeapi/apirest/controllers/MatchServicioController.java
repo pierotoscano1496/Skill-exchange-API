@@ -1,7 +1,9 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioEstadoUpdatedResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
-import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
@@ -19,18 +21,27 @@ public class MatchServicioController {
     private IMatchServicioService service;
 
     @PostMapping
-    public MatchServicio registrar(@RequestBody MatchServicio matchServicio) {
+    public MatchServicioResponse registrar(@RequestBody CreateMatchServicioBody requestBody) {
         try {
-            return service.registrar(matchServicio);
+            return service.registrar(requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
     @PatchMapping("estado/{id}")
-    public MatchServicio actualizarEstado(@PathVariable UUID id, @RequestBody String estado) {
+    public MatchServicioResponse actualizarEstado(@PathVariable UUID id, @RequestBody String estado) {
         try {
             return service.actualizarEstado(id, estado);
+        } catch (DatabaseNotWorkingException | NotUpdatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PatchMapping("puntuacion/{id}")
+    public MatchServicioResponse puntuarServicio(@PathVariable UUID id, @RequestBody int puntuacion) {
+        try {
+            return service.puntuarServicio(id, puntuacion);
         } catch (DatabaseNotWorkingException | NotUpdatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

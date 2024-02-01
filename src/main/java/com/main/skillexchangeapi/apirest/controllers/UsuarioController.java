@@ -2,6 +2,9 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
+import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
+import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Usuario;
@@ -26,19 +29,18 @@ public class UsuarioController {
     private IUsuarioService service;
 
     @PostMapping
-    public ResponseEntity<Usuario> registrar(@RequestBody Usuario usuario) {
+    public ResponseEntity<UsuarioRegisteredResponse> registrar(@RequestBody CreateUsuarioBody requestBody) {
         try {
-            Usuario usuarioRegistered = service.registrar(usuario);
-            return ResponseEntity.status(HttpStatus.CREATED).body(usuarioRegistered);
+            return ResponseEntity.status(HttpStatus.CREATED).body(service.registrar(requestBody));
         } catch (NotCreatedException | EncryptionAlghorithmException | DatabaseNotWorkingException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 
     @PatchMapping("/plan/{id}")
-    public ResponseEntity<PlanUsuario> asignarPlan(@RequestParam UUID id, SetPlanToUsuarioRequest requestBody) {
+    public ResponseEntity<PlanAsignado> asignarPlan(@RequestParam UUID id, SetPlanToUsuarioRequest requestBody) {
         try {
-            PlanUsuario planUsuarioAssigned = service.asignarPlan(id, requestBody);
+            PlanAsignado planUsuarioAssigned = service.asignarPlan(id, requestBody);
             return ResponseEntity.ok(planUsuarioAssigned);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
