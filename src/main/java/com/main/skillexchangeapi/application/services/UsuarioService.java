@@ -43,6 +43,27 @@ public class UsuarioService implements IUsuarioService {
     private PasswordEncoder passwordEncoder;
 
     @Override
+    public UsuarioRegisteredResponse obtener(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        Usuario usuario = repository.obtenerByCorreo(correo);
+        return UsuarioRegisteredResponse.builder()
+                .id(usuario.getId())
+                .dni(usuario.getDni())
+                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                .tipoDocumento(usuario.getTipoDocumento())
+                .nombres(usuario.getNombres())
+                .apellidos(usuario.getApellidos())
+                .tipo(usuario.getTipo())
+                .correo(usuario.getCorreo())
+                .fechaNacimiento(usuario.getFechaNacimiento())
+                .introduccion(usuario.getIntroduccion())
+                .perfilFacebook(usuario.getPerfilFacebook())
+                .perfilInstagram(usuario.getPerfilInstagram())
+                .perfilLinkedin(usuario.getPerfilLinkedin())
+                .perfilTiktok(usuario.getPerfilTiktok())
+                .build();
+    }
+
+    @Override
     public UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
         Usuario usuario = repository.login(credenciales);
 

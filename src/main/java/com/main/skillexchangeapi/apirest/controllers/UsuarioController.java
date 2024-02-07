@@ -6,12 +6,14 @@ import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
+import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +29,17 @@ import java.util.UUID;
 public class UsuarioController {
     @Autowired
     private IUsuarioService service;
+
+    @GetMapping
+    public ResponseEntity<UsuarioRegisteredResponse> obtener(@RequestHeader("Authorization") String bearerToken) {
+        try {
+            String token = bearerToken.replace("Bearer ", "");
+            String correo = TokenUtils.getEmailFromToken(token);
+            return ResponseEntity.status(HttpStatus.OK).body(service.obtener(correo));
+        } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
 
     @PostMapping
     public ResponseEntity<UsuarioRegisteredResponse> registrar(@RequestBody CreateUsuarioBody requestBody) {

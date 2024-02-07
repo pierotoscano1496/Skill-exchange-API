@@ -64,6 +64,46 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
+    public Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_correo(?)}");) {
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipo(resultSet.getString("TIPO"))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
     public UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
             statement.setString("p_correo", correo);

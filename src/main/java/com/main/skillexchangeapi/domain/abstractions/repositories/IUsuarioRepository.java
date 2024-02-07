@@ -12,6 +12,8 @@ import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 public interface IUsuarioRepository {
     Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException;
 
+    Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
