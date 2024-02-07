@@ -7,6 +7,8 @@ import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
+import com.main.skillexchangeapi.app.security.services.InMemoryTokenBlackList;
+import com.main.skillexchangeapi.domain.abstractions.services.ITokenBlackList;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
@@ -14,6 +16,7 @@ import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +33,13 @@ public class UsuarioController {
     @Autowired
     private IUsuarioService service;
 
+    @Autowired
+    private ITokenBlackList tokenBlackList;
+
     @GetMapping
-    public ResponseEntity<UsuarioRegisteredResponse> obtener(@RequestHeader("Authorization") String bearerToken) {
+    public ResponseEntity<UsuarioRegisteredResponse> obtener(HttpServletRequest request) {
         try {
-            String token = bearerToken.replace("Bearer ", "");
-            String correo = TokenUtils.getEmailFromToken(token);
+            String correo = TokenUtils.extractEmailFromRequest(request);
             return ResponseEntity.status(HttpStatus.OK).body(service.obtener(correo));
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -67,5 +72,13 @@ public class UsuarioController {
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(HttpServletRequest request) {
+        String token = TokenUtils.extractTokenFromRequest(request);
+        tokenBlackList.addToBlacklist(token);
+
+        return ResponseEntity.ok("Logout succesfull");
     }
 }

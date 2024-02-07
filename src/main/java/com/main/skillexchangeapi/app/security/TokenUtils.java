@@ -4,9 +4,11 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.Date;
@@ -48,8 +50,9 @@ public class TokenUtils {
         }
     }
 
-    public static String getEmailFromToken(String token) {
+    public static String extractEmailFromRequest(HttpServletRequest request) {
         try {
+            String token = extractTokenFromRequest(request);
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(ACCESS_TOKEN_SIGNATURE.getBytes())
                     .build()
@@ -58,6 +61,15 @@ public class TokenUtils {
 
             return claims.getSubject();
         } catch (JwtException ex) {
+            return null;
+        }
+    }
+
+    public static String extractTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.replace("Bearer ", "");
+        } else {
             return null;
         }
     }
