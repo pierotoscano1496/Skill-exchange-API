@@ -14,6 +14,6 @@ public class MensajeriaController {
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/mensajes/{roomId}")
     public MensajeChat enviar(@DestinationVariable String roomId, MensajeChat mensajeChat) {
-        return new MensajeChat(mensajeChat.nombre(), mensajeChat.contenido());
+        return new MensajeChat(mensajeChat.getMessage(),mensajeChat.getUser());
     }
 }
