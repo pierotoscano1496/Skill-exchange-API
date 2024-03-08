@@ -28,7 +28,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "usuario", produces = "application/json")
-//@CrossOrigin(origins = "${url.allowed.host}")
 public class UsuarioController {
     @Autowired
     private IUsuarioService service;
@@ -36,10 +35,13 @@ public class UsuarioController {
     @Autowired
     private ITokenBlackList tokenBlackList;
 
+    @Autowired
+    private TokenUtils tokenUtils;
+
     @GetMapping
     public ResponseEntity<UsuarioRegisteredResponse> obtener(HttpServletRequest request) {
         try {
-            String correo = TokenUtils.extractEmailFromRequest(request);
+            String correo = tokenUtils.extractEmailFromRequest(request);
             return ResponseEntity.status(HttpStatus.OK).body(service.obtener(correo));
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -76,7 +78,7 @@ public class UsuarioController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletRequest request) {
-        String token = TokenUtils.extractTokenFromRequest(request);
+        String token = tokenUtils.extractTokenFromRequest(request);
         tokenBlackList.addToBlacklist(token);
 
         return ResponseEntity.ok("Logout succesfull");

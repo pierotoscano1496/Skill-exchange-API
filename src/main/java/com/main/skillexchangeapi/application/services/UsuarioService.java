@@ -65,6 +65,9 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
+        // Cifrar clave de usuario
+        credenciales.setClave(passwordEncoder.encode(credenciales.getClave()));
+
         Usuario usuario = repository.login(credenciales);
 
         return UsuarioResponse.builder()

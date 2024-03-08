@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.util.Collections;
@@ -15,11 +16,17 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class TokenUtils {
-    private final static String ACCESS_TOKEN_SIGNATURE = "_smFQI04ueQOV9El1r0ZxyYJT4ucYeLgTiOK2djlA13-oikO/VKz=Zrk!OV9B2uXzHJ?Ob=RF6MBLSXM?RAn2b7gwGwnuRHsDHWMriH4PP2ZMGYyLEvtxufjst7?wI0lg!PBQ4WXqTFIHyfDT!go6Dbhx/25rVUCBO!MFECFfKz-qWaqSLUFBS?sSz6QNDuB-Z=0tsZkOB7U?uirlMv=0Xx?DsCXErf8YzloSlA0j8?PuZ32gpX0p4q=exMGZfYc";
+    private final String accessTokenSignature;
     private final static Long ACCESS_TOKEN_VALIDITY_MILI_SECONDS = 1000 * 60 * (long) 60; // 1 hora
 
-    public static String createToken(String nombre, String email) {
+    @Autowired
+    public TokenUtils(@Value("${jwt.secret}") String accessTokenSignature) {
+        this.accessTokenSignature = accessTokenSignature;
+    }
+
+    public String createToken(String nombre, String email) {
         long expirationTime = ACCESS_TOKEN_VALIDITY_MILI_SECONDS;
         Date expirationDate = new Date(System.currentTimeMillis() + expirationTime);
 
@@ -30,14 +37,14 @@ public class TokenUtils {
                 .setSubject(email)
                 .setExpiration(expirationDate)
                 .addClaims(claims)
-                .signWith(Keys.hmacShaKeyFor(ACCESS_TOKEN_SIGNATURE.getBytes()))
+                .signWith(Keys.hmacShaKeyFor(accessTokenSignature.getBytes()))
                 .compact();
     }
 
-    public static UsernamePasswordAuthenticationToken getAuthentication(String token) {
+    public UsernamePasswordAuthenticationToken getAuthentication(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(ACCESS_TOKEN_SIGNATURE.getBytes())
+                    .setSigningKey(accessTokenSignature.getBytes())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -50,11 +57,11 @@ public class TokenUtils {
         }
     }
 
-    public static String extractEmailFromRequest(HttpServletRequest request) {
+    public String extractEmailFromRequest(HttpServletRequest request) {
         try {
             String token = extractTokenFromRequest(request);
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(ACCESS_TOKEN_SIGNATURE.getBytes())
+                    .setSigningKey(accessTokenSignature.getBytes())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -65,7 +72,7 @@ public class TokenUtils {
         }
     }
 
-    public static String extractTokenFromRequest(HttpServletRequest request) {
+    public String extractTokenFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.replace("Bearer ", "");
