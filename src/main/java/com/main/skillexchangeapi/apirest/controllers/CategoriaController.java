@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +21,10 @@ public class CategoriaController {
     private ICategoriaService service;
 
     @GetMapping
-    public List<CategoriaResponse> obtener() {
+    public ResponseEntity<List<CategoriaResponse>> obtener() {
         try {
-            return service.obtener();
+            List<CategoriaResponse> categorias = service.obtener();
+            return ResponseEntity.ok(categorias);
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
