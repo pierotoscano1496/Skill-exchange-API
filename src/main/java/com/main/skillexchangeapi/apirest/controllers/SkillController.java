@@ -2,8 +2,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.CreateSkillRequest;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
-import com.main.skillexchangeapi.application.services.SkillService;
-import com.main.skillexchangeapi.domain.entities.Skill;
+import com.main.skillexchangeapi.domain.abstractions.services.ISkillService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -21,9 +20,9 @@ import java.util.UUID;
 @RequestMapping(value = "skill", produces = "application/json")
 public class SkillController {
     @Autowired
-    private SkillService service;
+    private ISkillService service;
 
-    @GetMapping("/sub-categoria/{idSucategoria}")
+    @GetMapping("/sub-categoria/{idSubcategoria}")
     public List<SkillResponse> obtenerBySubCategoria(@PathVariable UUID idSubcategoria) {
         try {
             return service.obtenerBySubCategoria(idSubcategoria);
