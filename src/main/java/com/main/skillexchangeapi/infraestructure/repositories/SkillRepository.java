@@ -1,11 +1,9 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
-import com.main.skillexchangeapi.domain.entities.Categoria;
-import com.main.skillexchangeapi.domain.entities.Plan;
-import com.main.skillexchangeapi.domain.entities.Skill;
-import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -19,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -27,11 +26,41 @@ public class SkillRepository implements ISkillRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<Skill> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_skills_by_sub_categoria(?)")) {
+            statement.setBytes("p_id_sub_categoria", UuidManager.UuidToBytes(idSubcategoria));
+
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Skill> skills = new ArrayList<>();
+
+            while (resultSet.next()) {
+                skills.add(Skill.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .subCategoria(SubCategoria.builder()
+                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                .build())
+                        .build());
+            }
+
+            if (!skills.isEmpty()) {
+                return skills;
+            } else {
+                throw new ResourceNotFoundException("No se encontraron habilidades para la subcategoría indicada");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de habilidades");
+        }
+    }
+
+    @Override
     public Skill registrar(Skill skill) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_skill(?, ?)}");) {
-            statement.setString("p_nombre", skill.getNombre());
-            statement.setBytes("p_id_categoria", UuidManager.UuidToBytes(skill.getCategoria().getId()));
+            statement.setString("p_descripcion", skill.getDescripcion());
+            statement.setBytes("p_id_sub_categoria", UuidManager.UuidToBytes(skill.getSubCategoria().getId()));
 
             ResultSet resultSet = statement.getResultSet();
 
@@ -39,15 +68,15 @@ public class SkillRepository implements ISkillRepository {
 
             if (resultSet.first()) {
                 skillRegistered = Skill.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .nombre(resultSet.getString("nombre"))
+                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
                         .build();
 
-                Categoria categoria = Categoria.builder()
-                        .id(UUID.fromString(resultSet.getString("id_categoria")))
+                SubCategoria subCategoria = SubCategoria.builder()
+                        .id(UUID.fromString(resultSet.getString("ID_SUB_CATEGORIA")))
                         .build();
 
-                skillRegistered.setCategoria(categoria);
+                skillRegistered.setSubCategoria(subCategoria);
             }
 
             resultSet.close();

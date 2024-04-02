@@ -3,7 +3,7 @@ package com.main.skillexchangeapi.domain.entities;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Data
@@ -12,10 +12,10 @@ public class MatchServicio {
     private final UUID id;
     private Servicio servicio;
     private Usuario cliente;
-    private Date fecha;
-    private Date fechaInicio;
-    private Date fechaCierre;
-    private int estado;
+    private LocalDate fecha;
+    private LocalDate fechaInicio;
+    private LocalDate fechaCierre;
+    private String estado;
     private int puntuacion;
     private double costo;
 }

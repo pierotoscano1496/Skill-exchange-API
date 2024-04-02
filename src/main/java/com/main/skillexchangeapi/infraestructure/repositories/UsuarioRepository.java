@@ -34,7 +34,60 @@ public class UsuarioRepository implements IUsuarioRepository {
                 Usuario usuario = null;
 
                 while (resultSet.next()) {
-                    usuario = Usuario.builder().id(UUID.fromString(resultSet.getString("id"))).dni(resultSet.getString("dni")).carnetExtranjeria(resultSet.getString("carnet_extranjeria")).tipoDocumento(resultSet.getString("tipo_documento")).nombres(resultSet.getNString("nombres")).apellidos(resultSet.getNString("apellidos")).fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate()).perfilLinkedin(resultSet.getString("perfil_linkedin")).perfilFacebook(resultSet.getString("perfil_facebook")).perfilInstagram(resultSet.getString("perfil_instagram")).perfilTiktok(resultSet.getString("perfil_tiktok")).build();
+                    usuario = Usuario.builder()
+                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .dni(resultSet.getString("DNI"))
+                            .correo(resultSet.getString("CORREO"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_correo(?)}");) {
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipo(resultSet.getString("TIPO"))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
 
                     break;
                 }
@@ -59,7 +112,12 @@ public class UsuarioRepository implements IUsuarioRepository {
                 UsuarioPersonalInfo usuarioPersonalInfo = null;
 
                 while (resultSet.next()) {
-                    usuarioPersonalInfo = UsuarioPersonalInfo.builder().correo(resultSet.getString("correo")).nombres(resultSet.getNString("nombres")).apellidos(resultSet.getNString("apellidos")).clave(resultSet.getNString("clave")).build();
+                    usuarioPersonalInfo = UsuarioPersonalInfo.builder()
+                            .correo(resultSet.getString("CORREO"))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .clave(resultSet.getNString("CLAVE"))
+                            .build();
 
                     break;
                 }
@@ -77,12 +135,14 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
             byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
             statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
             statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
             statement.setString("p_tipo_documento", usuario.getTipoDocumento());
+            statement.setString("p_tipo", usuario.getTipo());
+            statement.setString("p_introduccion", usuario.getIntroduccion());
             statement.setString("p_correo", usuario.getCorreo());
             statement.setString("p_nombres", usuario.getNombres());
             statement.setString("p_apellidos", usuario.getApellidos());
@@ -101,9 +161,24 @@ public class UsuarioRepository implements IUsuarioRepository {
                 if (statusMessage.equals("Usuario registrado")) {
                     Usuario usuarioRegistered = null;
                     while (resultSet.next()) {
-                        UUID uuid = UuidManager.bytesToUuid(resultSet.getBytes("id"));
+                        UUID uuid = UuidManager.bytesToUuid(resultSet.getBytes("ID"));
 
-                        usuarioRegistered = Usuario.builder().id(uuid).dni(resultSet.getString("dni")).carnetExtranjeria(resultSet.getString("carnet_extranjeria")).tipoDocumento(resultSet.getString("tipo_documento")).correo(resultSet.getString("correo")).nombres(resultSet.getString("nombres")).apellidos(resultSet.getString("apellidos")).fechaNacimiento(resultSet.getDate("fecha_nacimiento").toLocalDate()).perfilLinkedin(resultSet.getString("perfil_linkedin")).perfilFacebook(resultSet.getString("perfil_facebook")).perfilInstagram(resultSet.getString("perfil_instagram")).perfilTiktok(resultSet.getString("perfil_tiktok")).build();
+                        usuarioRegistered = Usuario.builder()
+                                .id(uuid)
+                                .dni(resultSet.getString("DNI"))
+                                .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                                .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                                .tipo("TIPO")
+                                .introduccion("INTRODUCCION")
+                                .correo(resultSet.getString("CORREO"))
+                                .nombres(resultSet.getString("NOMBRES"))
+                                .apellidos(resultSet.getString("APELLIDOS"))
+                                .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                                .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                                .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                                .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                                .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                                .build();
                         break;
                     }
 
@@ -128,9 +203,16 @@ public class UsuarioRepository implements IUsuarioRepository {
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
-                    Plan plan = Plan.builder().id(UUID.fromString(resultSet.getString("id_plan"))).build();
+                    Plan plan = Plan.builder()
+                            .id(UUID.fromString(resultSet.getString("ID_PLAN")))
+                            .build();
 
-                    PlanUsuario planUsuarioRegistered = PlanUsuario.builder().plan(plan).isActive(resultSet.getBoolean("is_active")).moneda(resultSet.getString("moneda")).monto(resultSet.getDouble("monto")).build();
+                    PlanUsuario planUsuarioRegistered = PlanUsuario.builder()
+                            .plan(plan)
+                            .isActive(resultSet.getBoolean("IS_ACTIVE"))
+                            .moneda(resultSet.getString("MONEDA"))
+                            .monto(resultSet.getDouble("MONTO"))
+                            .build();
 
                     return planUsuarioRegistered;
                 } else {

@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -18,12 +19,14 @@ public class Usuario {
     private String correo;
     private String nombres;
     private String apellidos;
+    private String tipo;
     private LocalDate fechaNacimiento;
     private String clave;
     private String perfilLinkedin;
     private String perfilFacebook;
     private String perfilInstagram;
     private String perfilTiktok;
-    private ArrayList<SkillUsuario> skillsDetails;
-    private ArrayList<PlanUsuario> planesDetails;
+    private String introduccion;
+    private List<SkillUsuario> skillsDetails;
+    private List<PlanUsuario> planesDetails;
 }

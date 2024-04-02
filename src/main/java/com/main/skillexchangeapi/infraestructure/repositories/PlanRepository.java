@@ -31,10 +31,11 @@ public class PlanRepository implements IPlanRepository {
             while (resultSet.next()) {
 
                 Plan plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .tipo(resultSet.getString("tipo"))
-                        .isFree(resultSet.getBoolean("is_free"))
-                        .codigo(resultSet.getString("codigo"))
+                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .tipo(resultSet.getString("TIPO"))
+                        .isFree(resultSet.getBoolean("IS_FREE"))
+                        .codigo(resultSet.getString("CODIGO"))
+                        .montoBasico(resultSet.getDouble("MONTO_BASICO"))
                         .build();
 
                 planes.add(plan);
@@ -67,10 +68,11 @@ public class PlanRepository implements IPlanRepository {
 
             while (resultSet.next()) {
                 plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("id")))
-                        .tipo(resultSet.getString("tipo"))
-                        .isFree(resultSet.getBoolean("is_free"))
-                        .codigo(resultSet.getString("codigo"))
+                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .tipo(resultSet.getString("TIPO"))
+                        .isFree(resultSet.getBoolean("IS_FREE"))
+                        .codigo(resultSet.getString("CODIGO"))
+                        .montoBasico(resultSet.getDouble("MONTO_BASICO"))
                         .build();
 
                 break;

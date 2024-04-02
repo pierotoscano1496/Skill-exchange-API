@@ -4,6 +4,8 @@ import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -11,7 +13,9 @@ import java.util.UUID;
 public class Servicio {
     private final UUID id;
     private SkillUsuario skillUsuario;
+    private String titulo;
     private String descripcion;
     private double precio;
-    private ModalidadPago modalidadPago;
+    private List<ModalidadPago> modalidadesPago;
+    private List<RecursoMultimediaServicio> recursosMultimediaServicio;
 }
