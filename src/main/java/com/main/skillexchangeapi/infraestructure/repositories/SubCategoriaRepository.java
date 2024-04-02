@@ -50,7 +50,7 @@ public class SubCategoriaRepository implements ISubCategoriaRepository {
                 throw new ResourceNotFoundException("No se encontraron sub categorías para la categoría indicada");
             }
         } catch (SQLException e) {
-            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+            throw new DatabaseNotWorkingException("Error de búsqueda de subcategorías");
         }
     }
 }

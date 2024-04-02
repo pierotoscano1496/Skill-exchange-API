@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.entities.*;
@@ -16,12 +17,43 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public class SkillRepository implements ISkillRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    @Override
+    public List<Skill> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_skills_by_sub_categoria(?)")) {
+            statement.setBytes("p_id_sub_categoria", UuidManager.UuidToBytes(idSubcategoria));
+
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Skill> skills = new ArrayList<>();
+
+            while (resultSet.next()) {
+                skills.add(Skill.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .subCategoria(SubCategoria.builder()
+                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                .build())
+                        .build());
+            }
+
+            if (!skills.isEmpty()) {
+                return skills;
+            } else {
+                throw new ResourceNotFoundException("No se encontraron habilidades para la subcategoría indicada");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de habilidades");
+        }
+    }
 
     @Override
     public Skill registrar(Skill skill) throws DatabaseNotWorkingException, NotCreatedException {

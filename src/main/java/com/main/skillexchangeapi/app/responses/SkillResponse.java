@@ -11,5 +11,5 @@ import java.util.UUID;
 public class SkillResponse {
     private UUID id;
     private String descripcion;
-    private UUID idCcategoria;
+    private UUID idSubCategoria;
 }
