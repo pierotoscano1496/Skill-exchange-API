@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(value = "simple-check", produces = "application/json")
-@CrossOrigin
 public class SimpleCheckController {
 
     @GetMapping
