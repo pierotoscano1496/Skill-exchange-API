@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
 public class CreateUsuarioBody {
     private String dni;
     private String carnetExtranjeria;
