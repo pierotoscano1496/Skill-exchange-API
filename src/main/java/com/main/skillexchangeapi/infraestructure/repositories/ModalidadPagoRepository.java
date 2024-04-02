@@ -68,7 +68,8 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
 
             for (ModalidadPago modalidadPago : modalidadesPago) {
                 try {
-                    statement.setObject("p_id", UuidManager.UuidToBytes(modalidadPago.getId()));
+                    byte[] idModalidadPagoToBytes = UuidManager.randomUuidToBytes();
+                    statement.setObject("p_id", idModalidadPagoToBytes);
                     statement.setString("p_tipo", modalidadPago.getTipo());
                     statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
                     statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());

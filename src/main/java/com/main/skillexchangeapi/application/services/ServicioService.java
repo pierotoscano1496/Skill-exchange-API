@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.application.services;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
+import com.main.skillexchangeapi.app.requests.servicio.ModalidadPagoBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
@@ -47,6 +48,23 @@ public class ServicioService implements IServicioService {
                         .build())
                 .build());
 
+        List<ModalidadPago> modalidadesPagoRegistered = modalidadPagoRepository
+                .registrarMultiple(requestBody
+                        .getModalidadesPago().stream().map(m -> ModalidadPago.builder()
+                                .tipo(m.getTipo())
+                                .cuentaBancaria(m.getCuentaBancaria())
+                                .numeroCelular(m.getNumeroCelular())
+                                .build())
+                        .collect(Collectors.toList()));
+
+        List<RecursoMultimediaServicio> recursosMultimediaServicioRegistered = recursoMultimediaServicioRepository
+                .registrarMultiple(requestBody
+                        .getRecursosMultimedia().stream().map(r -> RecursoMultimediaServicio.builder()
+                                .medio(r.getMedio())
+                                .url(r.getUrl())
+                                .build())
+                        .collect(Collectors.toList()));
+
         return ServicioRegisteredResponse.builder()
                 .id(servicioRegistered.getId())
                 .titulo(servicioRegistered.getTitulo())
@@ -54,6 +72,8 @@ public class ServicioService implements IServicioService {
                 .precio(servicioRegistered.getPrecio())
                 .idSkill(servicioRegistered.getSkillUsuario().getSkill().getId())
                 .idUsuario(servicioRegistered.getSkillUsuario().getUsuario().getId())
+                .modalidadesPago(modalidadesPagoRegistered)
+                .recursosMultimediaServicio(recursosMultimediaServicioRegistered)
                 .build();
     }
 

@@ -22,7 +22,7 @@ public class SubCategoriaController {
     @Autowired
     private ISubCategoriaService service;
 
-    @GetMapping("/{idCategoria}")
+    @GetMapping("/categoria/{idCategoria}")
     public List<SubCategoriaResponse> obtenerByCategoria(@PathVariable UUID idCategoria) {
         try {
             return service.obtenerByCategoria(idCategoria);

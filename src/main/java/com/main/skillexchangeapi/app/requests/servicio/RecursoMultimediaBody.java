@@ -2,10 +2,8 @@ package com.main.skillexchangeapi.app.requests.servicio;
 
 import lombok.Getter;
 
-import java.util.UUID;
-
 @Getter
-public class RecursoMultimediaServicioRequest {
+public class RecursoMultimediaBody {
     private String medio;
     private String url;
 }

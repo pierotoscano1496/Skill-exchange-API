@@ -32,7 +32,8 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
 
             for (RecursoMultimediaServicio recursoMultimediaServicio : recursosMultimediaServicio) {
                 try {
-                    statement.setObject("p_id", UuidManager.UuidToBytes(recursoMultimediaServicio.getId()));
+                    byte[] idRecursoMultimediaToBytes = UuidManager.randomUuidToBytes();
+                    statement.setObject("p_id", idRecursoMultimediaToBytes);
                     statement.setString("p_url", recursoMultimediaServicio.getUrl());
                     statement.setString("p_medio", recursoMultimediaServicio.getMedio());
                     statement.setObject("p_id_servicio", UuidManager.UuidToBytes(recursoMultimediaServicio.getServicio().getId()));
