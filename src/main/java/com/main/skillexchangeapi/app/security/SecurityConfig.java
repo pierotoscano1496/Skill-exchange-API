@@ -41,7 +41,7 @@ public class SecurityConfig {
                         //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
                         //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST,   "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categoria").permitAll()
                         .requestMatchers(HttpMethod.GET, "/sub-categoria/categoria/*").permitAll()
                         .requestMatchers(HttpMethod.GET,"/skill/sub-categoria/*").permitAll()
