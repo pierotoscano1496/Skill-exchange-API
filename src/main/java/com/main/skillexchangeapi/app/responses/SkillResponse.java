@@ -2,11 +2,12 @@ package com.main.skillexchangeapi.app.responses;
 
 import com.main.skillexchangeapi.domain.entities.Categoria;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Setter;
 
 import java.util.UUID;
 
-@Setter
+@Data
 @Builder
 public class SkillResponse {
     private UUID id;
