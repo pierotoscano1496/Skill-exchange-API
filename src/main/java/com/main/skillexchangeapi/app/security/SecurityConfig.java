@@ -41,10 +41,10 @@ public class SecurityConfig {
                         //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
                         //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
-                        .requestMatchers(HttpMethod.POST,   "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categoria").permitAll()
                         .requestMatchers(HttpMethod.GET, "/sub-categoria/categoria/*").permitAll()
-                        .requestMatchers(HttpMethod.GET,"/skill/sub-categoria/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/skill/sub-categoria/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -54,18 +54,6 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .build();
     }
-
-    /*@Bean
-    CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration cors = new CorsConfiguration();
-        cors.setAllowedOrigins(Arrays.asList(allowedOrigin));
-        cors.setAllowedMethods(Arrays.asList("GET", "POST", "OPTIONS", "PATCH", "DELETE"));
-        cors.setAllowedHeaders(Arrays.asList("Authorization"));
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cors);
-        return source;
-    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
