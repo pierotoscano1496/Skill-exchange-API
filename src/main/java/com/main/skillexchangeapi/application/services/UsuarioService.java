@@ -212,22 +212,4 @@ public class UsuarioService implements IUsuarioService {
                 .moneda(planUsuarioAsignado.getMoneda())
                 .build();
     }
-
-    // Aditional settings
-    private boolean validateUsuarioExists(CreateUsuarioBody usuarioBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        Usuario usuario = null;
-        switch (usuarioBody.getTipoDocumento()) {
-            case "dni":
-                usuario = repository.obtenerByDni(usuarioBody.getDni());
-                break;
-            case "carnet-extranjeria":
-                usuario = repository.obtenerByCarnetExtranjeria(usuarioBody.getCarnetExtranjeria());
-                break;
-            default:
-                break;
-        }
-
-        if (usuario)
-
-    }
 }
