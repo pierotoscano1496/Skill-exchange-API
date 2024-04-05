@@ -23,7 +23,7 @@ public class SkillController {
     @Autowired
     private SkillService service;
 
-    @GetMapping("/sub-categoria/{idSucategoria}")
+    @GetMapping("/sub-categoria/{idSubcategoria}")
     public List<SkillResponse> obtenerBySubCategoria(@PathVariable UUID idSubcategoria) {
         try {
             return service.obtenerBySubCategoria(idSubcategoria);
