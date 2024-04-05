@@ -14,6 +14,10 @@ public interface IUsuarioRepository {
 
     Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
+    Usuario validarExistenciaByDni(String dni, String correo) throws DatabaseNotWorkingException;
+
+    Usuario validarExistenciaByCarnetExtranjeria(String carnetExtranjeria, String correo) throws DatabaseNotWorkingException;
+
     UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
