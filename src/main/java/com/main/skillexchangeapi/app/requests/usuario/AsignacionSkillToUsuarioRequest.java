@@ -6,8 +6,7 @@ import lombok.Getter;
 
 import java.util.UUID;
 
-@Data
-@Builder
+@Getter
 public class AsignacionSkillToUsuarioRequest {
     private UUID idSkill; // null para los nuevos skills
     private int nivelConocimiento;
