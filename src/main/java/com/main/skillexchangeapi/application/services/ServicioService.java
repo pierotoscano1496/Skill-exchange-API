@@ -54,6 +54,7 @@ public class ServicioService implements IServicioService {
                                 .tipo(m.getTipo())
                                 .cuentaBancaria(m.getCuentaBancaria())
                                 .numeroCelular(m.getNumeroCelular())
+                                .servicio(servicioRegistered)
                                 .build())
                         .collect(Collectors.toList()));
 
@@ -62,6 +63,7 @@ public class ServicioService implements IServicioService {
                         .getRecursosMultimedia().stream().map(r -> RecursoMultimediaServicio.builder()
                                 .medio(r.getMedio())
                                 .url(r.getUrl())
+                                .servicio(servicioRegistered)
                                 .build())
                         .collect(Collectors.toList()));
 
