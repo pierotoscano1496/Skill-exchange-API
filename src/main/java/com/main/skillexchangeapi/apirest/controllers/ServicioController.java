@@ -29,7 +29,7 @@ public class ServicioController {
     /**
      * Búsquedas personalizadas
      */
-    @PostMapping
+    @PostMapping("busqueda")
     private List<ServicioBusquedaResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
         try {
             return service.searchByParameters(parameters);
