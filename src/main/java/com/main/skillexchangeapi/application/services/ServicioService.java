@@ -1,9 +1,6 @@
 package com.main.skillexchangeapi.application.services;
 
-import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
-import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
-import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
-import com.main.skillexchangeapi.app.requests.servicio.ModalidadPagoBody;
+import com.main.skillexchangeapi.app.requests.servicio.*;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
@@ -12,8 +9,10 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepos
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +30,28 @@ public class ServicioService implements IServicioService {
 
     @Autowired
     private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
+
+    @Override
+    public List<ServicioBusquedaResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.searchByParams(SearchServicioParams.builder()
+                        .keyWord(requestBody.getKeyWord())
+                        .idSkill(requestBody.getIdSkill())
+                        .idSubcategoria(requestBody.getIdSubcategoria())
+                        .idCategoria(requestBody.getIdCategoria())
+                        .build())
+                .stream().map(s -> ServicioBusquedaResponse.builder()
+                        .id(s.getId())
+                        .descripcion(s.getDescripcion())
+                        .precio(s.getPrecio())
+                        .titulo(s.getTitulo())
+                        .idUsuario(s.getSkillUsuario().getUsuario().getId())
+                        .nombresUsuario(s.getSkillUsuario().getUsuario().getNombres())
+                        .apellidosUsuario(s.getSkillUsuario().getUsuario().getApellidos())
+                        .correoUsuario(s.getSkillUsuario().getUsuario().getCorreo())
+                        .idSkill(s.getSkillUsuario().getSkill().getId())
+                        .descripcionSkill(s.getSkillUsuario().getSkill().getDescripcion())
+                        .build()).collect(Collectors.toList());
+    }
 
     @Override
     public ServicioRegisteredResponse registrar(CreateServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException {
