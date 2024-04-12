@@ -94,42 +94,59 @@ public class UsuarioService implements IUsuarioService {
     @Override
     public UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
         // Cifrar clave de usuario
-        String claveCifrada = passwordEncoder.encode(requestBody.getClave());
-        requestBody.setClave(claveCifrada);
+        // Validar existencia de usuario previa antes de registrar
+        Usuario usuarioExistente = null;
+        switch (requestBody.getTipoDocumento()) {
+            case "dni":
+                usuarioExistente = repository.validarExistenciaByDni(requestBody.getDni(), requestBody.getCorreo());
+                break;
+            case "carnet-extranjeria":
+                usuarioExistente = repository.validarExistenciaByCarnetExtranjeria(requestBody.getCarnetExtranjeria(), requestBody.getCorreo());
+                break;
+            default:
+                throw new NotCreatedException("El usuario no tiene una identificación válida");
+        }
 
-        Usuario usuarioRegistered = repository.registrar(Usuario.builder()
-                .dni(requestBody.getDni())
-                .carnetExtranjeria(requestBody.getCarnetExtranjeria())
-                .tipoDocumento(requestBody.getTipoDocumento())
-                .correo(requestBody.getCorreo())
-                .nombres(requestBody.getNombres())
-                .apellidos(requestBody.getApellidos())
-                .tipo(requestBody.getTipo())
-                .fechaNacimiento(requestBody.getFechaNacimiento())
-                .clave(requestBody.getClave())
-                .perfilLinkedin(requestBody.getPerfilLinkedin())
-                .perfilFacebook(requestBody.getPerfilFacebook())
-                .perfilInstagram(requestBody.getPerfilInstagram())
-                .perfilTiktok(requestBody.getPerfilTiktok())
-                .introduccion(requestBody.getIntroduccion())
-                .build());
+        if (usuarioExistente == null) {
+            String claveCifrada = passwordEncoder.encode(requestBody.getClave());
+            requestBody.setClave(claveCifrada);
 
-        return UsuarioRegisteredResponse.builder()
-                .id(usuarioRegistered.getId())
-                .dni(usuarioRegistered.getDni())
-                .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
-                .tipoDocumento(usuarioRegistered.getTipoDocumento())
-                .correo(usuarioRegistered.getCorreo())
-                .nombres(usuarioRegistered.getNombres())
-                .apellidos(usuarioRegistered.getApellidos())
-                .tipo(usuarioRegistered.getTipo())
-                .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
-                .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
-                .perfilFacebook(usuarioRegistered.getPerfilFacebook())
-                .perfilInstagram(usuarioRegistered.getPerfilInstagram())
-                .perfilTiktok(usuarioRegistered.getPerfilTiktok())
-                .introduccion(usuarioRegistered.getIntroduccion())
-                .build();
+            Usuario usuarioRegistered = repository.registrar(Usuario.builder()
+                    .dni(requestBody.getDni())
+                    .carnetExtranjeria(requestBody.getCarnetExtranjeria())
+                    .tipoDocumento(requestBody.getTipoDocumento())
+                    .correo(requestBody.getCorreo())
+                    .nombres(requestBody.getNombres())
+                    .apellidos(requestBody.getApellidos())
+                    .tipo(requestBody.getTipo())
+                    .fechaNacimiento(requestBody.getFechaNacimiento())
+                    .clave(requestBody.getClave())
+                    .perfilLinkedin(requestBody.getPerfilLinkedin())
+                    .perfilFacebook(requestBody.getPerfilFacebook())
+                    .perfilInstagram(requestBody.getPerfilInstagram())
+                    .perfilTiktok(requestBody.getPerfilTiktok())
+                    .introduccion(requestBody.getIntroduccion())
+                    .build());
+
+            return UsuarioRegisteredResponse.builder()
+                    .id(usuarioRegistered.getId())
+                    .dni(usuarioRegistered.getDni())
+                    .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
+                    .tipoDocumento(usuarioRegistered.getTipoDocumento())
+                    .correo(usuarioRegistered.getCorreo())
+                    .nombres(usuarioRegistered.getNombres())
+                    .apellidos(usuarioRegistered.getApellidos())
+                    .tipo(usuarioRegistered.getTipo())
+                    .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
+                    .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
+                    .perfilFacebook(usuarioRegistered.getPerfilFacebook())
+                    .perfilInstagram(usuarioRegistered.getPerfilInstagram())
+                    .perfilTiktok(usuarioRegistered.getPerfilTiktok())
+                    .introduccion(usuarioRegistered.getIntroduccion())
+                    .build();
+        } else {
+            throw new NotCreatedException("El usuario ya existe");
+        }
     }
 
     @Override
