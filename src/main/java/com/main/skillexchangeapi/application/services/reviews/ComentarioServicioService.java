@@ -1,8 +1,10 @@
 package com.main.skillexchangeapi.application.services.reviews;
 
+import com.main.skillexchangeapi.app.requests.review.comentarios.ComentarioServicioBody;
 import com.main.skillexchangeapi.app.responses.reviews.comentarios.ComentarioServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.repositories.reviews.IComentarioServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IComentarioServicioService;
+import com.main.skillexchangeapi.domain.entities.reviews.ComentarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -27,7 +29,24 @@ public class ComentarioServicioService implements IComentarioServicioService {
     }
 
     @Override
-    public ComentarioServicioResponse publicar() {
-        return null;
+    public ComentarioServicioResponse publicar(ComentarioServicioBody requestBody) {
+        ComentarioServicio comentarioSaved = repository.save(ComentarioServicio.builder()
+                .idServicio(requestBody.getIdServicio())
+                .comentario(requestBody.getComentario())
+                .puntaje(requestBody.getPuntaje())
+                .idComentarista(requestBody.getIdComentarista())
+                .nombresComentarista(requestBody.getNombresComentarista())
+                .apellidosComentarista(requestBody.getApellidosComentarista())
+                .build());
+
+        return ComentarioServicioResponse.builder()
+                .idServicio(comentarioSaved.getIdServicio())
+                .id(comentarioSaved.getId())
+                .comentario(comentarioSaved.getComentario())
+                .idComentarista(comentarioSaved.getIdComentarista())
+                .nombresComentarista(comentarioSaved.getNombresComentarista())
+                .apellidosComentarista(comentarioSaved.getApellidosComentarista())
+                .puntaje(comentarioSaved.getPuntaje())
+                .build();
     }
 }
