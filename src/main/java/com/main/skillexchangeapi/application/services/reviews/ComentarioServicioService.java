@@ -6,11 +6,13 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.reviews.IComen
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IComentarioServicioService;
 import com.main.skillexchangeapi.domain.entities.reviews.ComentarioServicio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Service
 public class ComentarioServicioService implements IComentarioServicioService {
     @Autowired
     private IComentarioServicioRepository repository;
