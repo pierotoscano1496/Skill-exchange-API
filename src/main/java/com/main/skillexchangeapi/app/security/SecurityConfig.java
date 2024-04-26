@@ -47,6 +47,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/skill/sub-categoria/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/skills/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/message-broker/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
