@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.main.skillexchangeapi.app.requests.messaging.FirstMessageChatBody;
 import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatService;
@@ -40,7 +41,14 @@ public class ChatController {
     }
 
     @PostMapping()
-    public MensajeChat enviarPrimerMensaje(@RequestBody MensajeChat mensajeChat) {
-        return service.saveMensaje(mensajeChat);
+    public MensajeChat enviarPrimerMensaje(@RequestBody FirstMessageChatBody requestBody, HttpServletRequest request) {
+        String correo = tokenUtils.extractEmailFromRequest(request);
+        try {
+            UUID idEmisor = usuarioService.obtener(correo).getId();
+            return service.saveMensaje(idEmisor, requestBody);
+        } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+
     }
 }
