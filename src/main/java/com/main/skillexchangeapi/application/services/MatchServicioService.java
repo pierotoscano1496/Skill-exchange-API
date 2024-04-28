@@ -32,9 +32,6 @@ public class MatchServicioService implements IMatchServicioService {
                         .id(requestBody.getIdCliente())
                         .build())
                 .costo(requestBody.getCosto())
-                .fecha(requestBody.getFecha())
-                .fechaInicio(requestBody.getFechaInicio())
-                .fechaCierre(requestBody.getFechaCierre())
                 .build());
 
         return MatchServicioResponse.builder()

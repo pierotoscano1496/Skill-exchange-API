@@ -12,9 +12,6 @@ import java.util.UUID;
 public class CreateMatchServicioBody {
     private UUID idServicio;
     private UUID idCliente;
-    private LocalDate fecha;
-    private LocalDate fechaInicio;
-    private LocalDate fechaCierre;
     private int puntuacion;
     private double costo;
 }

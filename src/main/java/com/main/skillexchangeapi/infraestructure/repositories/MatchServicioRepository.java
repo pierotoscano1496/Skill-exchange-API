@@ -26,11 +26,8 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Override
     public MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_match (?, ?, ?, ?, ?, ?, ?)}")) {
+             CallableStatement statement = connection.prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(match.getId()));
-            statement.setDate("p_fecha", java.sql.Date.valueOf(match.getFecha()));
-            statement.setDate("p_fecha_inicio", java.sql.Date.valueOf(match.getFechaInicio()));
-            statement.setDate("p_fecha_cierre", java.sql.Date.valueOf(match.getFechaCierre()));
             statement.setDouble("p_costo", match.getCosto());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(match.getCliente().getId()));
