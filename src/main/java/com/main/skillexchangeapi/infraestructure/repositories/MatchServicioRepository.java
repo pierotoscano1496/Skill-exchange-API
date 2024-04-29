@@ -27,7 +27,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Override
     public List<MatchServicio> obtenerFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_match_servicios_from_prestamista_by_optional_estado (?, ?)}")) {
+             CallableStatement statement = connection.prepareCall("{CALL obtener_matchs_servicio_from_prestamista_by_optional_estado (?, ?)}")) {
             statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
             statement.setString("p_estado", estado);
 
@@ -87,10 +87,10 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(match.getCliente().getId()));
 
-            try (ResultSet resultSet = statement.getResultSet()) {
+            try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchRegistered = null;
 
-                if (resultSet.first()) {
+                while (resultSet.next()) {
                     matchRegistered = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
@@ -102,6 +102,8 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .servicio(match.getServicio())
                             .cliente(match.getCliente())
                             .build();
+
+                    break;
                 }
 
                 if (matchRegistered != null) {
@@ -109,8 +111,6 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 } else {
                     throw new NotCreatedException("No se creó el match");
                 }
-            } catch (SQLException e) {
-                throw new DatabaseNotWorkingException(e.getMessage());
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó el match");
@@ -124,9 +124,11 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setString("p_estado", estado);
 
-            try (ResultSet resultSet = statement.getResultSet()) {
-                if (resultSet.first()) {
-                    return MatchServicio.builder()
+            try (ResultSet resultSet = statement.executeQuery()) {
+                MatchServicio matchServicioUpdated = null;
+
+                while (resultSet.next()) {
+                    matchServicioUpdated = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(resultSet.getDate("FECHA_INICIO").toLocalDate())
@@ -141,6 +143,12 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
                                     .build())
                             .build();
+
+                    break;
+                }
+
+                if (matchServicioUpdated != null) {
+                    return matchServicioUpdated;
                 } else {
                     throw new NotUpdatedException("No se actualizó el estado del match");
                 }
@@ -157,9 +165,11 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setInt("p_puntuacion", puntuacion);
 
-            try (ResultSet resultSet = statement.getResultSet()) {
-                if (resultSet.first()) {
-                    return MatchServicio.builder()
+            try (ResultSet resultSet = statement.executeQuery()) {
+                MatchServicio matchServicioUpdated = null;
+
+                while (resultSet.next()) {
+                    matchServicioUpdated = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(resultSet.getDate("FECHA_INICIO").toLocalDate())
@@ -174,6 +184,12 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
                                     .build())
                             .build();
+
+                    break;
+                }
+
+                if (matchServicioUpdated != null) {
+                    return matchServicioUpdated;
                 } else {
                     throw new NotUpdatedException("No se logró puntuar el match");
                 }
