@@ -11,15 +11,35 @@ import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class MatchServicioService implements IMatchServicioService {
     @Autowired
     private IMatchServicioRepository repository;
+
+    @Override
+    public List<MatchServicioResponse> obtenerFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.obtenerFromPrestamistaByOptionalEstado(idPrestamista, estado)
+                .stream().map(m -> MatchServicioResponse.builder()
+                        .id(m.getId())
+                        .idCliente(m.getCliente().getId())
+                        .fecha(m.getFecha())
+                        .fechaInicio(m.getFechaInicio())
+                        .fechaCierre(m.getFechaCierre())
+                        .estado(m.getEstado())
+                        .puntuacion(m.getPuntuacion())
+                        .costo(m.getCosto())
+                        .idServicio(m.getServicio().getId())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     @Override
     public MatchServicioResponse registrar(CreateMatchServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException {
