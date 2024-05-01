@@ -14,6 +14,7 @@ import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,18 @@ public class ServicioService implements IServicioService {
 
     @Autowired
     private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
+
+    @Override
+    public List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.obtenerByUsuario(idUsuario).stream().map(s -> ServicioResponse.builder()
+                .id(s.getId())
+                .idUsuario(s.getSkillUsuario().getUsuario().getId())
+                .idSkill(s.getSkillUsuario().getSkill().getId())
+                .titulo(s.getTitulo())
+                .descripcion(s.getDescripcion())
+                .precio(s.getPrecio())
+                .build()).collect(Collectors.toList());
+    }
 
     @Override
     public ServicioRegisteredResponse registrar(CreateServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException {

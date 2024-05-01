@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IMatchServicioRepository {
-    List<MatchServicio> obtenerFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException;
+    List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
 

@@ -6,9 +6,11 @@ import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioModalidadesPagoAsignadosResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioRecursosMultimediaAsignadosResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioRegisteredResponse;
+import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +24,19 @@ import java.util.UUID;
 public class ServicioController {
     @Autowired
     private IServicioService service;
+
+    @GetMapping("usuario/{idUsuario}")
+    private List<ServicioResponse> obtenerByUsuario(UUID idUsuario) {
+        try {
+            return service.obtenerByUsuario(idUsuario);
+        } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
+            HttpStatus statusError = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e instanceof DatabaseNotWorkingException) {
+                statusError = HttpStatus.NOT_FOUND;
+            }
+            throw new ResponseStatusException(statusError, e.getMessage());
+        }
+    }
 
     @PostMapping
     private ServicioRegisteredResponse registrar(@RequestBody CreateServicioBody requestBody) {
