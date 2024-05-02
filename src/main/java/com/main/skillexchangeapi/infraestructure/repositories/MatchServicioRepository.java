@@ -25,6 +25,73 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_cliente(?)}")) {
+            statement.setObject("p_id_cliente", UuidManager.UuidToBytes(idCliente));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<MatchServicio> matchServicios = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    if (resultSet.wasNull()) {
+                        fechaInicio = null;
+                    }
+
+                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    if (resultSet.wasNull()) {
+                        fechaCierre = null;
+                    }
+
+                    matchServicios.add(MatchServicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .fecha(resultSet.getDate("FECHA").toLocalDate())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .estado(resultSet.getString("ESTADO"))
+                            .puntuacion(resultSet.getInt("PUNTUACION"))
+                            .costo(resultSet.getDouble("COSTO"))
+                            .servicio(Servicio.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
+                                    .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
+                                    .precio(resultSet.getDouble("PRECIO_SERVICIO"))
+                                    .titulo(resultSet.getString("TITULO_SERVICIO"))
+                                    .skillUsuario(SkillUsuario.builder()
+                                            .usuario(Usuario.builder()
+                                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
+                                                    .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
+                                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
+                                                    .correo(resultSet.getString("CORREO_PROVEEDOR"))
+                                                    .dni(resultSet.getString("DNI_PROVEEDOR"))
+                                                    .nombres(resultSet.getString("NOMBRES_PROVEEDOR"))
+                                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
+                                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
+                                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
+                                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
+                                                    .tipo(resultSet.getString("TIPO_PROVEEDOR"))
+                                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .cliente(Usuario.builder()
+                                    .id(idCliente)
+                                    .build())
+                            .build());
+                }
+
+                if (!matchServicios.isEmpty()) {
+                    return matchServicios;
+                } else {
+                    throw new ResourceNotFoundException("No se encontró el match");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del match");
+        }
+    }
+
+    @Override
     public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_prestamista_by_optional_estado(?, ?)}")) {

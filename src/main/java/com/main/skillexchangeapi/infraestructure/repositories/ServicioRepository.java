@@ -27,6 +27,11 @@ public class ServicioRepository implements IServicioRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<Servicio> obtenerServiciosClienteNoRechazados(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return null;
+    }
+
+    @Override
     public List<Servicio> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL obtener_servicios_by_usuario(?)}")) {

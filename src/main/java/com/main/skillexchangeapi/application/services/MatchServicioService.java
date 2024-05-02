@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.application.services;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
@@ -24,6 +25,41 @@ import java.util.stream.Collectors;
 public class MatchServicioService implements IMatchServicioService {
     @Autowired
     private IMatchServicioRepository repository;
+
+    @Override
+    public List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.obtenerDetailsFromCliente(idCliente)
+                .stream().map(m->MatchServicioProveedorDetailsResponse.builder()
+                        .id(m.getId())
+                        .proveedor(UsuarioResponse.builder()
+                                .id(m.getServicio().getSkillUsuario().getUsuario().getId())
+                                .dni(m.getServicio().getSkillUsuario().getUsuario().getDni())
+                                .carnetExtranjeria(m.getServicio().getSkillUsuario().getUsuario().getCarnetExtranjeria())
+                                .correo(m.getServicio().getSkillUsuario().getUsuario().getCorreo())
+                                .nombres(m.getServicio().getSkillUsuario().getUsuario().getNombres())
+                                .apellidos(m.getServicio().getSkillUsuario().getUsuario().getApellidos())
+                                .perfilFacebook(m.getServicio().getSkillUsuario().getUsuario().getPerfilFacebook())
+                                .perfilInstagram(m.getServicio().getSkillUsuario().getUsuario().getPerfilInstagram())
+                                .perfilLinkedin(m.getServicio().getSkillUsuario().getUsuario().getPerfilLinkedin())
+                                .perfilTiktok(m.getServicio().getSkillUsuario().getUsuario().getPerfilTiktok())
+                                .tipo(m.getServicio().getSkillUsuario().getUsuario().getTipo())
+                                .tipoDocumento(m.getServicio().getSkillUsuario().getUsuario().getTipoDocumento())
+                                .build())
+                        .fecha(m.getFecha())
+                        .fechaInicio(m.getFechaInicio())
+                        .fechaCierre(m.getFechaCierre())
+                        .estado(m.getEstado())
+                        .puntuacion(m.getPuntuacion())
+                        .costo(m.getCosto())
+                        .servicio(ServicioResponse.builder()
+                                .id(m.getServicio().getId())
+                                .descripcion(m.getServicio().getDescripcion())
+                                .precio(m.getServicio().getPrecio())
+                                .titulo(m.getServicio().getTitulo())
+                                .build())
+                        .build())
+                .collect(Collectors.toList());
+    }
 
     @Override
     public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {

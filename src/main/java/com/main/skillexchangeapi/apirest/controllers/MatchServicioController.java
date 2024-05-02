@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioEstadoUpdatedResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
 import com.main.skillexchangeapi.domain.exceptions.*;
@@ -19,6 +20,19 @@ import java.util.UUID;
 public class MatchServicioController {
     @Autowired
     private IMatchServicioService service;
+
+    @GetMapping("details/cliente/{idCliente}")
+    public List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(@PathVariable UUID idCliente) {
+        try {
+            return service.obtenerDetailsFromCliente(idCliente);
+        } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e instanceof ResourceNotFoundException) {
+                errorStatus = HttpStatus.NOT_FOUND;
+            }
+            throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
 
     @GetMapping({"details/prestamista/{idPrestamista}/estado/{estado}", "details/prestamista/{idPrestamista}"})
     public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(@PathVariable UUID idPrestamista, @PathVariable(required = false) String estado) {

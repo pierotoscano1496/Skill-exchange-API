@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IServicioService {
+
     List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     ServicioRegisteredResponse registrar(CreateServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException;
