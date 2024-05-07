@@ -85,6 +85,20 @@ public class ChatController {
         }
     }
 
+    @GetMapping("/with-no-messages/{idUsuario}")
+    public MensajeChat obtenerIdConversationWithUser(@PathVariable UUID idUsuario, HttpServletRequest request) {
+        try {
+            return service.obtenerWithUserNoMessages(request, idUsuario);
+        } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+            HttpStatus statusError = HttpStatus.INTERNAL_SERVER_ERROR;
+
+            if (e instanceof ResourceNotFoundException) {
+                statusError = HttpStatus.NOT_FOUND;
+            }
+            throw new ResponseStatusException(statusError, e.getMessage());
+        }
+    }
+
     @PostMapping()
     public MensajeChat enviarPrimerMensaje(@RequestBody FirstMessageChatBody requestBody, HttpServletRequest request) {
         try {

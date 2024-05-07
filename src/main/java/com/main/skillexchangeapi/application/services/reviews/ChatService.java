@@ -125,4 +125,18 @@ public class ChatService implements IChatService {
             throw new ResourceNotFoundException("No existe la conversación");
         }
     }
+
+    @Override
+    public MensajeChat obtenerWithUserNoMessages(HttpServletRequest request, UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        String correo = tokenUtils.extractEmailFromRequest(request);
+        UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
+
+        //Optional<MensajeChat> mensajeChat = repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor), UuidManager.UuidToBytes(idUsuario));
+        Optional<MensajeChat> mensajeChat = repository.findByIdContactExcludeMessages(idEmisor, idUsuario);
+        if (mensajeChat.isPresent()) {
+            return mensajeChat.get();
+        } else {
+            throw new ResourceNotFoundException("No existe la conversación");
+        }
+    }
 }

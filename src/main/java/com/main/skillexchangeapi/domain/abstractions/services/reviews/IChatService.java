@@ -23,4 +23,5 @@ public interface IChatService {
     MensajeChat obtenerConversacion(UUID idRoom) throws ResourceNotFoundException;
 
     MensajeChat obtenerWithUser(HttpServletRequest request, UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
+    MensajeChat obtenerWithUserNoMessages(HttpServletRequest request, UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
 }

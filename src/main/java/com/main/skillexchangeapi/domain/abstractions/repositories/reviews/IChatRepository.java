@@ -13,4 +13,7 @@ import java.util.UUID;
 public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
     @Query("{$and: [{'contacts.idContact': ?0}, {'contacts.idContact': ?1}]}")
     Optional<MensajeChat> findByIdContacts(UUID idContact1, UUID idContact2);
+
+    @Query(value = "{$and: [{'contacts.idContact': ?0}, {'contacts.idContact': ?1}]}", fields = "{messages: 0}")
+    Optional<MensajeChat> findByIdContactExcludeMessages(UUID idContact1, UUID idContact2);
 }

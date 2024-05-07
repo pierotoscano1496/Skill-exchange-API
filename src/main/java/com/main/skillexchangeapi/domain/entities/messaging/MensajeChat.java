@@ -21,7 +21,6 @@ public class MensajeChat {
     @NonNull
     private List<Contact> contacts;
 
-    @NonNull
     private List<Message> messages;
     /*
     @NonNull
