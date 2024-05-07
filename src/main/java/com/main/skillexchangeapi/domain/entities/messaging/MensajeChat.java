@@ -4,9 +4,11 @@ import com.mongodb.lang.NonNull;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -16,6 +18,12 @@ public class MensajeChat {
     @Id
     private UUID id;
 
+    @NonNull
+    private List<Contact> contacts;
+
+    @NonNull
+    private List<Message> messages;
+    /*
     @NonNull
     private UUID idEmisor;
 
@@ -29,4 +37,6 @@ public class MensajeChat {
 
     @NonNull
     private Date fecha;
+
+     */
 }

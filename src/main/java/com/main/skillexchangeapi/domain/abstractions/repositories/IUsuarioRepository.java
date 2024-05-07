@@ -9,8 +9,12 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 
+import java.util.UUID;
+
 public interface IUsuarioRepository {
     Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException;
+
+    Usuario obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 

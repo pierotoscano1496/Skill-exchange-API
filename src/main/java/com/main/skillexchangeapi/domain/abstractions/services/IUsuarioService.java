@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IUsuarioService {
+    UsuarioResponse obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     UsuarioRegisteredResponse obtener(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException;

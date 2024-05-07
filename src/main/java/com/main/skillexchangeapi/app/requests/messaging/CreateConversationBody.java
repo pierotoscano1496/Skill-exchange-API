@@ -1,13 +1,14 @@
 package com.main.skillexchangeapi.app.requests.messaging;
 
+import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
-import java.util.Date;
 import java.util.UUID;
 
-@Getter
-public class FirstMessageChatBody {
+@Builder
+@Data
+public class CreateConversationBody {
+    private UUID idEmisor;
     private UUID idReceptor;
-    private String mensaje;
-    private String resourceUrl;
 }
