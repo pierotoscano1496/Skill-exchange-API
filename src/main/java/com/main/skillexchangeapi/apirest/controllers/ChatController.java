@@ -59,9 +59,9 @@ public class ChatController {
     }
 
     @GetMapping("/own")
-    public List<ConversationResponse> obtenerConversations(HttpServletRequest request) {
+    public List<MensajeChat> obtenerConversationsNoMessages(HttpServletRequest request) {
         try {
-            return conversationService.obtenerOwn(request);
+            return service.obtenerNoMessages(request);
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
             HttpStatus statusError = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof ResourceNotFoundException) {
@@ -86,7 +86,7 @@ public class ChatController {
     }
 
     @GetMapping("/with-no-messages/{idUsuario}")
-    public MensajeChat obtenerIdConversationWithUser(@PathVariable UUID idUsuario, HttpServletRequest request) {
+    public MensajeChat obtenerConversationWithUserNoMessages(@PathVariable UUID idUsuario, HttpServletRequest request) {
         try {
             return service.obtenerWithUserNoMessages(request, idUsuario);
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {

@@ -68,6 +68,7 @@ public class ChatService implements IChatService {
                 .build();
 
         Message firstMessage = Message.builder()
+                .sentBy(emisor.getId())
                 .fecha(new Date())
                 .mensaje(requestBody.getMensaje())
                 .resourceUrl(requestBody.getResourceUrl())
@@ -88,6 +89,7 @@ public class ChatService implements IChatService {
         if (mensajeChatFound.isPresent()) {
             MensajeChat mensajeChat = mensajeChatFound.get();
             Message newMessage = Message.builder()
+                    .sentBy(message.getSentBy())
                     .mensaje(message.getMensaje())
                     .resourceUrl(message.getResourceUrl())
                     .fecha(new Date())
@@ -110,6 +112,13 @@ public class ChatService implements IChatService {
         } else {
             throw new ResourceNotFoundException("No existe la conversación");
         }
+    }
+
+    @Override
+    public List<MensajeChat> obtenerNoMessages(HttpServletRequest request) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        String correo = tokenUtils.extractEmailFromRequest(request);
+        UUID idUsuarioLogged = usuarioRepository.obtenerByCorreo(correo).getId();
+        return repository.findByIdContactExcludeMessages(idUsuarioLogged);
     }
 
     @Override
