@@ -1,9 +1,7 @@
 package com.main.skillexchangeapi.application.services;
 
-import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
-import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
-import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
-import com.main.skillexchangeapi.app.requests.servicio.ModalidadPagoBody;
+import com.main.skillexchangeapi.app.requests.servicio.*;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
@@ -12,6 +10,7 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepos
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -43,6 +42,72 @@ public class ServicioService implements IServicioService {
                 .descripcion(s.getDescripcion())
                 .precio(s.getPrecio())
                 .build()).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ServicioBusquedaResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.searchByParams(SearchServicioParams.builder()
+                        .keyWord(requestBody.getKeyWord())
+                        .idSkill(requestBody.getIdSkill())
+                        .idSubcategoria(requestBody.getIdSubcategoria())
+                        .idCategoria(requestBody.getIdCategoria())
+                        .build())
+                .stream().map(s -> ServicioBusquedaResponse.builder()
+                        .id(s.getId())
+                        .descripcion(s.getDescripcion())
+                        .precio(s.getPrecio())
+                        .titulo(s.getTitulo())
+                        .idUsuario(s.getSkillUsuario().getUsuario().getId())
+                        .nombresUsuario(s.getSkillUsuario().getUsuario().getNombres())
+                        .apellidosUsuario(s.getSkillUsuario().getUsuario().getApellidos())
+                        .correoUsuario(s.getSkillUsuario().getUsuario().getCorreo())
+                        .idSkill(s.getSkillUsuario().getSkill().getId())
+                        .descripcionSkill(s.getSkillUsuario().getSkill().getDescripcion())
+                        .build()).collect(Collectors.toList());
+    }
+
+    @Override
+    public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        Servicio servicio = repository.obtenerDetails(id);
+        List<RecursoMultimediaServicio> recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+        List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
+
+        return ServicioDetailsPreviewResponse.builder()
+                .id(servicio.getId())
+                .descripcion(servicio.getDescripcion())
+                .titulo(servicio.getTitulo())
+                .precio(servicio.getPrecio())
+                .prestamista(UsuarioResponse.builder()
+                        .id(servicio.getSkillUsuario().getUsuario().getId())
+                        .dni(servicio.getSkillUsuario().getUsuario().getDni())
+                        .carnetExtranjeria(servicio.getSkillUsuario().getUsuario().getCarnetExtranjeria())
+                        .tipoDocumento(servicio.getSkillUsuario().getUsuario().getTipoDocumento())
+                        .nombres(servicio.getSkillUsuario().getUsuario().getNombres())
+                        .apellidos(servicio.getSkillUsuario().getUsuario().getApellidos())
+                        .correo(servicio.getSkillUsuario().getUsuario().getCorreo())
+                        .fechaNacimiento(servicio.getSkillUsuario().getUsuario().getFechaNacimiento())
+                        .introduccion(servicio.getSkillUsuario().getUsuario().getIntroduccion())
+                        .perfilFacebook(servicio.getSkillUsuario().getUsuario().getPerfilFacebook())
+                        .perfilInstagram(servicio.getSkillUsuario().getUsuario().getPerfilInstagram())
+                        .perfilLinkedin(servicio.getSkillUsuario().getUsuario().getPerfilLinkedin())
+                        .perfilTiktok(servicio.getSkillUsuario().getUsuario().getPerfilTiktok())
+                        .build())
+                .recursosMultimedia(recursosMultimediaServicio.stream()
+                        .map(r -> RecursoMultimediaResponse.builder()
+                                .id(r.getId())
+                                .medio(r.getMedio())
+                                .url(r.getUrl())
+                                .build())
+                        .collect(Collectors.toList()))
+                .modalidadesPago(modalidadesPago.stream()
+                        .map(m -> MedioPagoResponse.builder()
+                                .id(m.getId())
+                                .numeroCelular(m.getNumeroCelular())
+                                .tipo(m.getTipo())
+                                .cuentaBancaria(m.getCuentaBancaria())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @Override

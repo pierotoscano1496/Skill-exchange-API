@@ -3,6 +3,8 @@ package com.main.skillexchangeapi.domain.abstractions.services;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
+import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParametersBody;
+import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioModalidadesPagoAsignadosResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioRecursosMultimediaAsignadosResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioRegisteredResponse;
@@ -18,6 +20,10 @@ import java.util.UUID;
 public interface IServicioService {
 
     List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    List<ServicioBusquedaResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     ServicioRegisteredResponse registrar(CreateServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException;
 

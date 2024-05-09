@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.domain.entities.ModalidadPago;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,6 +23,38 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<ModalidadPago> obtenerByServicio(UUID idServicio) throws ResourceNotFoundException, DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("{CALL obtener_modalidades_pago_by_servicio(?)}")) {
+            statement.setObject("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<ModalidadPago> modalidadesPago = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    modalidadesPago.add(ModalidadPago.builder()
+                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .tipo(resultSet.getString("TIPO"))
+                            .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
+                            .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                            .servicio(Servicio.builder()
+                                    .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                    .build())
+                            .build());
+                }
+
+                if (!modalidadesPago.isEmpty()) {
+                    return modalidadesPago;
+                } else {
+                    throw new ResourceNotFoundException("No existen modalidades de pago para el servicio");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error durante la búsqueda de modalidades de pago");
+        }
+    }
+
+    @Override
     public ModalidadPago registrar(ModalidadPago modalidadPago) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
@@ -31,28 +64,28 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
             statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(modalidadPago.getServicio().getId()));
 
-            ResultSet resultSet = statement.getResultSet();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ModalidadPago modalidadPagoRegistered = null;
 
-            ModalidadPago modalidadPagoRegistered = null;
+                while (resultSet.next()) {
+                    modalidadPagoRegistered = ModalidadPago.builder()
+                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .tipo(resultSet.getString("TIPO"))
+                            .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
+                            .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                            .servicio(Servicio.builder()
+                                    .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                    .build())
+                            .build();
 
-            if (resultSet.first()) {
-                modalidadPagoRegistered = ModalidadPago.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
-                        .tipo(resultSet.getString("TIPO"))
-                        .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
-                        .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
-                        .servicio(Servicio.builder()
-                                .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
-                                .build())
-                        .build();
-            }
+                    break;
+                }
 
-            resultSet.close();
-
-            if (modalidadPagoRegistered != null) {
-                return modalidadPago;
-            } else {
-                throw new NotCreatedException("No se creó la modalidad de pago");
+                if (modalidadPagoRegistered != null) {
+                    return modalidadPago;
+                } else {
+                    throw new NotCreatedException("No se creó la modalidad de pago");
+                }
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó la modalidad de pago");

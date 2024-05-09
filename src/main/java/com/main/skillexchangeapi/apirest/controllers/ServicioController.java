@@ -2,11 +2,9 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
+import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParametersBody;
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
-import com.main.skillexchangeapi.app.responses.servicio.ServicioModalidadesPagoAsignadosResponse;
-import com.main.skillexchangeapi.app.responses.servicio.ServicioRecursosMultimediaAsignadosResponse;
-import com.main.skillexchangeapi.app.responses.servicio.ServicioRegisteredResponse;
-import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
+import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -35,6 +33,34 @@ public class ServicioController {
                 statusError = HttpStatus.NOT_FOUND;
             }
             throw new ResponseStatusException(statusError, e.getMessage());
+        }
+    }
+
+    @GetMapping("details/preview/{id}")
+    public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) {
+        try {
+            return service.obtenerDetailsPreview(id);
+        } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+
+            if (e instanceof ResourceNotFoundException) {
+                errorStatus = HttpStatus.NOT_FOUND;
+            }
+            throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
+
+    /**
+     * Búsquedas personalizadas
+     */
+    @PostMapping("busqueda")
+    private List<ServicioBusquedaResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
+        try {
+            return service.searchByParameters(parameters);
+        } catch (DatabaseNotWorkingException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 

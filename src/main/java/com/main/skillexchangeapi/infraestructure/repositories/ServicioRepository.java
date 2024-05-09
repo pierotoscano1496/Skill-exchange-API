@@ -2,10 +2,9 @@ package com.main.skillexchangeapi.infraestructure.repositories;
 
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
-import com.main.skillexchangeapi.domain.entities.Servicio;
-import com.main.skillexchangeapi.domain.entities.Skill;
-import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -27,8 +26,112 @@ public class ServicioRepository implements IServicioRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public Servicio obtenerDetails(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_servicio_details(?)")) {
+            statement.setBytes("p_id", UuidManager.UuidToBytes(id));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Servicio servicio = null;
+
+                while (resultSet.next()) {
+                    servicio = Servicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .precio(resultSet.getDouble("PRECIO"))
+                            .titulo(resultSet.getString("TITULO"))
+                            .skillUsuario(SkillUsuario.builder()
+                                    .skill(Skill.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SKILL")))
+                                            .descripcion(resultSet.getString("DESCRIPCION_SKILL"))
+                                            .subCategoria(SubCategoria.builder()
+                                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                                    .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
+                                                    .categoria(Categoria.builder()
+                                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CATEGORIA")))
+                                                            .nombre(resultSet.getString("NOMBRE_CATEGORIA"))
+                                                            .build())
+                                                    .build())
+                                            .build())
+                                    .usuario(Usuario.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_USUARIO")))
+                                            .nombres(resultSet.getString("NOMBRES_USUARIO"))
+                                            .apellidos(resultSet.getString("APELLIDOS_USUARIO"))
+                                            .correo(resultSet.getString("CORREO_USUARIO"))
+                                            .dni(resultSet.getString("DNI_USUARIO"))
+                                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_USUARIO"))
+                                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_USUARIO"))
+                                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO_USUARIO").toLocalDate())
+                                            .introduccion(resultSet.getString("INTRODUCCION_USUARIO"))
+                                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_USUARIO"))
+                                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_USUARIO"))
+                                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_USUARIO"))
+                                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_USUARIO"))
+                                            .build())
+                                    .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO_SKILL_USUARIO"))
+                                    .descripcion(resultSet.getString("DESCRIPCION_SKILL_USUARIO"))
+                                    .build())
+                            .build();
+                }
+
+                if (servicio != null) {
+                    return servicio;
+                } else {
+                    throw new ResourceNotFoundException("No existe el servicio");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error durante la búsqueda del servicio");
+        }
+    }
+
+    @Override
     public List<Servicio> obtenerServiciosClienteNoRechazados(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return null;
+    }
+
+    @Override
+    public List<Servicio> searchByParams(SearchServicioParams params) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL search_servicios_details(?, ?, ?, ?)")) {
+            statement.setString("p_key_word", params.getKeyWord());
+            statement.setBytes("p_id_skill", UuidManager.UuidToBytes(params.getIdSkill()));
+            statement.setBytes("p_id_subcategoria", UuidManager.UuidToBytes(params.getIdSubcategoria()));
+            statement.setBytes("p_id_categoria", UuidManager.UuidToBytes(params.getIdCategoria()));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<Servicio> servicios = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    servicios.add(Servicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .precio(resultSet.getDouble("PRECIO"))
+                            .titulo(resultSet.getString("TITULO"))
+                            .skillUsuario(SkillUsuario.builder()
+                                    .skill(Skill.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SKILL")))
+                                            .descripcion("DESCRIPCION_SKILL")
+                                            .build())
+                                    .usuario(Usuario.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_USUARIO")))
+                                            .nombres(resultSet.getString("NOMBRES_USUARIO"))
+                                            .apellidos(resultSet.getString("APELLIDOS_USUARIO"))
+                                            .correo(resultSet.getString("CORREO_USUARIO"))
+                                            .build())
+                                    .build())
+                            .build());
+                }
+
+                if (!servicios.isEmpty()) {
+                    return servicios;
+                } else {
+                    throw new ResourceNotFoundException("No existen los servicios indicados");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error durante la búsqueda de servicios");
+        }
     }
 
     @Override
