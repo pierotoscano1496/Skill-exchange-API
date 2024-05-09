@@ -47,7 +47,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/skill/sub-categoria/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/skills/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/messaging-socket/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/messaging-socket/**").permitAll() // Check: Encontrar manera de establecerlo privado
+                        .requestMatchers(HttpMethod.GET, "/servicio/details/preview/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/servicio/busqueda").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
