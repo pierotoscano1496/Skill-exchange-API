@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.servicio.*;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
@@ -51,6 +52,50 @@ public class ServicioService implements IServicioService {
                         .idSkill(s.getSkillUsuario().getSkill().getId())
                         .descripcionSkill(s.getSkillUsuario().getSkill().getDescripcion())
                         .build()).collect(Collectors.toList());
+    }
+
+    @Override
+    public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        Servicio servicio = repository.obtenerDetails(id);
+        List<RecursoMultimediaServicio> recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+        List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
+
+        return ServicioDetailsPreviewResponse.builder()
+                .id(servicio.getId())
+                .descripcion(servicio.getDescripcion())
+                .titulo(servicio.getTitulo())
+                .precio(servicio.getPrecio())
+                .prestamista(UsuarioResponse.builder()
+                        .id(servicio.getSkillUsuario().getUsuario().getId())
+                        .dni(servicio.getSkillUsuario().getUsuario().getDni())
+                        .carnetExtranjeria(servicio.getSkillUsuario().getUsuario().getCarnetExtranjeria())
+                        .tipoDocumento(servicio.getSkillUsuario().getUsuario().getTipoDocumento())
+                        .nombres(servicio.getSkillUsuario().getUsuario().getNombres())
+                        .apellidos(servicio.getSkillUsuario().getUsuario().getApellidos())
+                        .correo(servicio.getSkillUsuario().getUsuario().getCorreo())
+                        .fechaNacimiento(servicio.getSkillUsuario().getUsuario().getFechaNacimiento())
+                        .introduccion(servicio.getSkillUsuario().getUsuario().getIntroduccion())
+                        .perfilFacebook(servicio.getSkillUsuario().getUsuario().getPerfilFacebook())
+                        .perfilInstagram(servicio.getSkillUsuario().getUsuario().getPerfilInstagram())
+                        .perfilLinkedin(servicio.getSkillUsuario().getUsuario().getPerfilLinkedin())
+                        .perfilTiktok(servicio.getSkillUsuario().getUsuario().getPerfilTiktok())
+                        .build())
+                .recursosMultimedia(recursosMultimediaServicio.stream()
+                        .map(r -> RecursoMultimediaResponse.builder()
+                                .id(r.getId())
+                                .medio(r.getMedio())
+                                .url(r.getUrl())
+                                .build())
+                        .collect(Collectors.toList()))
+                .modalidadesPago(modalidadesPago.stream()
+                        .map(m -> MedioPagoResponse.builder()
+                                .id(m.getId())
+                                .numeroCelular(m.getNumeroCelular())
+                                .tipo(m.getTipo())
+                                .cuentaBancaria(m.getCuentaBancaria())
+                                .build())
+                        .collect(Collectors.toList()))
+                .build();
     }
 
     @Override

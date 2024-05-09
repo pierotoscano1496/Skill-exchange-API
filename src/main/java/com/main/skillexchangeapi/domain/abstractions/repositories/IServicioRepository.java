@@ -7,8 +7,12 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 
 import java.util.List;
+import java.util.UUID;
 
 public interface IServicioRepository {
-    List<Servicio> searchByParams(SearchServicioParams params)throws DatabaseNotWorkingException, ResourceNotFoundException;
+    Servicio obtenerDetails(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException;
+
+    List<Servicio> searchByParams(SearchServicioParams params) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException;
 }

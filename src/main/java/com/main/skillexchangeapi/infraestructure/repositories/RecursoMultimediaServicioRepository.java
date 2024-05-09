@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.domain.entities.RecursoMultimediaServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -22,6 +23,37 @@ import java.util.UUID;
 public class RecursoMultimediaServicioRepository implements IRecursoMultimediaServicioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    @Override
+    public List<RecursoMultimediaServicio> obtenerByServicio(UUID idServicio) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_recursos_multimedia_servicio_by_servicio(?)")) {
+            statement.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<RecursoMultimediaServicio> recursosMultimediaServicio = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    recursosMultimediaServicio.add(RecursoMultimediaServicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .servicio(Servicio.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
+                                    .build())
+                            .medio(resultSet.getString("MEDIO"))
+                            .url(resultSet.getString("URL"))
+                            .build());
+                }
+
+                if (!recursosMultimediaServicio.isEmpty()) {
+                    return recursosMultimediaServicio;
+                } else {
+                    throw new ResourceNotFoundException("No se encontraron recursos");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error durante la búsqueda de servicios");
+        }
+    }
 
     @Override
     public List<RecursoMultimediaServicio> registrarMultiple(List<RecursoMultimediaServicio> recursosMultimediaServicio) throws DatabaseNotWorkingException, NotCreatedException {
