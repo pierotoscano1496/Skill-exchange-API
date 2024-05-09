@@ -47,6 +47,19 @@ public class MatchServicioController {
         }
     }
 
+    @GetMapping("details/prestamista/{idPrestamista}/serving")
+    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaInServing(@PathVariable UUID idPrestamista) {
+        try {
+            return service.obtenerDetailsFromPrestamistaInServing(idPrestamista);
+        } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e instanceof ResourceNotFoundException) {
+                errorStatus = HttpStatus.NOT_FOUND;
+            }
+            throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
+
     @PostMapping
     public MatchServicioResponse registrar(@RequestBody CreateMatchServicioBody requestBody) {
         try {

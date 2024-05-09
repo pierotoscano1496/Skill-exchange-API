@@ -160,6 +160,73 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
+    public List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_prestamista_in_serving(?)}")) {
+            statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<MatchServicio> matchServicios = new ArrayList<>();
+
+                while (resultSet.next()) {
+                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    if (resultSet.wasNull()) {
+                        fechaInicio = null;
+                    }
+
+                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    if (resultSet.wasNull()) {
+                        fechaCierre = null;
+                    }
+
+                    matchServicios.add(MatchServicio.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .fecha(resultSet.getDate("FECHA").toLocalDate())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .estado(resultSet.getString("ESTADO"))
+                            .puntuacion(resultSet.getInt("PUNTUACION"))
+                            .costo(resultSet.getDouble("COSTO"))
+                            .servicio(Servicio.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
+                                    .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
+                                    .precio(resultSet.getDouble("PRECIO_SERVICIO"))
+                                    .titulo(resultSet.getString("TITULO_SERVICIO"))
+                                    .skillUsuario(SkillUsuario.builder()
+                                            .usuario(Usuario.builder()
+                                                    .id(idPrestamista)
+                                                    .build())
+                                            .build())
+                                    .build())
+                            .cliente(Usuario.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
+                                    .apellidos(resultSet.getString("APELLIDOS_CLIENTE"))
+                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_CLIENTE"))
+                                    .correo(resultSet.getString("CORREO_CLIENTE"))
+                                    .dni(resultSet.getString("DNI_CLIENTE"))
+                                    .nombres(resultSet.getString("NOMBRES_CLIENTE"))
+                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_CLIENTE"))
+                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
+                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
+                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
+                                    .tipo(resultSet.getString("TIPO_CLIENTE"))
+                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_CLIENTE"))
+                                    .build())
+                            .build());
+                }
+
+                if (!matchServicios.isEmpty()) {
+                    return matchServicios;
+                } else {
+                    throw new ResourceNotFoundException("No se encontró el match");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del match");
+        }
+    }
+
+    @Override
     public MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("{CALL obtener_match_servicio(?)}")) {

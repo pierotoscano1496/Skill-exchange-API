@@ -14,6 +14,8 @@ public interface IMatchServicioRepository {
 
     List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
+    List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;

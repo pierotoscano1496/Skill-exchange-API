@@ -29,7 +29,7 @@ public class MatchServicioService implements IMatchServicioService {
     @Override
     public List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return repository.obtenerDetailsFromCliente(idCliente)
-                .stream().map(m->MatchServicioProveedorDetailsResponse.builder()
+                .stream().map(m -> MatchServicioProveedorDetailsResponse.builder()
                         .id(m.getId())
                         .proveedor(UsuarioResponse.builder()
                                 .id(m.getServicio().getSkillUsuario().getUsuario().getId())
@@ -64,6 +64,41 @@ public class MatchServicioService implements IMatchServicioService {
     @Override
     public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return repository.obtenerDetailsFromPrestamistaByOptionalEstado(idPrestamista, estado)
+                .stream().map(m -> MatchServicioDetailsResponse.builder()
+                        .id(m.getId())
+                        .cliente(UsuarioResponse.builder()
+                                .id(m.getCliente().getId())
+                                .dni(m.getCliente().getDni())
+                                .carnetExtranjeria(m.getCliente().getCarnetExtranjeria())
+                                .correo(m.getCliente().getCorreo())
+                                .nombres(m.getCliente().getNombres())
+                                .apellidos(m.getCliente().getApellidos())
+                                .perfilFacebook(m.getCliente().getPerfilFacebook())
+                                .perfilInstagram(m.getCliente().getPerfilInstagram())
+                                .perfilLinkedin(m.getCliente().getPerfilLinkedin())
+                                .perfilTiktok(m.getCliente().getPerfilTiktok())
+                                .tipo(m.getCliente().getTipo())
+                                .tipoDocumento(m.getCliente().getTipoDocumento())
+                                .build())
+                        .fecha(m.getFecha())
+                        .fechaInicio(m.getFechaInicio())
+                        .fechaCierre(m.getFechaCierre())
+                        .estado(m.getEstado())
+                        .puntuacion(m.getPuntuacion())
+                        .costo(m.getCosto())
+                        .servicio(ServicioResponse.builder()
+                                .id(m.getServicio().getId())
+                                .descripcion(m.getServicio().getDescripcion())
+                                .precio(m.getServicio().getPrecio())
+                                .titulo(m.getServicio().getTitulo())
+                                .build())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.obtenerDetailsFromPrestamistaInServing(idPrestamista)
                 .stream().map(m -> MatchServicioDetailsResponse.builder()
                         .id(m.getId())
                         .cliente(UsuarioResponse.builder()
