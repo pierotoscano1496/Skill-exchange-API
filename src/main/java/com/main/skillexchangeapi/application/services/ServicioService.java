@@ -17,6 +17,7 @@ import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -69,7 +70,13 @@ public class ServicioService implements IServicioService {
     @Override
     public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         Servicio servicio = repository.obtenerDetails(id);
-        List<RecursoMultimediaServicio> recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+        List<RecursoMultimediaServicio> recursosMultimediaServicio;
+        try {
+            recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+        } catch (ResourceNotFoundException e) {
+            recursosMultimediaServicio = new ArrayList<>();
+        }
+
         List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
 
         return ServicioDetailsPreviewResponse.builder()

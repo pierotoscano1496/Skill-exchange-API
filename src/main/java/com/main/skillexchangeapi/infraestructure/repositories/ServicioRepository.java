@@ -95,9 +95,12 @@ public class ServicioRepository implements IServicioRepository {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("CALL search_servicios_details(?, ?, ?, ?)")) {
             statement.setString("p_key_word", params.getKeyWord());
-            statement.setBytes("p_id_skill", UuidManager.UuidToBytes(params.getIdSkill()));
-            statement.setBytes("p_id_subcategoria", UuidManager.UuidToBytes(params.getIdSubcategoria()));
-            statement.setBytes("p_id_categoria", UuidManager.UuidToBytes(params.getIdCategoria()));
+            statement.setBytes("p_id_skill", params.getIdSkill() != null ?
+                    UuidManager.UuidToBytes(params.getIdSkill()) : null);
+            statement.setBytes("p_id_subcategoria", params.getIdSubcategoria() != null ?
+                    UuidManager.UuidToBytes(params.getIdSubcategoria()) : null);
+            statement.setBytes("p_id_categoria", params.getIdCategoria() != null ?
+                    UuidManager.UuidToBytes(params.getIdCategoria()) : null);
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<Servicio> servicios = new ArrayList<>();
