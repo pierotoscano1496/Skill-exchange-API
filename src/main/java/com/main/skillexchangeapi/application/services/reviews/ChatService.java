@@ -51,36 +51,53 @@ public class ChatService implements IChatService {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
 
-        // Contactos
-        Usuario emisor = usuarioRepository.obtenerById(idEmisor);
-        Usuario receptor = usuarioRepository.obtenerById(requestBody.getIdReceptor());
+        // Evaluar si hay una conversación previa con el receptor
+        Optional<MensajeChat> previousConversation = repository.findByIdContacts(idEmisor, requestBody.getIdReceptor());
+        if (previousConversation.isPresent()) {
+            // Enviar mensaje a la conversación existente
+            MensajeChat mensajeChat = previousConversation.get();
+            Message newMessage = Message.builder()
+                    .sentBy(idEmisor)
+                    .mensaje(requestBody.getMensaje())
+                    .resourceUrl(requestBody.getResourceUrl())
+                    .fecha(new Date())
+                    .build();
 
-        Contact contactEmisor = Contact.builder()
-                .idContact(emisor.getId())
-                .fullName(emisor.getNombres() + " " + emisor.getApellidos())
-                .email(emisor.getCorreo())
-                .build();
+            mensajeChat.getMessages().add(newMessage);
+            return repository.save(mensajeChat);
+        } else {
+            // Crear nueva conversación
+            // Contactos
+            Usuario emisor = usuarioRepository.obtenerById(idEmisor);
+            Usuario receptor = usuarioRepository.obtenerById(requestBody.getIdReceptor());
 
-        Contact contactReceptor = Contact.builder()
-                .idContact(receptor.getId())
-                .fullName(receptor.getNombres() + " " + receptor.getApellidos())
-                .email(receptor.getCorreo())
-                .build();
+            Contact contactEmisor = Contact.builder()
+                    .idContact(emisor.getId())
+                    .fullName(emisor.getNombres() + " " + emisor.getApellidos())
+                    .email(emisor.getCorreo())
+                    .build();
 
-        Message firstMessage = Message.builder()
-                .sentBy(emisor.getId())
-                .fecha(new Date())
-                .mensaje(requestBody.getMensaje())
-                .resourceUrl(requestBody.getResourceUrl())
-                .build();
+            Contact contactReceptor = Contact.builder()
+                    .idContact(receptor.getId())
+                    .fullName(receptor.getNombres() + " " + receptor.getApellidos())
+                    .email(receptor.getCorreo())
+                    .build();
 
-        MensajeChat mensajeChat = MensajeChat.builder()
-                .id(UuidManager.randomUuid())
-                .contacts(Arrays.asList(contactEmisor, contactReceptor))
-                .messages(Arrays.asList(firstMessage))
-                .build();
+            Message firstMessage = Message.builder()
+                    .sentBy(emisor.getId())
+                    .fecha(new Date())
+                    .mensaje(requestBody.getMensaje())
+                    .resourceUrl(requestBody.getResourceUrl())
+                    .build();
 
-        return repository.save(mensajeChat);
+            MensajeChat mensajeChat = MensajeChat.builder()
+                    .id(UuidManager.randomUuid())
+                    .contacts(Arrays.asList(contactEmisor, contactReceptor))
+                    .messages(Arrays.asList(firstMessage))
+                    .build();
+
+            return repository.save(mensajeChat);
+        }
     }
 
     @Override
