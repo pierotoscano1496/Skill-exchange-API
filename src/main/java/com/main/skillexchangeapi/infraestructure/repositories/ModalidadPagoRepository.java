@@ -37,6 +37,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                             .tipo(resultSet.getString("TIPO"))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                            .url(resultSet.getString("URL"))
                             .servicio(Servicio.builder()
                                     .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
                                     .build())
@@ -62,6 +63,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
             statement.setString("p_tipo", modalidadPago.getTipo());
             statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
             statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
+            statement.setString("p_url", modalidadPago.getUrl());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(modalidadPago.getServicio().getId()));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -73,6 +75,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                             .tipo(resultSet.getString("TIPO"))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                            .url(resultSet.getString("URL"))
                             .servicio(Servicio.builder()
                                     .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
                                     .build())
@@ -106,6 +109,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                     statement.setString("p_tipo", modalidadPago.getTipo());
                     statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
                     statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
+                    statement.setString("p_url", modalidadPago.getUrl());
                     statement.setObject("p_id_servicio", UuidManager.UuidToBytes(modalidadPago.getServicio().getId()));
 
                     try (ResultSet resultSet = statement.executeQuery()) {
@@ -117,6 +121,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                                     .tipo(resultSet.getString("TIPO"))
                                     .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                                     .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                                    .url(resultSet.getString("URL"))
                                     .servicio(Servicio.builder()
                                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                             .build())

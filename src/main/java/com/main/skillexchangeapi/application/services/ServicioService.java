@@ -112,6 +112,7 @@ public class ServicioService implements IServicioService {
                                 .numeroCelular(m.getNumeroCelular())
                                 .tipo(m.getTipo())
                                 .cuentaBancaria(m.getCuentaBancaria())
+                                .url(m.getUrl())
                                 .build())
                         .collect(Collectors.toList()))
                 .build();
@@ -133,12 +134,14 @@ public class ServicioService implements IServicioService {
                         .build())
                 .build());
 
+        /*
         List<ModalidadPago> modalidadesPagoRegistered = modalidadPagoRepository
                 .registrarMultiple(requestBody
                         .getModalidadesPago().stream().map(m -> ModalidadPago.builder()
                                 .tipo(m.getTipo())
                                 .cuentaBancaria(m.getCuentaBancaria())
                                 .numeroCelular(m.getNumeroCelular())
+                                .url(m.getUrl())
                                 .servicio(servicioRegistered)
                                 .build())
                         .collect(Collectors.toList()));
@@ -151,6 +154,7 @@ public class ServicioService implements IServicioService {
                                 .servicio(servicioRegistered)
                                 .build())
                         .collect(Collectors.toList()));
+         */
 
         return ServicioRegisteredResponse.builder()
                 .id(servicioRegistered.getId())
@@ -159,8 +163,8 @@ public class ServicioService implements IServicioService {
                 .precio(servicioRegistered.getPrecio())
                 .idSkill(servicioRegistered.getSkillUsuario().getSkill().getId())
                 .idUsuario(servicioRegistered.getSkillUsuario().getUsuario().getId())
-                .modalidadesPago(modalidadesPagoRegistered)
-                .recursosMultimediaServicio(recursosMultimediaServicioRegistered)
+                //.modalidadesPago(modalidadesPagoRegistered)
+                //.recursosMultimediaServicio(recursosMultimediaServicioRegistered)
                 .build();
     }
 
@@ -173,6 +177,7 @@ public class ServicioService implements IServicioService {
                                 .id(id).build())
                         .cuentaBancaria(m.getCuentaBancaria())
                         .numeroCelular(m.getNumeroCelular())
+                        .url(m.getUrl())
                         .build())
                 .collect(Collectors.toList());
 
@@ -184,6 +189,7 @@ public class ServicioService implements IServicioService {
                                 .tipo(m.getTipo())
                                 .cuentaBancaria(m.getCuentaBancaria())
                                 .numeroCelular(m.getNumeroCelular())
+                                .url(m.getUrl())
                                 .build()).toList())
                 .build();
     }

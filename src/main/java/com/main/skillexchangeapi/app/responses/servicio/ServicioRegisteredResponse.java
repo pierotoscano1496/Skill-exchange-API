@@ -17,6 +17,6 @@ public class ServicioRegisteredResponse {
     private double precio;
     private UUID idUsuario;
     private UUID idSkill;
-    private List<ModalidadPago> modalidadesPago;
-    private List<RecursoMultimediaServicio> recursosMultimediaServicio;
+    //private List<ModalidadPago> modalidadesPago;
+    //private List<RecursoMultimediaServicio> recursosMultimediaServicio;
 }

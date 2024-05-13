@@ -79,39 +79,40 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
              CallableStatement statement = connection.prepareCall("{CALL obtener_skills_from_usuario(?)}");) {
             statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(idUsuario));
 
-            ResultSet resultSet = statement.executeQuery();
-            List<SkillUsuario> skillsUsuario = new ArrayList<>();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<SkillUsuario> skillsUsuario = new ArrayList<>();
 
-            while (resultSet.next()) {
-                Categoria categoria = Categoria.builder()
-                        .nombre(resultSet.getString("NOMBRE_CATEGORIA"))
-                        .build();
+                while (resultSet.next()) {
+                    Categoria categoria = Categoria.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CATEGORIA")))
+                            .nombre(resultSet.getString("NOMBRE_CATEGORIA"))
+                            .build();
 
-                SubCategoria subCategoria = SubCategoria.builder()
-                        .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
-                        .categoria(categoria)
-                        .build();
+                    SubCategoria subCategoria = SubCategoria.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                            .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
+                            .categoria(categoria)
+                            .build();
 
-                Skill skill = Skill.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
-                        .descripcion(resultSet.getString("DESCRIPCION"))
-                        .subCategoria(subCategoria)
-                        .build();
+                    Skill skill = Skill.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .subCategoria(subCategoria)
+                            .build();
 
-                SkillUsuario skillUsuario = SkillUsuario.builder()
-                        .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
-                        .skill(skill)
-                        .build();
+                    SkillUsuario skillUsuario = SkillUsuario.builder()
+                            .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
+                            .skill(skill)
+                            .build();
 
-                skillsUsuario.add(skillUsuario);
-            }
+                    skillsUsuario.add(skillUsuario);
+                }
 
-            resultSet.close();
-
-            if (!skillsUsuario.isEmpty()) {
-                return skillsUsuario;
-            } else {
-                throw new ResourceNotFoundException("El usuario no tiene skills");
+                if (!skillsUsuario.isEmpty()) {
+                    return skillsUsuario;
+                } else {
+                    throw new ResourceNotFoundException("El usuario no tiene skills");
+                }
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se pudieron buscar los skills");

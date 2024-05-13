@@ -19,7 +19,7 @@ import java.util.Map;
 @Component
 public class TokenUtils {
     private final String accessTokenSignature;
-    private final static Long ACCESS_TOKEN_VALIDITY_MILI_SECONDS = 1000 * 60 * (long) 60; // 1 hora
+    private final static Long ACCESS_TOKEN_VALIDITY_MILI_SECONDS = 1000 * 60 * (long) 60 * 5; // 5 horas
 
     @Autowired
     public TokenUtils(@Value("${jwt.secret}") String accessTokenSignature) {

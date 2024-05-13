@@ -6,14 +6,19 @@ import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParameters
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageModalidadPagoService;
+import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageRecursoMultimediaServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +29,14 @@ public class ServicioController {
     @Autowired
     private IServicioService service;
 
-    @GetMapping("usuario/{idUsuario}")
-    private List<ServicioResponse> obtenerByUsuario(UUID idUsuario) {
+    @Autowired
+    private IBlobStorageRecursoMultimediaServicioService recursoMultimediaServicioService;
+
+    @Autowired
+    private IBlobStorageModalidadPagoService metadataModalidadPagoService;
+
+    @GetMapping("/usuario/{idUsuario}")
+    private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
         try {
             return service.obtenerByUsuario(idUsuario);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
@@ -38,7 +49,7 @@ public class ServicioController {
     }
 
     @GetMapping("details/preview/{id}")
-    public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) {
+    public ServicioDetailsPreviewResponse obtenerDetailsPreview(@PathVariable UUID id) {
         try {
             return service.obtenerDetailsPreview(id);
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
@@ -74,12 +85,38 @@ public class ServicioController {
         }
     }
 
-    @PatchMapping("modalidad-pago/{id}")
+    @PatchMapping("/modalidad-pago/{id}")
     private ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id, @RequestBody List<AsignacionModalidadPagoToServicioRequest> requestBody) {
         try {
             return service.asignarModalidadesPago(id, requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/upload-multimedia/{id}")
+    private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id, @RequestParam("files") List<MultipartFile> files) {
+        try {
+            return recursoMultimediaServicioService.uploadMultimediaServiceResources(id, files);
+        } catch (IOException | InvalidFileException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e instanceof InvalidFileException) {
+                errorStatus = HttpStatus.BAD_REQUEST;
+            }
+            throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/upload-metadata-modalidad-pago/{id}")
+    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+        try {
+            return metadataModalidadPagoService.uploadMetadataToService(id, file);
+        } catch (IOException | InvalidFileException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (e instanceof InvalidFileException) {
+                errorStatus = HttpStatus.BAD_REQUEST;
+            }
+            throw new ResponseStatusException(errorStatus, e.getMessage());
         }
     }
 

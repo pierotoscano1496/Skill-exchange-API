@@ -11,4 +11,5 @@ public class ModalidadPagoAsignadoToServicioResponse {
     private String cuentaBancaria;
     private String numeroCelular;
     private UUID idServicio;
+    private String url;
 }

@@ -12,6 +12,6 @@ public class CreateServicioBody {
     private double precio;
     private UUID idUsuario;
     private UUID idSkill;
-    private List<ModalidadPagoBody> modalidadesPago;
-    private List<RecursoMultimediaBody> recursosMultimedia;
+    //private List<ModalidadPagoBody> modalidadesPago;
+    //private List<RecursoMultimediaBody> recursosMultimedia;
 }

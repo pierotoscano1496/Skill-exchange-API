@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
@@ -48,6 +49,17 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/skills/{id}")
+    public List<SkillResponse> obtenerSkills(@PathVariable UUID id) {
+        try {
+            return service.obtenerSkills(id);
+        } catch (DatabaseNotWorkingException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @PostMapping
     public ResponseEntity<UsuarioRegisteredResponse> registrar(@RequestBody CreateUsuarioBody requestBody) {
         try {
@@ -58,7 +70,7 @@ public class UsuarioController {
     }
 
     @PatchMapping("/plan/{id}")
-    public ResponseEntity<PlanAsignado> asignarPlan(@RequestParam UUID id, SetPlanToUsuarioRequest requestBody) {
+    public ResponseEntity<PlanAsignado> asignarPlan(@PathVariable UUID id, SetPlanToUsuarioRequest requestBody) {
         try {
             PlanAsignado planUsuarioAssigned = service.asignarPlan(id, requestBody);
             return ResponseEntity.ok(planUsuarioAssigned);

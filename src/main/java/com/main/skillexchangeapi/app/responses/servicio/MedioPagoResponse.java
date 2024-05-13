@@ -12,4 +12,5 @@ public class MedioPagoResponse {
     private String tipo;
     private String cuentaBancaria;
     private String numeroCelular;
+    private String url;
 }

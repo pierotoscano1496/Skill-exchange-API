@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.application.services;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
@@ -200,14 +201,12 @@ public class UsuarioService implements IUsuarioService {
     }
 
     @Override
-    public List<UsuarioSkillsResponse> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<SkillResponse> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return skillUsuarioRepository.obtenerByIdUsuario(id)
-                .stream().map(s -> UsuarioSkillsResponse.builder()
-                        .idSkill(s.getSkill().getId())
-                        .descripcionSkill(s.getSkill().getDescripcion())
-                        .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
-                        .nombreCategoria(s.getSkill().getSubCategoria().getCategoria().getNombre())
-                        .nivelConocimiento(s.getNivelConocimiento())
+                .stream().map(s -> SkillResponse.builder()
+                        .id(s.getSkill().getId())
+                        .descripcion(s.getSkill().getDescripcion())
+                        .idSubCategoria(s.getSkill().getSubCategoria().getId())
                         .build()).collect(Collectors.toList());
     }
 

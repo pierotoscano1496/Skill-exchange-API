@@ -194,9 +194,15 @@ public class ServicioRepository implements IServicioRepository {
                             .titulo(resultSet.getString("TITULO"))
                             .descripcion(resultSet.getString("DESCRIPCION"))
                             .precio(resultSet.getDouble("PRECIO"))
-                            .skillUsuario(servicio.getSkillUsuario())
+                            .skillUsuario(SkillUsuario.builder()
+                                    .skill(Skill.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SKILL")))
+                                            .build())
+                                    .usuario(Usuario.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_USUARIO")))
+                                            .build())
+                                    .build())
                             .build();
-
                     break;
                 }
 
