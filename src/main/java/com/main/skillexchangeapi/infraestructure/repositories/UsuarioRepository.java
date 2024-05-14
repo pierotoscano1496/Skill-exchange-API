@@ -35,7 +35,7 @@ public class UsuarioRepository implements IUsuarioRepository {
 
                 while (resultSet.next()) {
                     usuario = Usuario.builder()
-                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .dni(resultSet.getString("DNI"))
                             .correo(resultSet.getString("CORREO"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
@@ -320,7 +320,7 @@ public class UsuarioRepository implements IUsuarioRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (resultSet.next()) {
                     Plan plan = Plan.builder()
-                            .id(UUID.fromString(resultSet.getString("ID_PLAN")))
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PLAN")))
                             .build();
 
                     PlanUsuario planUsuarioRegistered = PlanUsuario.builder()

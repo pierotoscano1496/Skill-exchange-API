@@ -68,12 +68,12 @@ public class SkillRepository implements ISkillRepository {
 
             if (resultSet.first()) {
                 skillRegistered = Skill.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                         .descripcion(resultSet.getString("DESCRIPCION"))
                         .build();
 
                 SubCategoria subCategoria = SubCategoria.builder()
-                        .id(UUID.fromString(resultSet.getString("ID_SUB_CATEGORIA")))
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
                         .build();
 
                 skillRegistered.setSubCategoria(subCategoria);

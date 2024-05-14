@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IPlanRepository;
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -31,7 +32,7 @@ public class PlanRepository implements IPlanRepository {
             while (resultSet.next()) {
 
                 Plan plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                         .tipo(resultSet.getString("TIPO"))
                         .isFree(resultSet.getBoolean("IS_FREE"))
                         .codigo(resultSet.getString("CODIGO"))
@@ -68,7 +69,7 @@ public class PlanRepository implements IPlanRepository {
 
             while (resultSet.next()) {
                 plan = Plan.builder()
-                        .id(UUID.fromString(resultSet.getString("ID")))
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                         .tipo(resultSet.getString("TIPO"))
                         .isFree(resultSet.getBoolean("IS_FREE"))
                         .codigo(resultSet.getString("CODIGO"))

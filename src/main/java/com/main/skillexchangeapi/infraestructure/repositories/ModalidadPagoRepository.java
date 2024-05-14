@@ -33,13 +33,13 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
 
                 while (resultSet.next()) {
                     modalidadesPago.add(ModalidadPago.builder()
-                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .tipo(resultSet.getString("TIPO"))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                             .url(resultSet.getString("URL"))
                             .servicio(Servicio.builder()
-                                    .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())
                             .build());
                 }
@@ -71,13 +71,13 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
 
                 while (resultSet.next()) {
                     modalidadPagoRegistered = ModalidadPago.builder()
-                            .id(UUID.fromString(resultSet.getString("ID")))
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .tipo(resultSet.getString("TIPO"))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                             .url(resultSet.getString("URL"))
                             .servicio(Servicio.builder()
-                                    .id(UUID.fromString(resultSet.getString("ID_SERVICIO")))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())
                             .build();
 
@@ -100,7 +100,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
         List<ModalidadPago> modalidadesPagoRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
+             CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
 
             for (ModalidadPago modalidadPago : modalidadesPago) {
                 try {
