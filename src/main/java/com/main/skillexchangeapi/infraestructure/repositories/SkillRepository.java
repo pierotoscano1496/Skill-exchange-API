@@ -26,6 +26,34 @@ public class SkillRepository implements ISkillRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<Skill> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_skills()");
+             ResultSet resultSet = statement.executeQuery()) {
+
+            List<Skill> skills = new ArrayList<>();
+
+            while (resultSet.next()) {
+                skills.add(Skill.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .subCategoria(SubCategoria.builder()
+                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                .build())
+                        .build());
+            }
+
+            if (!skills.isEmpty()) {
+                return skills;
+            } else {
+                throw new ResourceNotFoundException("No se encontraron habilidades para la subcategoría indicada");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de habilidades");
+        }
+    }
+
+    @Override
     public List<Skill> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("CALL obtener_skills_by_sub_categoria(?)")) {

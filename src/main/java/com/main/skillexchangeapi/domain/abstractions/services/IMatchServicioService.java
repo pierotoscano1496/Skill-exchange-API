@@ -1,6 +1,8 @@
 package com.main.skillexchangeapi.domain.abstractions.services;
 
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
+import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
@@ -19,7 +21,7 @@ public interface IMatchServicioService {
 
     MatchServicioResponse registrar(CreateMatchServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException;
 
-    MatchServicioResponse actualizarEstado(UUID id, String estado) throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException, BadRequestException;
+    MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody) throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException, BadRequestException;
 
-    MatchServicioResponse puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
+    MatchServicioResponse puntuarServicio(UUID id, PuntajeServicioRequest request) throws DatabaseNotWorkingException, NotUpdatedException;
 }

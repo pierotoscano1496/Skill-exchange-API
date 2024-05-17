@@ -24,6 +24,36 @@ public class SubCategoriaRepository implements ISubCategoriaRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
+    public List<SubCategoria> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+             CallableStatement statement = connection.prepareCall("CALL obtener_sub_categorias()");
+             ResultSet resultSet = statement.executeQuery()) {
+
+            List<SubCategoria> subCategorias = new ArrayList<>();
+
+            while (resultSet.next()) {
+                subCategorias.add(SubCategoria.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .categoria(Categoria.builder()
+                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CATEGORIA")))
+                                .build())
+                        .nombre(resultSet.getString("NOMBRE"))
+                        .build());
+            }
+
+            resultSet.close();
+
+            if (!subCategorias.isEmpty()) {
+                return subCategorias;
+            } else {
+                throw new ResourceNotFoundException("No se encontraron sub categorías");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de subcategorías");
+        }
+    }
+
+    @Override
     public List<SubCategoria> obtenerByCategoria(UUID idCategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
              CallableStatement statement = connection.prepareCall("CALL obtener_sub_categorias_by_categoria(?)");) {

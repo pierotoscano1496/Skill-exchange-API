@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ISkillService {
+    List<SkillResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException;
     List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException;
     SkillResponse registrar(CreateSkillRequest request) throws DatabaseNotWorkingException, NotCreatedException;
 }

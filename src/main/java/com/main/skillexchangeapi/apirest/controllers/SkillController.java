@@ -22,6 +22,17 @@ public class SkillController {
     @Autowired
     private ISkillService service;
 
+    @GetMapping
+    public List<SkillResponse> obtener() {
+        try {
+            return service.obtener();
+        } catch (DatabaseNotWorkingException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @GetMapping("/sub-categoria/{idSubcategoria}")
     public List<SkillResponse> obtenerBySubCategoria(@PathVariable UUID idSubcategoria) {
         try {

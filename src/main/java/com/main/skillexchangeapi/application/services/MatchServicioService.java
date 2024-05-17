@@ -1,6 +1,8 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
+import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
@@ -156,13 +158,14 @@ public class MatchServicioService implements IMatchServicioService {
     }
 
     @Override
-    public MatchServicioResponse actualizarEstado(UUID id, String estado) throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException, BadRequestException {
+    public MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody) throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException, BadRequestException {
         // Corroborar que el estado sea el correcto según el ciclo de vida del match
         MatchServicio matchServicio = repository.obtener(id);
         boolean estadoIsCorrect = false;
         final String[] estadosReadyForSolicitado = {"pendiente-pago", "rechazado"};
         final String estadoReadyForPendientePago = "ejecucion";
         final String estadoReadyForEjecucion = "finalizado";
+        String estado = requestBody.getEstado();
 
         String servicioClosedMessage = null;
 
@@ -210,8 +213,9 @@ public class MatchServicioService implements IMatchServicioService {
     }
 
     @Override
-    public MatchServicioResponse puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException {
-        MatchServicio matchServicioUpdated = repository.puntuarServicio(id, puntuacion);
+    public MatchServicioResponse puntuarServicio(UUID id, PuntajeServicioRequest request) throws DatabaseNotWorkingException, NotUpdatedException {
+        int puntaje = request.getPuntaje();
+        MatchServicio matchServicioUpdated = repository.puntuarServicio(id, puntaje);
 
         return MatchServicioResponse.builder()
                 .id(matchServicioUpdated.getId())

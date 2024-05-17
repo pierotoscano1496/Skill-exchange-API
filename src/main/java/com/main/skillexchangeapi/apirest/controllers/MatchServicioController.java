@@ -1,6 +1,8 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
+import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioEstadoUpdatedResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
@@ -70,9 +72,9 @@ public class MatchServicioController {
     }
 
     @PatchMapping("estado/{id}")
-    public MatchServicioResponse actualizarEstado(@PathVariable UUID id, @RequestBody String estado) {
+    public MatchServicioResponse actualizarEstado(@PathVariable UUID id, @RequestBody UpdateEstadoMatchServicioBody requestBody) {
         try {
-            return service.actualizarEstado(id, estado);
+            return service.actualizarEstado(id, requestBody);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException | NotUpdatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (BadRequestException e) {
@@ -81,9 +83,9 @@ public class MatchServicioController {
     }
 
     @PatchMapping("puntuacion/{id}")
-    public MatchServicioResponse puntuarServicio(@PathVariable UUID id, @RequestBody int puntuacion) {
+    public MatchServicioResponse puntuarServicio(@PathVariable UUID id, @RequestBody PuntajeServicioRequest request) {
         try {
-            return service.puntuarServicio(id, puntuacion);
+            return service.puntuarServicio(id, request);
         } catch (DatabaseNotWorkingException | NotUpdatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

@@ -325,17 +325,17 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchServicioUpdated = null;
 
-                Date fechaInicio = resultSet.getDate("FECHA_INICIO");
-                if (resultSet.wasNull()) {
-                    fechaInicio = null;
-                }
-
-                Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
-                if (resultSet.wasNull()) {
-                    fechaCierre = null;
-                }
-
                 while (resultSet.next()) {
+                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    if (resultSet.wasNull()) {
+                        fechaInicio = null;
+                    }
+
+                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    if (resultSet.wasNull()) {
+                        fechaCierre = null;
+                    }
+
                     matchServicioUpdated = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                             .fecha(resultSet.getDate("FECHA").toLocalDate())

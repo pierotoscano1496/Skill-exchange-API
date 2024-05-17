@@ -29,6 +29,15 @@ public class SkillService implements ISkillService {
     private ICategoriaRepository categoriaRepository;
 
     @Override
+    public List<SkillResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return repository.obtener().stream().map(s -> SkillResponse.builder()
+                .id(s.getId())
+                .descripcion(s.getDescripcion())
+                .idSubCategoria(s.getSubCategoria().getId())
+                .build()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return repository.obtenerBySubCategoria(idSubcategoria).stream().map(s -> SkillResponse.builder()
                 .id(s.getId())

@@ -22,6 +22,17 @@ public class SubCategoriaController {
     @Autowired
     private ISubCategoriaService service;
 
+    @GetMapping
+    public List<SubCategoriaResponse> obtener() {
+        try {
+            return service.obtener();
+        } catch (DatabaseNotWorkingException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @GetMapping("/categoria/{idCategoria}")
     public List<SubCategoriaResponse> obtenerByCategoria(@PathVariable UUID idCategoria) {
         try {

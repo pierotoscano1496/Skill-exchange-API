@@ -19,6 +19,16 @@ public class SubCategoriaService implements ISubCategoriaService {
     private ISubCategoriaRepository repository;
 
     @Override
+    public List<SubCategoriaResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+        List<SubCategoria> subCategorias = repository.obtener();
+        return subCategorias.stream().map(s -> SubCategoriaResponse.builder()
+                .id(s.getId())
+                .nombre(s.getNombre())
+                .idCategoria(s.getCategoria().getId())
+                .build()).collect(Collectors.toList());
+    }
+
+    @Override
     public List<SubCategoriaResponse> obtenerByCategoria(UUID idCategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
         List<SubCategoria> subCategorias = repository.obtenerByCategoria(idCategoria);
         return subCategorias.stream().map(s -> SubCategoriaResponse.builder()

@@ -8,5 +8,6 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ISubCategoriaService {
+    List<SubCategoriaResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException;
     List<SubCategoriaResponse> obtenerByCategoria(UUID idCategoria) throws DatabaseNotWorkingException, ResourceNotFoundException;
 }
