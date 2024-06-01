@@ -115,6 +115,13 @@
 			<artifactId>spring-cloud-azure-starter-storage</artifactId>
 		</dependency>
 
+		<!-- Firebase -->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.1.1</version>
+		</dependency>
+
 		<!-- Datadog -->
 		<!-- <dependency>
 			<groupId>io.micrometer</groupId>

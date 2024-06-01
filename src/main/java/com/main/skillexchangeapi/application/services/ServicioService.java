@@ -1,8 +1,11 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.servicio.*;
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.*;
+import com.main.skillexchangeapi.app.responses.usuario.CategoriaResponse;
+import com.main.skillexchangeapi.app.responses.usuario.SubCategoriaResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IRecursoMultimediaServicioRepository;
@@ -98,6 +101,18 @@ public class ServicioService implements IServicioService {
                         .perfilInstagram(servicio.getSkillUsuario().getUsuario().getPerfilInstagram())
                         .perfilLinkedin(servicio.getSkillUsuario().getUsuario().getPerfilLinkedin())
                         .perfilTiktok(servicio.getSkillUsuario().getUsuario().getPerfilTiktok())
+                        .build())
+                .skill(SkillResponse.builder()
+                        .id(servicio.getSkillUsuario().getSkill().getId())
+                        .descripcion(servicio.getSkillUsuario().getSkill().getDescripcion())
+                        .build())
+                .subCategoria(SubCategoriaResponse.builder()
+                        .id(servicio.getSkillUsuario().getSkill().getSubCategoria().getId())
+                        .nombre(servicio.getSkillUsuario().getSkill().getSubCategoria().getNombre())
+                        .build())
+                .categoria(CategoriaResponse.builder()
+                        .id(servicio.getSkillUsuario().getSkill().getSubCategoria().getCategoria().getId())
+                        .nombre(servicio.getSkillUsuario().getSkill().getSubCategoria().getCategoria().getNombre())
                         .build())
                 .recursosMultimedia(recursosMultimediaServicio.stream()
                         .map(r -> RecursoMultimediaResponse.builder()

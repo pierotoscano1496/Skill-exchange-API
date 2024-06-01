@@ -1,6 +1,9 @@
 package com.main.skillexchangeapi.app.responses.servicio;
 
+import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.usuario.CategoriaResponse;
+import com.main.skillexchangeapi.app.responses.usuario.SubCategoriaResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -15,6 +18,9 @@ public class ServicioDetailsPreviewResponse {
     private String descripcion;
     private double precio;
     private UsuarioResponse prestamista;
+    private SkillResponse skill;
+    private SubCategoriaResponse subCategoria;
+    private CategoriaResponse categoria;
     private List<MedioPagoResponse> modalidadesPago;
     private List<RecursoMultimediaResponse> recursosMultimedia;
 }

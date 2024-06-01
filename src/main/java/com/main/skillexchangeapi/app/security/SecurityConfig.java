@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
                         //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categoria").permitAll()
