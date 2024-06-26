@@ -1,9 +1,7 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
-import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.security.entities.UsuarioCredenciales;
 import com.main.skillexchangeapi.domain.abstractions.security.services.IAuthService;
-import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.exceptions.UnsuccessLoginException;

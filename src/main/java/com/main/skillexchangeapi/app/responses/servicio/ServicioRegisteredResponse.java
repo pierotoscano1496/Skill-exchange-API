@@ -1,11 +1,8 @@
 package com.main.skillexchangeapi.app.responses.servicio;
 
-import com.main.skillexchangeapi.domain.entities.ModalidadPago;
-import com.main.skillexchangeapi.domain.entities.RecursoMultimediaServicio;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
 import java.util.UUID;
 
 @Data

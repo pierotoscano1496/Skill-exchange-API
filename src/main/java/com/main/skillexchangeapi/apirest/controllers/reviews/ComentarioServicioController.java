@@ -4,10 +4,10 @@ import com.main.skillexchangeapi.app.requests.review.comentarios.ComentarioServi
 import com.main.skillexchangeapi.app.responses.reviews.comentarios.ComentarioServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IComentarioServicioService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.UUID;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "servicios/comments", produces = "application/json")

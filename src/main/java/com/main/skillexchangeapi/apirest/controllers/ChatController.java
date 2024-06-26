@@ -2,7 +2,6 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.requests.messaging.FirstMessageChatBody;
 import com.main.skillexchangeapi.app.requests.messaging.MessageBody;
-import com.main.skillexchangeapi.app.responses.messaging.ConversationResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.abstractions.services.messaging.IConversationService;
@@ -10,7 +9,6 @@ import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatServi
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
-import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController

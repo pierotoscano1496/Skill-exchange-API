@@ -2,14 +2,12 @@ package com.main.skillexchangeapi.apirest.controllers.websockets;
 
 import com.main.skillexchangeapi.app.requests.messaging.MessageBody;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatService;
-import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import java.util.UUID;

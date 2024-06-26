@@ -4,7 +4,6 @@ import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioB
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
-import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioEstadoUpdatedResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;

@@ -2,7 +2,6 @@ package com.main.skillexchangeapi.app.requests.messaging;
 
 import lombok.Getter;
 
-import java.util.Date;
 import java.util.UUID;
 
 @Getter

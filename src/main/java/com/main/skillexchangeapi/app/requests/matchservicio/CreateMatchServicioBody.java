@@ -1,11 +1,8 @@
 package com.main.skillexchangeapi.app.requests.matchservicio;
 
 
-import com.main.skillexchangeapi.domain.entities.Servicio;
-import com.main.skillexchangeapi.domain.entities.Usuario;
 import lombok.Getter;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Getter

@@ -1,13 +1,8 @@
 package com.main.skillexchangeapi.app.requests.usuario;
 
-import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
-import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.UUID;
 
 @Data
 public class CreateUsuarioBody {

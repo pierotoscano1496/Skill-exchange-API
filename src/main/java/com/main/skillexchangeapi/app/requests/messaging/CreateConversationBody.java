@@ -2,7 +2,6 @@ package com.main.skillexchangeapi.app.requests.messaging;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 
 import java.util.UUID;
 

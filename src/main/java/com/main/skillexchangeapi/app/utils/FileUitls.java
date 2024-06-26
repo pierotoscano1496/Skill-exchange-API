@@ -4,20 +4,15 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class FileUitls {
-    static final String[] ACCEPTED_CHAT_FILES_EXTENSIONS = {"jpg", "jpeg", "png", "doc", "docx", "pdf", "doc", "docx", "ppt", "pptx", "xls", "xlsx"};
+    static final String[] ACCEPTED_CHAT_FILES_EXTENSIONS = {"jpg", "jpeg", "png", "doc", "pdf", "docx", "ppt", "pptx", "xls", "xlsx", "txt"};
     static final String[] ACCEPTED_MULTIMEDIA_RESOURCES_EXTENTIONS = {"jpg", "jpeg", "png", "bmp", "gif", "mp4", "mov", "wmv", "avi"};
     static final String[] MEDIOS_MULTIMEDIA_RESOURCES = {"video", "imagen", "web-externa", "facebook", "instagram", "tiktok", "youtube", "twitter", "linkedin"};
     static final String[] ACCEPTED_METADATA_MODALIDAD_PAGO = {"jpg", "jpeg", "png"};
 
     public static Optional<String> getExtension(String fileName) {
-        String[] parts = fileName.split("\\.");
-        if (parts.length > 1) {
-            String extension = parts[parts.length - 1];
-            if (Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase)) {
-                return Optional.of(extension);
-            } else {
-                return Optional.empty();
-            }
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        if (Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase)) {
+            return Optional.of(extension);
         } else {
             return Optional.empty();
         }

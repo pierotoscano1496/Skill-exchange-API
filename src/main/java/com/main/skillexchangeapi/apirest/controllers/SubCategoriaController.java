@@ -1,7 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
 import com.main.skillexchangeapi.app.responses.usuario.SubCategoriaResponse;
-import com.main.skillexchangeapi.application.services.SubCategoriaService;
 import com.main.skillexchangeapi.domain.abstractions.services.ISubCategoriaService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;

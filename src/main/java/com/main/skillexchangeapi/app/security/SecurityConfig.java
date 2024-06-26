@@ -13,9 +13,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -31,6 +34,16 @@ public class SecurityConfig {
 
     @Autowired
     private UserDetailsService userDetailsService;
+
+/*
+    @Bean
+    public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder passwordEncoder) {
+        UserDetails user = User.withUsername("spring")
+                .password(passwordEncoder.encode("secret"))
+                .roles("USER")
+                .build();
+        return new InMemoryUserDetailsManager(user);
+    }*/
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity,
@@ -54,6 +67,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/servicio/details/preview/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/servicio/busqueda").permitAll()
                         .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/chat-resources/upload").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
