@@ -8,6 +8,7 @@ public class FileUitls {
     static final String[] ACCEPTED_MULTIMEDIA_RESOURCES_EXTENTIONS = {"jpg", "jpeg", "png", "bmp", "gif", "mp4", "mov", "wmv", "avi"};
     static final String[] MEDIOS_MULTIMEDIA_RESOURCES = {"video", "imagen", "web-externa", "facebook", "instagram", "tiktok", "youtube", "twitter", "linkedin"};
     static final String[] ACCEPTED_METADATA_MODALIDAD_PAGO = {"jpg", "jpeg", "png"};
+    static final String[] METADATA_SERVICIO_TYPE = {"payment", "recurso-multimedia"};
 
     public static Optional<String> getExtension(String fileName) {
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
@@ -72,5 +73,9 @@ public class FileUitls {
         } else {
             return Optional.empty();
         }
+    }
+
+    public static boolean checkMetadataServicioType(String metadataServicioType) {
+        return Arrays.stream(METADATA_SERVICIO_TYPE).anyMatch(metadataServicioType::equalsIgnoreCase);
     }
 }

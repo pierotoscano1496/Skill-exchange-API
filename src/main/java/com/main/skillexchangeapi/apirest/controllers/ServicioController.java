@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParameters
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageModalidadPagoService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageRecursoMultimediaServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -30,10 +31,7 @@ public class ServicioController {
     private IServicioService service;
 
     @Autowired
-    private IBlobStorageRecursoMultimediaServicioService recursoMultimediaServicioService;
-
-    @Autowired
-    private IBlobStorageModalidadPagoService metadataModalidadPagoService;
+    private IAWSS3ServicioService storageService;
 
     @GetMapping("/usuario/{idUsuario}")
     private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
@@ -97,7 +95,7 @@ public class ServicioController {
     @PatchMapping("/upload-multimedia/{id}")
     private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id, @RequestParam("files") List<MultipartFile> files) {
         try {
-            return recursoMultimediaServicioService.uploadMultimediaServiceResources(id, files);
+            return storageService.uploadMultimediaServiceResources(id, files);
         } catch (IOException | InvalidFileException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof InvalidFileException) {
@@ -110,7 +108,7 @@ public class ServicioController {
     @PatchMapping("/upload-metadata-modalidad-pago/{id}")
     private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
         try {
-            return metadataModalidadPagoService.uploadMetadataToService(id, file);
+            return storageService.uploadModalidadPagoResource(id, file);
         } catch (IOException | InvalidFileException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof InvalidFileException) {
