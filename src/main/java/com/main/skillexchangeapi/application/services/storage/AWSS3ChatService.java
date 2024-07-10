@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @Service
 public class AWSS3ChatService implements IAWSS3ChatService {
-    @Value("${aws.credentials.bucket-name}")
+    @Value("${aws.credentials.chat-bucket-name}")
     private String bucketName;
 
     @Autowired
