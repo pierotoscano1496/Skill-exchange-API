@@ -1,6 +1,8 @@
 package com.main.skillexchangeapi.app.config;
 
+import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
@@ -17,12 +19,9 @@ public class S3Config {
     @Value("${aws.credentials.secret-key}")
     private String secretKey;
 
-    @Value("${aws.credentials.session-token}")
-    private String sessionToken;
-
     @Bean
     public AmazonS3 s3Client() {
-        BasicSessionCredentials credentials = new BasicSessionCredentials(accessKey, secretKey, sessionToken);
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         return AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(Regions.US_EAST_1)
