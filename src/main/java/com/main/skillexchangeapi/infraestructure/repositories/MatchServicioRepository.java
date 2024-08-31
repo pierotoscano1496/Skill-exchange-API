@@ -69,7 +69,6 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                                     .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
                                                     .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
                                                     .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
-                                                    .tipo(resultSet.getString("TIPO_PROVEEDOR"))
                                                     .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
                                                     .build())
                                             .build())
@@ -142,7 +141,6 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
                                     .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
                                     .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
-                                    .tipo(resultSet.getString("TIPO_CLIENTE"))
                                     .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_CLIENTE"))
                                     .build())
                             .build());
@@ -209,7 +207,6 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
                                     .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
                                     .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
-                                    .tipo(resultSet.getString("TIPO_CLIENTE"))
                                     .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_CLIENTE"))
                                     .build())
                             .build());

@@ -19,7 +19,6 @@ public class Usuario {
     private String correo;
     private String nombres;
     private String apellidos;
-    private String tipo;
     private LocalDate fechaNacimiento;
     private String clave;
     private String perfilLinkedin;

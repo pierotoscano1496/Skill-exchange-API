@@ -79,7 +79,6 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                             .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                            .tipo(resultSet.getString("TIPO"))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -119,7 +118,6 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                             .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                            .tipo(resultSet.getString("TIPO"))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -161,7 +159,6 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                             .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                            .tipo(resultSet.getString("TIPO"))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -199,7 +196,6 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                             .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                            .tipo(resultSet.getString("TIPO"))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -251,13 +247,12 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
             byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
             statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
             statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
             statement.setString("p_tipo_documento", usuario.getTipoDocumento());
-            statement.setString("p_tipo", usuario.getTipo());
             statement.setString("p_introduccion", usuario.getIntroduccion());
             statement.setString("p_correo", usuario.getCorreo());
             statement.setString("p_nombres", usuario.getNombres());
@@ -284,7 +279,6 @@ public class UsuarioRepository implements IUsuarioRepository {
                                 .dni(resultSet.getString("DNI"))
                                 .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                                 .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                                .tipo("TIPO")
                                 .introduccion("INTRODUCCION")
                                 .correo(resultSet.getString("CORREO"))
                                 .nombres(resultSet.getString("NOMBRES"))
