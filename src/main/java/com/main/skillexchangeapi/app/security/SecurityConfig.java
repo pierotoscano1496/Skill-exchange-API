@@ -53,7 +53,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         //.requestMatchers(new AntPathRequestMatcher("/simple-check", "POST")).permitAll()
                         //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/testing/ex/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categoria").permitAll()
@@ -68,9 +68,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/servicio/busqueda").permitAll()
                         .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/chat-resources/upload").permitAll()
+                        .requestMatchers("/error").anonymous()
                         .anyRequest().authenticated()
                 )
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                //.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session
