@@ -9,10 +9,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageModalidadPagoService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageRecursoMultimediaServicioService;
-import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
-import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
-import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
-import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+import com.main.skillexchangeapi.domain.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -96,7 +93,7 @@ public class ServicioController {
     private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id, @RequestParam("files") List<MultipartFile> files) {
         try {
             return storageService.uploadMultimediaServiceResources(id, files);
-        } catch (IOException | InvalidFileException e) {
+        } catch (IOException | InvalidFileException | FileNotUploadedException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof InvalidFileException) {
                 errorStatus = HttpStatus.BAD_REQUEST;
@@ -109,7 +106,7 @@ public class ServicioController {
     private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
         try {
             return storageService.uploadModalidadPagoResource(id, file);
-        } catch (IOException | InvalidFileException e) {
+        } catch (IOException | InvalidFileException | FileNotUploadedException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof InvalidFileException) {
                 errorStatus = HttpStatus.BAD_REQUEST;

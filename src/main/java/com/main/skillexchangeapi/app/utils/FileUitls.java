@@ -1,5 +1,7 @@
 package com.main.skillexchangeapi.app.utils;
 
+import com.main.skillexchangeapi.domain.constants.ResourceSource;
+
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -10,13 +12,22 @@ public class FileUitls {
     static final String[] ACCEPTED_METADATA_MODALIDAD_PAGO = {"jpg", "jpeg", "png"};
     static final String[] METADATA_SERVICIO_TYPE = {"payment", "recurso-multimedia"};
 
-    public static Optional<String> getExtension(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
-        if (Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase)) {
-            return Optional.of(extension);
-        } else {
+    public static Optional<String> getExtension(String fileName, ResourceSource resourceSource) {
+        if (fileName == null || !fileName.contains(".")) {
             return Optional.empty();
         }
+
+        String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
+        ResourceSource source = resourceSource != null ? resourceSource : ResourceSource.CHAT;
+
+        boolean admitExtension = switch (source) {
+            case CHAT -> Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
+            case MULTIMEDIA ->
+                    Arrays.stream(ACCEPTED_MULTIMEDIA_RESOURCES_EXTENTIONS).anyMatch(extension::equalsIgnoreCase);
+            case PAYMENT -> Arrays.stream(ACCEPTED_METADATA_MODALIDAD_PAGO).anyMatch(extension::equalsIgnoreCase);
+        };
+
+        return admitExtension ? Optional.of(extension) : Optional.empty();
     }
 
     /* Checkout: refactorizar método para aplicar una sola lógica */

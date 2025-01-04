@@ -4,6 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.main.skillexchangeapi.app.utils.FileUitls;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ChatService;
+import com.main.skillexchangeapi.domain.constants.ResourceSource;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class AWSS3ChatService implements IAWSS3ChatService {
 
     @Override
     public String uploadFile(MultipartFile multipartFile, UUID idCoversation) throws IOException, InvalidFileException {
-        Optional<String> fileExtension = FileUitls.getExtension(multipartFile.getOriginalFilename());
+        Optional<String> fileExtension = FileUitls.getExtension(multipartFile.getOriginalFilename(), ResourceSource.CHAT);
         if (fileExtension.isPresent()) {
             String pathFile = idCoversation.toString() + "/" + UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
             s3Client.putObject(bucketName, pathFile, multipartFile.getInputStream(), null);

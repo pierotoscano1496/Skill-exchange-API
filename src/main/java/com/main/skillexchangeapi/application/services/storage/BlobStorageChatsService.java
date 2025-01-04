@@ -6,6 +6,7 @@ import com.azure.storage.blob.BlobServiceClientBuilder;
 import com.main.skillexchangeapi.app.utils.FileUitls;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageChatsService;
+import com.main.skillexchangeapi.domain.constants.ResourceSource;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class BlobStorageChatsService implements IBlobStorageChatsService {
 
     @Override
     public String uploadResource(MultipartFile multipartFile) throws IOException, InvalidFileException {
-        Optional<String> fileExtension = FileUitls.getExtension(multipartFile.getOriginalFilename());
+        Optional<String> fileExtension = FileUitls.getExtension(multipartFile.getOriginalFilename(), ResourceSource.CHAT);
         if (fileExtension.isPresent()) {
             String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
             BlobClient blobClient = blobServiceClient.getBlobContainerClient(containerName)
