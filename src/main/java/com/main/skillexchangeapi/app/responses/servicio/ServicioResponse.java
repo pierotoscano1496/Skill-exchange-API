@@ -14,4 +14,5 @@ public class ServicioResponse {
     private double precio;
     private String titulo;
     private String descripcion;
+    private String urlImagePreview;
 }

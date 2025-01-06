@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "servicio", produces = "application/json")
@@ -33,7 +34,18 @@ public class ServicioController {
     @GetMapping("/usuario/{idUsuario}")
     private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
         try {
-            return service.obtenerByUsuario(idUsuario);
+            List<ServicioResponse> servicios = service.obtenerByUsuario(idUsuario).stream().map(servicio -> {
+                try {
+                    servicio.setUrlImagePreview(storageService.getFirstImageServicioPresignedUrl(servicio.getId()));
+                } catch (FileNotFoundException e) {
+                    servicio.setUrlImagePreview(null);
+                }
+
+                return servicio;
+            }).collect(Collectors.toList());
+
+
+            return servicios;
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
             HttpStatus statusError = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof DatabaseNotWorkingException) {
