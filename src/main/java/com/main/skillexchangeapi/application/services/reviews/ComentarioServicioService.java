@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.application.services.reviews;
 
 import com.main.skillexchangeapi.app.requests.review.comentarios.ComentarioServicioBody;
 import com.main.skillexchangeapi.app.responses.reviews.comentarios.ComentarioServicioResponse;
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.reviews.IComentarioServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IComentarioServicioService;
 import com.main.skillexchangeapi.domain.entities.reviews.ComentarioServicio;
@@ -33,6 +34,7 @@ public class ComentarioServicioService implements IComentarioServicioService {
     @Override
     public ComentarioServicioResponse publicar(ComentarioServicioBody requestBody) {
         ComentarioServicio comentarioSaved = repository.save(ComentarioServicio.builder()
+                .id(UuidManager.randomUuid())
                 .idServicio(requestBody.getIdServicio())
                 .comentario(requestBody.getComentario())
                 .puntaje(requestBody.getPuntaje())
