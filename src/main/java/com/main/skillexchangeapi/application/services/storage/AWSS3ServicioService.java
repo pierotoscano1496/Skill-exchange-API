@@ -10,6 +10,7 @@ import com.main.skillexchangeapi.app.responses.servicio.MultimediaResourceUpload
 import com.main.skillexchangeapi.app.utils.FileUitls;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
+import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.constants.ResourceSource;
 import com.main.skillexchangeapi.domain.constants.ResourceType;
 import com.main.skillexchangeapi.domain.exceptions.FileNotFoundException;
@@ -125,6 +126,26 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
         ListObjectsV2Request request = new ListObjectsV2Request()
                 .withBucketName(bucketName)
                 .withPrefix(idServicio.toString() + "/multimedia/");
+
+        ListObjectsV2Result result = s3Client.listObjectsV2(request);
+        List<S3ObjectSummary> objects = result.getObjectSummaries();
+
+        Optional<S3ObjectSummary> firstImage = objects.stream().filter(obj -> FileUitls.checkFileType(obj.getKey(), ResourceSource.MULTIMEDIA, ResourceType.IMAGE)).findFirst();
+
+        if (firstImage.isEmpty()) {
+            throw new FileNotFoundException("Imagen no encontrada");
+        }
+
+        return generatePresignedUrl(firstImage.get().getKey());
+    }
+
+    @Override
+    public String getImageMetodoPagoPresignedUrl(UUID idServicio, PaymentMethod paymentMethod) throws FileNotFoundException {
+        String pathFolder = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName();
+
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(bucketName)
+                .withPrefix(pathFolder);
 
         ListObjectsV2Result result = s3Client.listObjectsV2(request);
         List<S3ObjectSummary> objects = result.getObjectSummaries();

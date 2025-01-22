@@ -9,6 +9,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageModalidadPagoService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageRecursoMultimediaServicioService;
+import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -66,6 +67,15 @@ public class ServicioController {
                 errorStatus = HttpStatus.NOT_FOUND;
             }
             throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
+
+    @GetMapping("/payment-method/image/{id}/{paymentMethod}")
+    public String obtenerImagenMetodoPago(@PathVariable UUID id, @PathVariable PaymentMethod paymentMethod) {
+        try {
+            return storageService.getImageMetodoPagoPresignedUrl(id, paymentMethod);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
     }
 

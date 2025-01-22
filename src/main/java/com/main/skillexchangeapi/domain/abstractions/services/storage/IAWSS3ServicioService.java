@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.domain.abstractions.services.storage;
 
 import com.main.skillexchangeapi.app.responses.servicio.MultimediaResourceUploadedResponse;
+import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.FileNotFoundException;
 import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
@@ -17,4 +18,6 @@ public interface IAWSS3ServicioService {
     String uploadModalidadPagoResource(UUID idServicio, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
 
     String getFirstImageServicioPresignedUrl(UUID idServicio) throws FileNotFoundException;
+
+    String getImageMetodoPagoPresignedUrl(UUID idServicio, PaymentMethod paymentMethod) throws FileNotFoundException;
 }
