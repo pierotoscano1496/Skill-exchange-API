@@ -103,12 +103,12 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public String uploadModalidadPagoResource(UUID idServicio, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
+    public String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
         Optional<String> fileExtension = FileUitls.getExtension(multipartFiles.getOriginalFilename(), ResourceSource.PAYMENT);
         try {
             if (fileExtension.isPresent()) {
                 String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
-                String pathFile = idServicio.toString() + "/payments/" + fileName;
+                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName() + "/" + fileName;
                 s3Client.putObject(bucketName, pathFile, multipartFiles.getInputStream(), null);
                 return "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
             } else {

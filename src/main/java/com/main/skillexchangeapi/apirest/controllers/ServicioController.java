@@ -124,10 +124,10 @@ public class ServicioController {
         }
     }
 
-    @PatchMapping("/upload-metadata-modalidad-pago/{id}")
-    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+    @PatchMapping("/upload-metadata-modalidad-pago/{id}/{paymentMethod}")
+    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
         try {
-            return storageService.uploadModalidadPagoResource(id, file);
+            return storageService.uploadModalidadPagoResource(id, paymentMethod, file);
         } catch (IOException | InvalidFileException | FileNotUploadedException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof InvalidFileException) {

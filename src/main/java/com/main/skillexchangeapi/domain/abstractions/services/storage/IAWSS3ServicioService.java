@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface IAWSS3ServicioService {
     List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResources(UUID idServicio, List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
 
-    String uploadModalidadPagoResource(UUID idServicio, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
+    String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
 
     String getFirstImageServicioPresignedUrl(UUID idServicio) throws FileNotFoundException;
 
