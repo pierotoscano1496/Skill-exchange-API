@@ -83,7 +83,7 @@ public class ServicioController {
      * Búsquedas personalizadas
      */
     @PostMapping("busqueda")
-    private List<ServicioBusquedaResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
+    private List<ServicioResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
         try {
             return service.searchByParameters(parameters);
         } catch (DatabaseNotWorkingException e) {

@@ -40,7 +40,9 @@ public class ServicioService implements IServicioService {
     public List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return repository.obtenerByUsuario(idUsuario).stream().map(s -> ServicioResponse.builder()
                 .id(s.getId())
-                .idUsuario(s.getSkillUsuario().getUsuario().getId())
+                .usuario(UsuarioResponse.builder()
+                        .id(s.getSkillUsuario().getUsuario().getId())
+                        .build())
                 .idSkill(s.getSkillUsuario().getSkill().getId())
                 .titulo(s.getTitulo())
                 .descripcion(s.getDescripcion())
@@ -49,7 +51,7 @@ public class ServicioService implements IServicioService {
     }
 
     @Override
-    public List<ServicioBusquedaResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<ServicioResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
         return repository.searchByParams(SearchServicioParams.builder()
                         .keyWord(requestBody.getKeyWord())
                         .idSkill(requestBody.getIdSkill())
@@ -61,10 +63,12 @@ public class ServicioService implements IServicioService {
                         .descripcion(s.getDescripcion())
                         .precio(s.getPrecio())
                         .titulo(s.getTitulo())
-                        .idUsuario(s.getSkillUsuario().getUsuario().getId())
-                        .nombresUsuario(s.getSkillUsuario().getUsuario().getNombres())
-                        .apellidosUsuario(s.getSkillUsuario().getUsuario().getApellidos())
-                        .correoUsuario(s.getSkillUsuario().getUsuario().getCorreo())
+                        .usuario(UsuarioResponse.builder()
+                                .id(s.getSkillUsuario().getUsuario().getId())
+                                .nombres(s.getSkillUsuario().getUsuario().getNombres())
+                                .apellidos(s.getSkillUsuario().getUsuario().getApellidos())
+                                .correo(s.getSkillUsuario().getUsuario().getCorreo())
+                                .build())
                         .idSkill(s.getSkillUsuario().getSkill().getId())
                         .descripcionSkill(s.getSkillUsuario().getSkill().getDescripcion())
                         .build()).collect(Collectors.toList());

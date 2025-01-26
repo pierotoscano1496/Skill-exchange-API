@@ -1,18 +1,22 @@
 package com.main.skillexchangeapi.app.responses.servicio;
 
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
+@AllArgsConstructor
 public class ServicioResponse {
     private UUID id;
     private UUID idSkill;
-    private UUID idUsuario;
     private double precio;
     private String titulo;
     private String descripcion;
     private String urlImagePreview;
+    private UsuarioResponse usuario;
 }
