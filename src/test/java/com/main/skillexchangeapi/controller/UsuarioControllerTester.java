@@ -53,7 +53,7 @@ public class UsuarioControllerTester {
     @Test
     void registrarShouldGiveUUID() throws URISyntaxException {
         try {
-            final String urlBase = "http://localhost:" + randomServerPort + "/api/usuario";
+            final String urlBase = "http://backend:" + randomServerPort + "/api/usuario";
 
             URI uri = new URI(urlBase);
 
