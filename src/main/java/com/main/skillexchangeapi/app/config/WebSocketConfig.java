@@ -23,7 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/messaging-socket")
-                .setAllowedOrigins("http://localhost:3000", "http://frontend:3000")
+                .setAllowedOrigins("http://localhost:3000", "https://skill-exchange-frontend-2fc468262f15.herokuapp.com")
                 //.setAllowedOriginPatterns("http://localhost:3000")
                 .withSockJS();
     }
