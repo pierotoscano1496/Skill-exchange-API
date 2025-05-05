@@ -1,0 +1,46 @@
+version: "3.8"
+
+services:
+  backend:
+    build: .
+    ports:
+      - "9081:9081"
+    env_file:
+      - .env.dev
+    depends_on:
+      - mysql-db
+      - mongodb
+    networks:
+      - se-network
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql_skillexchange
+    env_file:
+      - .env.db.dev
+    ports:
+      - "3306:3306"
+    networks:
+      - se-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  mongodb:
+    image: mongodb/mongodb-community-server:5.0-ubuntu2004
+    container_name: mongodb_skillexchange
+    env_file:
+      - .env.mongo.dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - se-network
+
+networks:
+  se-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  mongo-data:
