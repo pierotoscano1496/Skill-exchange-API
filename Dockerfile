@@ -1,6 +1,13 @@
-FROM openjdk:18
+# Stage 1: Build
+FROM maven:3.8.5-openjdk-18 AS build
 WORKDIR /app
-ARG JAR_FILE=target/skillexchangeapi-0.0.1-SNAPSHOT.jar
-COPY ${JAR_FILE} app.jar
+COPY pom.xml .
+COPY src ./src
+RUN mvn package -Dmaven.test.skip
+
+# Stage 2: Run
+FROM openjdk:18-slim
+WORKDIR /app
+COPY --from=build /app/target/skillexchangeapi-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 9081
 ENTRYPOINT ["java", "-jar", "app.jar"]

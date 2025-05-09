@@ -3,6 +3,7 @@ version: "3.8"
 services:
   backend:
     build: .
+    container_name: skillexchange_api
     ports:
       - "9081:9081"
     env_file:
@@ -12,6 +13,7 @@ services:
       - mongodb
     networks:
       - se-network
+    restart: on-failure
 
   mysql-db:
     image: mysql:8.0
