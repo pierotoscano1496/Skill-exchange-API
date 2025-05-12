@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.app.requests.usuario;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class CreateUsuarioBody {
@@ -20,4 +21,5 @@ public class CreateUsuarioBody {
     private String perfilInstagram;
     private String perfilTiktok;
     private String introduccion;
+    private List<AsignacionSkillToUsuarioRequest> skills;
 }

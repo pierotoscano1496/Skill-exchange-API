@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -23,4 +24,5 @@ public class UsuarioRegisteredResponse {
     private String perfilInstagram;
     private String perfilTiktok;
     private String introduccion;
+    private List<SkillAsignado> skills;
 }

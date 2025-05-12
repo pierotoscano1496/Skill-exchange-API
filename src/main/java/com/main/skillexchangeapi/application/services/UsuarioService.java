@@ -147,6 +147,8 @@ public class UsuarioService implements IUsuarioService {
                     .introduccion(requestBody.getIntroduccion())
                     .build());
 
+            UsuarioSkillsAsignadosResponse skillsAsignados = asignarSkills(usuarioRegistered.getId(), requestBody.getSkills());
+
             return UsuarioRegisteredResponse.builder()
                     .id(usuarioRegistered.getId())
                     .dni(usuarioRegistered.getDni())
@@ -161,6 +163,7 @@ public class UsuarioService implements IUsuarioService {
                     .perfilInstagram(usuarioRegistered.getPerfilInstagram())
                     .perfilTiktok(usuarioRegistered.getPerfilTiktok())
                     .introduccion(usuarioRegistered.getIntroduccion())
+                    .skills(skillsAsignados.getSkillsAsignados())
                     .build();
         } else {
             throw new NotCreatedException("El usuario ya existe");
