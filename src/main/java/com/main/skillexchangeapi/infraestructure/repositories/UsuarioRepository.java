@@ -279,7 +279,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                                 .dni(resultSet.getString("DNI"))
                                 .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
                                 .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
-                                .introduccion("INTRODUCCION")
+                                .introduccion(resultSet.getString("INTRODUCCION"))
                                 .correo(resultSet.getString("CORREO"))
                                 .nombres(resultSet.getString("NOMBRES"))
                                 .apellidos(resultSet.getString("APELLIDOS"))

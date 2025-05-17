@@ -18,7 +18,7 @@ public class CoomandLineAppStartupRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         try {
             //System.out.println("Allowed URL for consume: " + allowedHost);
-            System.out.println("Servidor corriendo en: " + urlServer);
+            System.out.println("Servidor corriendo en: " + urlServer + "/api/v1/");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
