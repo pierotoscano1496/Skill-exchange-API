@@ -11,6 +11,17 @@ public class CreateServicioBody {
     private double precio;
     private UUID idUsuario;
     private UUID idSkill;
+    /**
+     * Valores posibles: "fijo", "hora", "rango"
+     */
+    private String tipoPrecio;
+    private double precioMinimo;
+    private double precioMaximo;
+    private String ubicacion;
+    /**
+     * Valores posibles: "presencial", "remoto", "mixto"
+     */
+    private String modalidad;
     //private List<ModalidadPagoBody> modalidadesPago;
     //private List<RecursoMultimediaBody> recursosMultimedia;
 }
