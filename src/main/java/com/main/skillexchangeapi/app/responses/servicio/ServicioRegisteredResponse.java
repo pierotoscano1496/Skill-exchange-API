@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.app.responses.servicio;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -14,6 +15,9 @@ public class ServicioRegisteredResponse {
     private double precio;
     private UUID idUsuario;
     private UUID idSkill;
+    private List<ServicioSkillResponse> skills;
+    private List<ServicioDisponibilidadResponse> disponibilidades;
+    private List<ServicioImagenResponse> imagenes;
     //private List<ModalidadPago> modalidadesPago;
     //private List<RecursoMultimediaServicio> recursosMultimediaServicio;
 }

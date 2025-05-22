@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.app.requests.servicio;
 
 import lombok.Getter;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -22,6 +23,10 @@ public class CreateServicioBody {
      * Valores posibles: "presencial", "remoto", "mixto"
      */
     private String modalidad;
+    private boolean aceptaTerminos;
+    private List<ServicioSkillBody> skills;
+    private List<ServicioDisponibilidadBody> disponibilidades;
+    private List<ServicioImagenBody> imagenes;
     //private List<ModalidadPagoBody> modalidadesPago;
     //private List<RecursoMultimediaBody> recursosMultimedia;
 }

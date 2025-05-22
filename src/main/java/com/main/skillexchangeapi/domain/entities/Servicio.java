@@ -1,5 +1,8 @@
 package com.main.skillexchangeapi.domain.entities;
 
+import com.main.skillexchangeapi.app.requests.servicio.ServicioSkillBody;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import lombok.Builder;
 import lombok.Data;
@@ -18,4 +21,7 @@ public class Servicio {
     private double precio;
     private List<ModalidadPago> modalidadesPago;
     private List<RecursoMultimediaServicio> recursosMultimediaServicio;
+    private List<ServicioDisponibilidad> disponibilidades;
+    private List<ServicioSkillBody> skills;
+    private List<ServicioImagen> imagenes;
 }

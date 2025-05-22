@@ -9,9 +9,15 @@ import com.main.skillexchangeapi.app.responses.usuario.SubCategoriaResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IRecursoMultimediaServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioDisponibilidadRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioImagenRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.entities.*;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -35,6 +41,15 @@ public class ServicioService implements IServicioService {
 
     @Autowired
     private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
+
+    @Autowired
+    private IServicioSkillRepository servicioSkillRepository;
+
+    @Autowired
+    private IServicioDisponibilidadRepository servicioDisponibilidadRepository;
+
+    @Autowired
+    private IServicioImagenRepository servicioImagenRepository;
 
     @Override
     public List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
@@ -152,7 +167,39 @@ public class ServicioService implements IServicioService {
                                 .build())
                         .build())
                 .build());
-
+        
+        List<ServicioSkill> skills = servicioSkillRepository.registrarMultiple(requestBody.getSkills()
+                .stream().map(s -> ServicioSkill.builder()
+                        .skill(Skill.builder()
+                                .id(s.getIdSkill())
+                                .build())
+                        .servicio(Servicio.builder()
+                                .id(servicioRegistered.getId())
+                                .build())
+                        .build())
+                .collect(Collectors.toList()));
+        
+        List<ServicioDisponibilidad> disponibilidades = servicioDisponibilidadRepository.registrarMultiple(requestBody.getDisponibilidades()
+        .stream().map(d -> ServicioDisponibilidad.builder()
+                .id(UuidManager.randomUuid())
+                .servicio(Servicio.builder()
+                        .id(servicioRegistered.getId())
+                        .build())
+                .dia(d.getDia())
+                .horaInicio(d.getHoraInicio())
+                .horaFin(d.getHoraFin())
+                .build())
+        .collect(Collectors.toList()));
+        
+        List<ServicioImagen> imagenes = servicioImagenRepository.registrarMultiple(requestBody.getImagenes()
+        .stream().map(i -> ServicioImagen.builder()
+                .id(UuidManager.randomUuid())
+                .servicio(Servicio.builder()
+                        .id(servicioRegistered.getId())
+                        .build())
+                .urlImagen(i.getUrlImagen())
+                .build())
+        .collect(Collectors.toList()));
         /*
         List<ModalidadPago> modalidadesPagoRegistered = modalidadPagoRepository
                 .registrarMultiple(requestBody
@@ -182,6 +229,22 @@ public class ServicioService implements IServicioService {
                 .precio(servicioRegistered.getPrecio())
                 .idSkill(servicioRegistered.getSkillUsuario().getSkill().getId())
                 .idUsuario(servicioRegistered.getSkillUsuario().getUsuario().getId())
+                .skills(skills.stream().map(s -> ServicioSkillResponse.builder()
+                        .idSkill(s.getSkill().getId())
+                        .idServicio(s.getServicio().getId())
+                        .build()).collect(Collectors.toList()))
+                .disponibilidades(disponibilidades.stream().map(d -> ServicioDisponibilidadResponse.builder()
+                        .id(d.getId())
+                        .idServicio(d.getServicio().getId())
+                        .dia(d.getDia())
+                        .horaInicio(d.getHoraInicio())
+                        .horaFin(d.getHoraFin())
+                        .build()).collect(Collectors.toList()))
+                .imagenes(imagenes.stream().map(i -> ServicioImagenResponse.builder()
+                        .id(i.getId())
+                        .urlImagen(i.getUrlImagen())
+                        .idServicio(i.getServicio().getId())
+                        .build()).collect(Collectors.toList()))
                 //.modalidadesPago(modalidadesPagoRegistered)
                 //.recursosMultimediaServicio(recursosMultimediaServicioRegistered)
                 .build();
