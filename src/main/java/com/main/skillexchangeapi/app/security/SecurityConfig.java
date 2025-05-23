@@ -69,6 +69,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/chat-resources/upload").permitAll()
                         .requestMatchers("/error").anonymous()
+                        // Swagger
+                        .requestMatchers("/api/swagger-ui-custom.html").permitAll()
+                        .requestMatchers("/api/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 //.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
