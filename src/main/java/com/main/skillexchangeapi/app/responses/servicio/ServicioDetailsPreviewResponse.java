@@ -17,10 +17,8 @@ public class ServicioDetailsPreviewResponse {
     private String titulo;
     private String descripcion;
     private double precio;
-    private UsuarioResponse prestamista;
-    private SkillResponse skill;
-    private SubCategoriaResponse subCategoria;
-    private CategoriaResponse categoria;
+    private UsuarioResponse proveedor;
+    private List<SkillResponse> skills;
     private List<MedioPagoResponse> modalidadesPago;
     private List<RecursoMultimediaResponse> recursosMultimedia;
 }

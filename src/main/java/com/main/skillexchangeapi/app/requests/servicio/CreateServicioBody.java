@@ -10,7 +10,7 @@ public class CreateServicioBody {
     private String titulo;
     private String descripcion;
     private double precio;
-    private UUID idUsuario;
+    private UUID idProveedor;
     private UUID idSkill;
     /**
      * Valores posibles: "fijo", "hora", "rango"
@@ -26,7 +26,6 @@ public class CreateServicioBody {
     private boolean aceptaTerminos;
     private List<ServicioSkillBody> skills;
     private List<ServicioDisponibilidadBody> disponibilidades;
-    private List<ServicioImagenBody> imagenes;
-    //private List<ModalidadPagoBody> modalidadesPago;
-    //private List<RecursoMultimediaBody> recursosMultimedia;
+    private List<ModalidadPagoBody> modalidadesPago;
+    private List<RecursoMultimediaBody> recursosMultimedia;
 }

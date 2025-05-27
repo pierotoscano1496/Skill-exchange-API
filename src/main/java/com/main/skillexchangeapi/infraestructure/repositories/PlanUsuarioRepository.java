@@ -2,8 +2,6 @@ package com.main.skillexchangeapi.infraestructure.repositories;
 
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IPlanUsuarioRepository;
-import com.main.skillexchangeapi.domain.entities.Plan;
-import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -15,7 +13,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 
 @Repository
 public class PlanUsuarioRepository implements IPlanUsuarioRepository {
@@ -25,7 +22,7 @@ public class PlanUsuarioRepository implements IPlanUsuarioRepository {
     @Override
     public PlanUsuario registrar(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}");) {
             statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
             statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
             statement.setBoolean("p_is_active", planUsuario.isActive());

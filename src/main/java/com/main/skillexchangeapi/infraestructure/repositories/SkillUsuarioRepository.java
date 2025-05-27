@@ -5,7 +5,6 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioR
 import com.main.skillexchangeapi.domain.entities.Categoria;
 import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.SubCategoria;
-import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -28,11 +27,12 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<SkillUsuario> registrarMultiple(List<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException {
+    public List<SkillUsuario> registrarMultiple(List<SkillUsuario> skillsUsuario)
+            throws DatabaseNotWorkingException, NotCreatedException {
         List<SkillUsuario> skillsUsuarioRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_skill_usuario(?, ?, ?, ?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL registrar_skill_usuario(?, ?, ?, ?)}");) {
             for (SkillUsuario skillUsuario : skillsUsuario) {
                 try {
                     statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(skillUsuario.getUsuario().getId()));
@@ -74,9 +74,10 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
     }
 
     @Override
-    public List<SkillUsuario> obtenerByIdUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<SkillUsuario> obtenerByIdUsuario(UUID idUsuario)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_skills_from_usuario(?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL obtener_skills_from_usuario(?)}");) {
             statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(idUsuario));
 
             try (ResultSet resultSet = statement.executeQuery()) {

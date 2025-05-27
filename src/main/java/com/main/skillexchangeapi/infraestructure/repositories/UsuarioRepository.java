@@ -15,7 +15,6 @@ import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.UUID;
 
@@ -25,8 +24,10 @@ public class UsuarioRepository implements IUsuarioRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
-    public Usuario login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL login(?, ?)}");) {
+    public Usuario login(UsuarioCredenciales credenciales)
+            throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL login(?, ?)}");) {
             statement.setString("p_correo", credenciales.getEmail());
             statement.setString("p_clave", credenciales.getClave());
 
@@ -65,7 +66,8 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_id(?)}");) {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_id(?)}");) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -104,7 +106,8 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_correo(?)}");) {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_correo(?)}");) {
             statement.setString("p_correo", correo);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -144,7 +147,8 @@ public class UsuarioRepository implements IUsuarioRepository {
     @Override
     public Usuario validarExistenciaByDni(String dni, String correo) throws DatabaseNotWorkingException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL validar_existencia_usuario_by_dni(?, ?)}");) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_usuario_by_dni(?, ?)}");) {
             statement.setString("p_dni", dni);
             statement.setString("p_correo", correo);
 
@@ -179,9 +183,11 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
-    public Usuario validarExistenciaByCarnetExtranjeria(String carnetExtranjeria, String correo) throws DatabaseNotWorkingException {
+    public Usuario validarExistenciaByCarnetExtranjeria(String carnetExtranjeria, String correo)
+            throws DatabaseNotWorkingException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL validar_existencia_by_carnet_extranjeria(?, ?)}");) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_by_carnet_extranjeria(?, ?)}");) {
             statement.setString("p_carnet_extranjeria", carnetExtranjeria);
             statement.setString("p_correo", correo);
 
@@ -216,8 +222,10 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
-    public UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
+    public UsuarioPersonalInfo getUserCred(String correo)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
             statement.setString("p_correo", correo);
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -246,8 +254,11 @@ public class UsuarioRepository implements IUsuarioRepository {
     }
 
     @Override
-    public Usuario registrar(Usuario usuario) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+    public Usuario registrar(Usuario usuario)
+            throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
             byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
             statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
@@ -304,7 +315,8 @@ public class UsuarioRepository implements IUsuarioRepository {
 
     @Override
     public PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
-        try (Connection connection = databaseConnection.getConnection(); CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
             statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
             statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
             statement.setBoolean("p_is_active", planUsuario.isActive());
@@ -338,7 +350,7 @@ public class UsuarioRepository implements IUsuarioRepository {
     @Override
     public int deleteAll() throws DatabaseNotWorkingException {
         try (Connection connection = databaseConnection.getConnection();
-             Statement statement = connection.createStatement()) {
+                Statement statement = connection.createStatement()) {
             return statement.executeUpdate("DELETE FROM USUARIO");
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("Error al eliminar los usuarios");

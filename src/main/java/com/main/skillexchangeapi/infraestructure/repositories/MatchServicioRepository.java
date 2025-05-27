@@ -5,7 +5,6 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicio
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Usuario;
-import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
@@ -21,13 +20,30 @@ import java.util.UUID;
 
 @Repository
 public class MatchServicioRepository implements IMatchServicioRepository {
+    private enum MatchServicioFromPrestamista {
+        BY_OPTIONAL_ESTADO(1),
+        IN_SERVING(2);
+
+        private final int valor;
+
+        MatchServicioFromPrestamista(int valor) {
+            this.valor = valor;
+        }
+
+        public int getValor() {
+            return valor;
+        }
+    }
+
     @Autowired
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_cliente(?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL matchs_servicio_details_from_cliente(?)}")) {
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(idCliente));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -57,20 +73,18 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
                                     .precio(resultSet.getDouble("PRECIO_SERVICIO"))
                                     .titulo(resultSet.getString("TITULO_SERVICIO"))
-                                    .skillUsuario(SkillUsuario.builder()
-                                            .usuario(Usuario.builder()
-                                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
-                                                    .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
-                                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
-                                                    .correo(resultSet.getString("CORREO_PROVEEDOR"))
-                                                    .dni(resultSet.getString("DNI_PROVEEDOR"))
-                                                    .nombres(resultSet.getString("NOMBRES_PROVEEDOR"))
-                                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
-                                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
-                                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
-                                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
-                                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
-                                                    .build())
+                                    .proveedor(Usuario.builder()
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
+                                            .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
+                                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
+                                            .correo(resultSet.getString("CORREO_PROVEEDOR"))
+                                            .dni(resultSet.getString("DNI_PROVEEDOR"))
+                                            .nombres(resultSet.getString("NOMBRES_PROVEEDOR"))
+                                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
+                                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
+                                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
+                                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
+                                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
                                             .build())
                                     .build())
                             .cliente(Usuario.builder()
@@ -91,77 +105,25 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_prestamista_by_optional_estado(?, ?)}")) {
-            statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
-            statement.setString("p_estado", estado);
-
-            try (ResultSet resultSet = statement.executeQuery()) {
-                List<MatchServicio> matchServicios = new ArrayList<>();
-
-                while (resultSet.next()) {
-                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
-                    if (resultSet.wasNull()) {
-                        fechaInicio = null;
-                    }
-
-                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
-                    if (resultSet.wasNull()) {
-                        fechaCierre = null;
-                    }
-
-                    matchServicios.add(MatchServicio.builder()
-                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
-                            .puntuacion(resultSet.getInt("PUNTUACION"))
-                            .costo(resultSet.getDouble("COSTO"))
-                            .servicio(Servicio.builder()
-                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
-                                    .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
-                                    .precio(resultSet.getDouble("PRECIO_SERVICIO"))
-                                    .titulo(resultSet.getString("TITULO_SERVICIO"))
-                                    .skillUsuario(SkillUsuario.builder()
-                                            .usuario(Usuario.builder()
-                                                    .id(idPrestamista)
-                                                    .build())
-                                            .build())
-                                    .build())
-                            .cliente(Usuario.builder()
-                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
-                                    .apellidos(resultSet.getString("APELLIDOS_CLIENTE"))
-                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_CLIENTE"))
-                                    .correo(resultSet.getString("CORREO_CLIENTE"))
-                                    .dni(resultSet.getString("DNI_CLIENTE"))
-                                    .nombres(resultSet.getString("NOMBRES_CLIENTE"))
-                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_CLIENTE"))
-                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
-                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
-                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
-                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_CLIENTE"))
-                                    .build())
-                            .build());
-                }
-
-                if (!matchServicios.isEmpty()) {
-                    return matchServicios;
-                } else {
-                    throw new ResourceNotFoundException("No se encontró el match");
-                }
-            }
-        } catch (SQLException e) {
-            throw new DatabaseNotWorkingException("Error de búsqueda del match");
-        }
+    public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return obtenerDetailsFromPrestamista(idPrestamista, estado, MatchServicioFromPrestamista.BY_OPTIONAL_ESTADO);
     }
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        return obtenerDetailsFromPrestamista(idPrestamista, null, MatchServicioFromPrestamista.IN_SERVING);
+    }
+
+    public List<MatchServicio> obtenerDetailsFromPrestamista(UUID idPrestamista, String estado,
+            MatchServicioFromPrestamista match) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL matchs_servicio_details_from_prestamista_in_serving(?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL matchs_servicio_details_from_proveedor(?, ?, ?)}")) {
             statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
+            statement.setString("p_estado", estado);
+            statement.setInt("p_type_query", match.getValor());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<MatchServicio> matchServicios = new ArrayList<>();
@@ -190,24 +152,22 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
                                     .precio(resultSet.getDouble("PRECIO_SERVICIO"))
                                     .titulo(resultSet.getString("TITULO_SERVICIO"))
-                                    .skillUsuario(SkillUsuario.builder()
-                                            .usuario(Usuario.builder()
-                                                    .id(idPrestamista)
-                                                    .build())
+                                    .proveedor(Usuario.builder()
+                                            .id(idPrestamista)
                                             .build())
                                     .build())
                             .cliente(Usuario.builder()
-                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
-                                    .apellidos(resultSet.getString("APELLIDOS_CLIENTE"))
-                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_CLIENTE"))
-                                    .correo(resultSet.getString("CORREO_CLIENTE"))
-                                    .dni(resultSet.getString("DNI_CLIENTE"))
-                                    .nombres(resultSet.getString("NOMBRES_CLIENTE"))
-                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_CLIENTE"))
-                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
-                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
-                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
-                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_CLIENTE"))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
+                                    .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
+                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
+                                    .correo(resultSet.getString("CORREO_PROVEEDOR"))
+                                    .dni(resultSet.getString("DNI_PROVEEDOR"))
+                                    .nombres(resultSet.getString("NOMBRES_PROVEEDOR"))
+                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
+                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
+                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
+                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
+                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
                                     .build())
                             .build());
                 }
@@ -226,7 +186,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Override
     public MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_match_servicio(?)}")) {
+                CallableStatement statement = connection.prepareCall("{CALL obtener_match_servicio(?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -276,7 +236,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Override
     public MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?)}")) {
+                CallableStatement statement = connection.prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(match.getId()));
             statement.setDouble("p_costo", match.getCosto());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
@@ -313,9 +273,11 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public MatchServicio actualizarEstado(UUID id, String estado) throws DatabaseNotWorkingException, NotUpdatedException {
+    public MatchServicio actualizarEstado(UUID id, String estado)
+            throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL actualizar_match_servicio_estado (?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL actualizar_match_servicio_estado (?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setString("p_estado", estado);
 
@@ -364,9 +326,10 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException {
+    public MatchServicio puntuarServicio(UUID id, int puntuacion)
+            throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL puntuar_servicio (?, ?)}")) {
+                CallableStatement statement = connection.prepareCall("{CALL puntuar_servicio (?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setInt("p_puntuacion", puntuacion);
 

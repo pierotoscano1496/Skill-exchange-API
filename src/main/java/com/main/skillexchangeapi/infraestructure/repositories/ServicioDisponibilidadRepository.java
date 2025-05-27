@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,15 +22,18 @@ public class ServicioDisponibilidadRepository implements IServicioDisponibilidad
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<ServicioDisponibilidad> registrarMultiple(List<ServicioDisponibilidad> servicioDisponibilidades) throws DatabaseNotWorkingException, NotCreatedException {
+    public List<ServicioDisponibilidad> registrarMultiple(List<ServicioDisponibilidad> servicioDisponibilidades)
+            throws DatabaseNotWorkingException, NotCreatedException {
         List<ServicioDisponibilidad> servicioDisponibilidadesRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_servicio_disponibilidad(?, ?, ?, ?, ?)}");) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_servicio_disponibilidad(?, ?, ?, ?, ?)}");) {
             for (ServicioDisponibilidad servicioDisponibilidad : servicioDisponibilidades) {
                 try {
                     statement.setBytes("p_id", UuidManager.randomUuidToBytes());
-                    statement.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicioDisponibilidad.getServicio().getId()));
+                    statement.setBytes("p_id_servicio",
+                            UuidManager.UuidToBytes(servicioDisponibilidad.getServicio().getId()));
                     statement.setString("p_dia", servicioDisponibilidad.getDia());
                     statement.setTime("p_hora_inicio", java.sql.Time.valueOf(servicioDisponibilidad.getHoraInicio()));
                     statement.setTime("p_hora_fin", java.sql.Time.valueOf(servicioDisponibilidad.getHoraFin()));

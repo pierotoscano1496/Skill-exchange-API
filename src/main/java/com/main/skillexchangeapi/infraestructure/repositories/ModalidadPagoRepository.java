@@ -11,7 +11,6 @@ import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.xml.crypto.Data;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +22,11 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<ModalidadPago> obtenerByServicio(UUID idServicio) throws ResourceNotFoundException, DatabaseNotWorkingException {
+    public List<ModalidadPago> obtenerByServicio(UUID idServicio)
+            throws ResourceNotFoundException, DatabaseNotWorkingException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_modalidades_pago_by_servicio(?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL obtener_modalidades_pago_by_servicio(?)}")) {
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(idServicio));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -56,9 +57,11 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
     }
 
     @Override
-    public ModalidadPago registrar(ModalidadPago modalidadPago) throws DatabaseNotWorkingException, NotCreatedException {
+    public ModalidadPago registrar(ModalidadPago modalidadPago)
+            throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(modalidadPago.getId()));
             statement.setString("p_tipo", modalidadPago.getTipo());
             statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
@@ -96,11 +99,13 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
     }
 
     @Override
-    public List<ModalidadPago> registrarMultiple(List<ModalidadPago> modalidadesPago) throws DatabaseNotWorkingException, NotCreatedException {
+    public List<ModalidadPago> registrarMultiple(List<ModalidadPago> modalidadesPago)
+            throws DatabaseNotWorkingException, NotCreatedException {
         List<ModalidadPago> modalidadesPagoRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
 
             for (ModalidadPago modalidadPago : modalidadesPago) {
                 try {

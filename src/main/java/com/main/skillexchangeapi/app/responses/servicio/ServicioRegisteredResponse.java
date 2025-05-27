@@ -10,14 +10,18 @@ import java.util.UUID;
 @Builder
 public class ServicioRegisteredResponse {
     private UUID id;
+    private UUID idProveedor;
     private String titulo;
     private String descripcion;
     private double precio;
-    private UUID idUsuario;
-    private UUID idSkill;
+    private double precioMaximo;
+    private double precioMinimo;
+    private String tipoPrecio;
+    private String ubicacion;
+    private String modalidad;
+    private boolean aceptaTerminos;
     private List<ServicioSkillResponse> skills;
     private List<ServicioDisponibilidadResponse> disponibilidades;
-    private List<ServicioImagenResponse> imagenes;
-    //private List<ModalidadPago> modalidadesPago;
-    //private List<RecursoMultimediaServicio> recursosMultimediaServicio;
+    private List<ModalidadPagoResponse> modalidadesPago;
+    private List<RecursoMultimediaAsignado> recursosMultimedia;
 }

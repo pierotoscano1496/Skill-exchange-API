@@ -45,7 +45,6 @@ public class ServicioController {
                 return servicio;
             }).collect(Collectors.toList());
 
-
             return servicios;
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
             HttpStatus statusError = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -57,7 +56,7 @@ public class ServicioController {
     }
 
     @GetMapping("details/preview/{id}")
-    public ServicioDetailsPreviewResponse obtenerDetailsPreview(@PathVariable UUID id) {
+    public ServicioResponse obtenerDetailsPreview(@PathVariable UUID id) {
         try {
             return service.obtenerDetailsPreview(id);
         } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
@@ -103,7 +102,8 @@ public class ServicioController {
     }
 
     @PatchMapping("/modalidad-pago/{id}")
-    private ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id, @RequestBody List<AsignacionModalidadPagoToServicioRequest> requestBody) {
+    private ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id,
+            @RequestBody List<AsignacionModalidadPagoToServicioRequest> requestBody) {
         try {
             return service.asignarModalidadesPago(id, requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
@@ -112,7 +112,8 @@ public class ServicioController {
     }
 
     @PatchMapping("/upload-multimedia/{id}")
-    private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id, @RequestParam("files") List<MultipartFile> files) {
+    private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id,
+            @RequestParam("files") List<MultipartFile> files) {
         try {
             return storageService.uploadMultimediaServiceResources(id, files);
         } catch (IOException | InvalidFileException | FileNotUploadedException e) {
@@ -125,7 +126,8 @@ public class ServicioController {
     }
 
     @PatchMapping("/upload-metadata-modalidad-pago/{id}/{paymentMethod}")
-    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id, @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
+    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id,
+            @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
         try {
             return storageService.uploadModalidadPagoResource(id, paymentMethod, file);
         } catch (IOException | InvalidFileException | FileNotUploadedException e) {
@@ -138,7 +140,8 @@ public class ServicioController {
     }
 
     @PatchMapping("recursos-multimedia/{id}")
-    private ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(@PathVariable UUID id, @RequestBody List<AsignacionRecursoMultimediaToServicioRequest> requestBody) {
+    private ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(@PathVariable UUID id,
+            @RequestBody List<AsignacionRecursoMultimediaToServicioRequest> requestBody) {
         try {
             return service.asignarRecursosMultimedia(id, requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {

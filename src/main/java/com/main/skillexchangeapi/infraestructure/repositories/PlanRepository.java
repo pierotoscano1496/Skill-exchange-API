@@ -15,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Repository
 public class PlanRepository implements IPlanRepository {
@@ -25,8 +24,8 @@ public class PlanRepository implements IPlanRepository {
     @Override
     public List<Plan> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_planes()}");
-             ResultSet resultSet = statement.executeQuery()) {
+                CallableStatement statement = connection.prepareCall("{CALL obtener_planes()}");
+                ResultSet resultSet = statement.executeQuery()) {
             List<Plan> planes = new ArrayList<>();
 
             while (resultSet.next()) {
@@ -60,7 +59,7 @@ public class PlanRepository implements IPlanRepository {
     @Override
     public Plan obtenerByCodigo(String codigo) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL obtener_plan_by_codigo(?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL obtener_plan_by_codigo(?)}");) {
             statement.setString("p_codigo", codigo);
 
             ResultSet resultSet = statement.executeQuery();

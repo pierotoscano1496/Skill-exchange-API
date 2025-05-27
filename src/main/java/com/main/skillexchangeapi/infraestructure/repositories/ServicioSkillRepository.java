@@ -6,8 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,11 +22,12 @@ public class ServicioSkillRepository implements IServicioSkillRepository {
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<ServicioSkill> registrarMultiple(List<ServicioSkill> servicioSkills) throws DatabaseNotWorkingException, NotCreatedException {
+    public List<ServicioSkill> registrarMultiple(List<ServicioSkill> servicioSkills)
+            throws DatabaseNotWorkingException, NotCreatedException {
         List<ServicioSkill> servicioSkillsRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_servicio_skill(?, ?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL registrar_servicio_skill(?, ?)}");) {
             for (ServicioSkill servicioSkill : servicioSkills) {
                 try {
                     statement.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicioSkill.getServicio().getId()));
@@ -54,7 +53,7 @@ public class ServicioSkillRepository implements IServicioSkillRepository {
                     servicioSkillsRegistered.clear();
                 }
             }
-            
+
             if (servicioSkillsRegistered.size() == servicioSkills.size()) {
                 return servicioSkillsRegistered;
             } else {

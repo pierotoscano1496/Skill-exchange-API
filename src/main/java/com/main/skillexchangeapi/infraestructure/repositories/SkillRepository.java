@@ -1,10 +1,8 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
-import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.entities.*;
-import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -28,8 +26,8 @@ public class SkillRepository implements ISkillRepository {
     @Override
     public List<Skill> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("CALL obtener_skills()");
-             ResultSet resultSet = statement.executeQuery()) {
+                CallableStatement statement = connection.prepareCall("CALL obtener_skills()");
+                ResultSet resultSet = statement.executeQuery()) {
 
             List<Skill> skills = new ArrayList<>();
 
@@ -54,9 +52,10 @@ public class SkillRepository implements ISkillRepository {
     }
 
     @Override
-    public List<Skill> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<Skill> obtenerBySubCategoria(UUID idSubcategoria)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("CALL obtener_skills_by_sub_categoria(?)")) {
+                CallableStatement statement = connection.prepareCall("CALL obtener_skills_by_sub_categoria(?)")) {
             statement.setBytes("p_id_sub_categoria", UuidManager.UuidToBytes(idSubcategoria));
 
             ResultSet resultSet = statement.executeQuery();
@@ -86,7 +85,7 @@ public class SkillRepository implements ISkillRepository {
     @Override
     public Skill registrar(Skill skill) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_skill(?, ?)}");) {
+                CallableStatement statement = connection.prepareCall("{CALL registrar_skill(?, ?)}");) {
             statement.setString("p_descripcion", skill.getDescripcion());
             statement.setBytes("p_id_sub_categoria", UuidManager.UuidToBytes(skill.getSubCategoria().getId()));
 

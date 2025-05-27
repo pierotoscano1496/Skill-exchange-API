@@ -9,7 +9,7 @@ import lombok.Data;
 @Data
 @Builder
 public class ServicioDisponibilidadResponse {
-private UUID id;
+    private UUID id;
     private UUID idServicio;
     private String dia;
     private LocalTime horaInicio;

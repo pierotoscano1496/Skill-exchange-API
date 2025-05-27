@@ -33,270 +33,271 @@ import java.util.stream.Collectors;
 
 @Service
 public class ServicioService implements IServicioService {
-    @Autowired
-    private IServicioRepository repository;
+        @Autowired
+        private IServicioRepository repository;
 
-    @Autowired
-    private IModalidadPagoRepository modalidadPagoRepository;
+        @Autowired
+        private IModalidadPagoRepository modalidadPagoRepository;
 
-    @Autowired
-    private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
+        @Autowired
+        private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
 
-    @Autowired
-    private IServicioSkillRepository servicioSkillRepository;
+        @Autowired
+        private IServicioSkillRepository servicioSkillRepository;
 
-    @Autowired
-    private IServicioDisponibilidadRepository servicioDisponibilidadRepository;
+        @Autowired
+        private IServicioDisponibilidadRepository servicioDisponibilidadRepository;
 
-    @Autowired
-    private IServicioImagenRepository servicioImagenRepository;
+        @Autowired
+        private IServicioImagenRepository servicioImagenRepository;
 
-    @Override
-    public List<ServicioResponse> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.obtenerByUsuario(idUsuario).stream().map(s -> ServicioResponse.builder()
-                .id(s.getId())
-                .usuario(UsuarioResponse.builder()
-                        .id(s.getSkillUsuario().getUsuario().getId())
-                        .build())
-                .idSkill(s.getSkillUsuario().getSkill().getId())
-                .titulo(s.getTitulo())
-                .descripcion(s.getDescripcion())
-                .precio(s.getPrecio())
-                .build()).collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ServicioResponse> searchByParameters(SearchServiciosParametersBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.searchByParams(SearchServicioParams.builder()
-                        .keyWord(requestBody.getKeyWord())
-                        .idSkill(requestBody.getIdSkill())
-                        .idSubcategoria(requestBody.getIdSubcategoria())
-                        .idCategoria(requestBody.getIdCategoria())
-                        .build())
-                .stream().map(s -> ServicioBusquedaResponse.builder()
-                        .id(s.getId())
-                        .descripcion(s.getDescripcion())
-                        .precio(s.getPrecio())
-                        .titulo(s.getTitulo())
-                        .usuario(UsuarioResponse.builder()
-                                .id(s.getSkillUsuario().getUsuario().getId())
-                                .nombres(s.getSkillUsuario().getUsuario().getNombres())
-                                .apellidos(s.getSkillUsuario().getUsuario().getApellidos())
-                                .correo(s.getSkillUsuario().getUsuario().getCorreo())
-                                .build())
-                        .idSkill(s.getSkillUsuario().getSkill().getId())
-                        .descripcionSkill(s.getSkillUsuario().getSkill().getDescripcion())
-                        .build()).collect(Collectors.toList());
-    }
-
-    @Override
-    public ServicioDetailsPreviewResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        Servicio servicio = repository.obtenerDetails(id);
-        List<RecursoMultimediaServicio> recursosMultimediaServicio;
-        try {
-            recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
-        } catch (ResourceNotFoundException e) {
-            recursosMultimediaServicio = new ArrayList<>();
+        @Override
+        public List<ServicioResponse> obtenerByUsuario(UUID idUsuario)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.obtenerByUsuario(idUsuario).stream().map(s -> ServicioResponse.builder()
+                                .id(s.getId())
+                                .descripcion(s.getDescripcion())
+                                .precio(s.getPrecio())
+                                .precioMinimo(s.getPrecioMinimo())
+                                .precioMaximo(s.getPrecioMaximo())
+                                .titulo(s.getTitulo())
+                                .tipoPrecio(s.getTipoPrecio())
+                                .ubicacion(s.getUbicacion())
+                                .modalidad(s.getModalidad())
+                                .aceptaTerminos(s.isAceptaTerminos())
+                                .build()).collect(Collectors.toList());
         }
 
-        List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
+        @Override
+        public List<ServicioResponse> searchByParameters(SearchServiciosParametersBody requestBody)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.searchByParams(SearchServicioParams.builder()
+                                .keyWord(requestBody.getKeyWord())
+                                .idSkill(requestBody.getIdSkill())
+                                .idSubcategoria(requestBody.getIdSubcategoria())
+                                .idCategoria(requestBody.getIdCategoria())
+                                .build())
+                                .stream().map(s -> ServicioResponse.builder()
+                                                .id(s.getId())
+                                                .descripcion(s.getDescripcion())
+                                                .precio(s.getPrecio())
+                                                .tipoPrecio(s.getTipoPrecio())
+                                                .precioMinimo(s.getPrecioMinimo())
+                                                .precioMaximo(s.getPrecioMaximo())
+                                                .titulo(s.getTitulo())
+                                                .ubicacion(s.getUbicacion())
+                                                .modalidad(s.getModalidad())
+                                                .aceptaTerminos(s.isAceptaTerminos())
+                                                .proveedor(UsuarioResponse.builder()
+                                                                .id(s.getProveedor().getId())
+                                                                .nombres(s.getProveedor().getNombres())
+                                                                .apellidos(s.getProveedor().getApellidos())
+                                                                .build())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
 
-        return ServicioDetailsPreviewResponse.builder()
-                .id(servicio.getId())
-                .descripcion(servicio.getDescripcion())
-                .titulo(servicio.getTitulo())
-                .precio(servicio.getPrecio())
-                .prestamista(UsuarioResponse.builder()
-                        .id(servicio.getSkillUsuario().getUsuario().getId())
-                        .dni(servicio.getSkillUsuario().getUsuario().getDni())
-                        .carnetExtranjeria(servicio.getSkillUsuario().getUsuario().getCarnetExtranjeria())
-                        .tipoDocumento(servicio.getSkillUsuario().getUsuario().getTipoDocumento())
-                        .nombres(servicio.getSkillUsuario().getUsuario().getNombres())
-                        .apellidos(servicio.getSkillUsuario().getUsuario().getApellidos())
-                        .correo(servicio.getSkillUsuario().getUsuario().getCorreo())
-                        .fechaNacimiento(servicio.getSkillUsuario().getUsuario().getFechaNacimiento())
-                        .introduccion(servicio.getSkillUsuario().getUsuario().getIntroduccion())
-                        .perfilFacebook(servicio.getSkillUsuario().getUsuario().getPerfilFacebook())
-                        .perfilInstagram(servicio.getSkillUsuario().getUsuario().getPerfilInstagram())
-                        .perfilLinkedin(servicio.getSkillUsuario().getUsuario().getPerfilLinkedin())
-                        .perfilTiktok(servicio.getSkillUsuario().getUsuario().getPerfilTiktok())
-                        .build())
-                .skill(SkillResponse.builder()
-                        .id(servicio.getSkillUsuario().getSkill().getId())
-                        .descripcion(servicio.getSkillUsuario().getSkill().getDescripcion())
-                        .build())
-                .subCategoria(SubCategoriaResponse.builder()
-                        .id(servicio.getSkillUsuario().getSkill().getSubCategoria().getId())
-                        .nombre(servicio.getSkillUsuario().getSkill().getSubCategoria().getNombre())
-                        .build())
-                .categoria(CategoriaResponse.builder()
-                        .id(servicio.getSkillUsuario().getSkill().getSubCategoria().getCategoria().getId())
-                        .nombre(servicio.getSkillUsuario().getSkill().getSubCategoria().getCategoria().getNombre())
-                        .build())
-                .recursosMultimedia(recursosMultimediaServicio.stream()
-                        .map(r -> RecursoMultimediaResponse.builder()
-                                .id(r.getId())
-                                .medio(r.getMedio())
-                                .url(r.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .modalidadesPago(modalidadesPago.stream()
-                        .map(m -> MedioPagoResponse.builder()
-                                .id(m.getId())
-                                .numeroCelular(m.getNumeroCelular())
-                                .tipo(m.getTipo())
-                                .cuentaBancaria(m.getCuentaBancaria())
-                                .url(m.getUrl())
-                                .build())
-                        .collect(Collectors.toList()))
-                .build();
-    }
+        @Override
+        public ServicioResponse obtenerDetailsPreview(UUID id)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Servicio servicio = repository.obtenerDetails(id);
+                List<RecursoMultimediaServicio> recursosMultimediaServicio;
+                try {
+                        recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+                } catch (ResourceNotFoundException e) {
+                        recursosMultimediaServicio = new ArrayList<>();
+                }
 
-    @Override
-    public ServicioRegisteredResponse registrar(CreateServicioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        Servicio servicioRegistered = repository.registrar(Servicio.builder()
-                .titulo(requestBody.getTitulo())
-                .descripcion(requestBody.getDescripcion())
-                .precio(requestBody.getPrecio())
-                .skillUsuario(SkillUsuario.builder()
-                        .usuario(Usuario.builder()
-                                .id(requestBody.getIdUsuario())
-                                .build())
-                        .skill(Skill.builder()
-                                .id(requestBody.getIdSkill())
-                                .build())
-                        .build())
-                .build());
-        
-        List<ServicioSkill> skills = servicioSkillRepository.registrarMultiple(requestBody.getSkills()
-                .stream().map(s -> ServicioSkill.builder()
-                        .skill(Skill.builder()
-                                .id(s.getIdSkill())
-                                .build())
-                        .servicio(Servicio.builder()
+                List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
+
+                return ServicioResponse.builder()
+                                .id(servicio.getId())
+                                .titulo(servicio.getTitulo())
+                                .descripcion(servicio.getDescripcion())
+                                .precio(servicio.getPrecio())
+                                .tipoPrecio(servicio.getTipoPrecio())
+                                .precioMinimo(servicio.getPrecioMinimo())
+                                .precioMaximo(servicio.getPrecioMaximo())
+                                .ubicacion(servicio.getUbicacion())
+                                .modalidad(servicio.getModalidad())
+                                .aceptaTerminos(servicio.isAceptaTerminos())
+                                .proveedor(UsuarioResponse.builder()
+                                                .id(servicio.getProveedor().getId())
+                                                .dni(servicio.getProveedor().getDni())
+                                                .carnetExtranjeria(servicio.getProveedor().getCarnetExtranjeria())
+                                                .tipoDocumento(servicio.getProveedor().getTipoDocumento())
+                                                .nombres(servicio.getProveedor().getNombres())
+                                                .apellidos(servicio.getProveedor().getApellidos())
+                                                .correo(servicio.getProveedor().getCorreo())
+                                                .fechaNacimiento(servicio.getProveedor().getFechaNacimiento())
+                                                .introduccion(servicio.getProveedor().getIntroduccion())
+                                                .perfilFacebook(servicio.getProveedor().getPerfilFacebook())
+                                                .perfilInstagram(servicio.getProveedor().getPerfilInstagram())
+                                                .perfilLinkedin(servicio.getProveedor().getPerfilLinkedin())
+                                                .perfilTiktok(servicio.getProveedor().getPerfilTiktok())
+                                                .build())
+                                .skills(servicio.getSkills().stream()
+                                                .map(s -> ServicioSkillResponse.builder()
+                                                                .idSkill(s.getSkill().getId())
+                                                                .idServicio(s.getServicio().getId())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(modalidadesPago.stream()
+                                                .map(m -> ModalidadPagoResponse.builder()
+                                                                .id(m.getId())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build();
+        }
+
+        @Override
+        public ServicioRegisteredResponse registrar(CreateServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                Servicio servicioRegistered = repository.registrar(Servicio.builder()
+                                .proveedor(Usuario.builder()
+                                                .id(requestBody.getIdProveedor())
+                                                .build())
+                                .titulo(requestBody.getTitulo())
+                                .descripcion(requestBody.getDescripcion())
+                                .precio(requestBody.getPrecio())
+                                .precioMaximo(requestBody.getPrecioMaximo())
+                                .precioMinimo(requestBody.getPrecioMinimo())
+                                .tipoPrecio(requestBody.getTipoPrecio())
+                                .ubicacion(requestBody.getUbicacion())
+                                .modalidad(requestBody.getModalidad())
+                                .aceptaTerminos(requestBody.isAceptaTerminos())
+                                .skills(requestBody.getSkills()
+                                                .stream()
+                                                .map(s -> ServicioSkill.builder()
+                                                                .skill(Skill.builder()
+                                                                                .id(s.getIdSkill())
+                                                                                .build())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(requestBody.getModalidadesPago()
+                                                .stream()
+                                                .map(m -> ModalidadPago.builder()
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .recursosMultimediaServicio(requestBody.getRecursosMultimedia()
+                                                .stream()
+                                                .map(r -> RecursoMultimediaServicio.builder()
+                                                                .medio(r.getMedio())
+                                                                .url(r.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .disponibilidades(requestBody.getDisponibilidades()
+                                                .stream()
+                                                .map(d -> ServicioDisponibilidad.builder()
+                                                                .dia(d.getDia())
+                                                                .horaInicio(d.getHoraInicio())
+                                                                .horaFin(d.getHoraFin())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build());
+
+                return ServicioRegisteredResponse.builder()
                                 .id(servicioRegistered.getId())
-                                .build())
-                        .build())
-                .collect(Collectors.toList()));
-        
-        List<ServicioDisponibilidad> disponibilidades = servicioDisponibilidadRepository.registrarMultiple(requestBody.getDisponibilidades()
-        .stream().map(d -> ServicioDisponibilidad.builder()
-                .id(UuidManager.randomUuid())
-                .servicio(Servicio.builder()
-                        .id(servicioRegistered.getId())
-                        .build())
-                .dia(d.getDia())
-                .horaInicio(d.getHoraInicio())
-                .horaFin(d.getHoraFin())
-                .build())
-        .collect(Collectors.toList()));
-        
-        List<ServicioImagen> imagenes = servicioImagenRepository.registrarMultiple(requestBody.getImagenes()
-        .stream().map(i -> ServicioImagen.builder()
-                .id(UuidManager.randomUuid())
-                .servicio(Servicio.builder()
-                        .id(servicioRegistered.getId())
-                        .build())
-                .urlImagen(i.getUrlImagen())
-                .build())
-        .collect(Collectors.toList()));
-        /*
-        List<ModalidadPago> modalidadesPagoRegistered = modalidadPagoRepository
-                .registrarMultiple(requestBody
-                        .getModalidadesPago().stream().map(m -> ModalidadPago.builder()
+                                .idProveedor(servicioRegistered.getProveedor().getId())
+                                .titulo(servicioRegistered.getTitulo())
+                                .descripcion(servicioRegistered.getDescripcion())
+                                .precio(servicioRegistered.getPrecio())
+                                .precioMinimo(servicioRegistered.getPrecioMinimo())
+                                .precioMaximo(servicioRegistered.getPrecioMaximo())
+                                .ubicacion(servicioRegistered.getUbicacion())
+                                .modalidad(servicioRegistered.getModalidad())
+                                .aceptaTerminos(servicioRegistered.isAceptaTerminos())
+                                .skills(servicioRegistered.getSkills().stream()
+                                                .map(s -> ServicioSkillResponse.builder()
+                                                                .idSkill(s.getSkill().getId())
+                                                                .idServicio(servicioRegistered.getId())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .disponibilidades(servicioRegistered.getDisponibilidades()
+                                                .stream()
+                                                .map(s -> ServicioDisponibilidadResponse.builder()
+                                                                .id(s.getId())
+                                                                .dia(s.getDia())
+                                                                .horaInicio(s.getHoraInicio())
+                                                                .horaFin(s.getHoraFin())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(servicioRegistered.getModalidadesPago()
+                                                .stream()
+                                                .map(m -> ModalidadPagoResponse.builder()
+                                                                .id(m.getId())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build();
+
+        }
+
+        @Override
+        public ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id,
+                        List<AsignacionModalidadPagoToServicioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                List<ModalidadPago> modalidadesPago = requestBody.stream().map(m -> ModalidadPago.builder()
+                                .id(UuidManager.randomUuid())
                                 .tipo(m.getTipo())
+                                .servicio(Servicio.builder()
+                                                .id(id).build())
                                 .cuentaBancaria(m.getCuentaBancaria())
                                 .numeroCelular(m.getNumeroCelular())
                                 .url(m.getUrl())
-                                .servicio(servicioRegistered)
                                 .build())
-                        .collect(Collectors.toList()));
+                                .collect(Collectors.toList());
 
-        List<RecursoMultimediaServicio> recursosMultimediaServicioRegistered = recursoMultimediaServicioRepository
-                .registrarMultiple(requestBody
-                        .getRecursosMultimedia().stream().map(r -> RecursoMultimediaServicio.builder()
-                                .medio(r.getMedio())
-                                .url(r.getUrl())
-                                .servicio(servicioRegistered)
-                                .build())
-                        .collect(Collectors.toList()));
-         */
-
-        return ServicioRegisteredResponse.builder()
-                .id(servicioRegistered.getId())
-                .titulo(servicioRegistered.getTitulo())
-                .descripcion(servicioRegistered.getDescripcion())
-                .precio(servicioRegistered.getPrecio())
-                .idSkill(servicioRegistered.getSkillUsuario().getSkill().getId())
-                .idUsuario(servicioRegistered.getSkillUsuario().getUsuario().getId())
-                .skills(skills.stream().map(s -> ServicioSkillResponse.builder()
-                        .idSkill(s.getSkill().getId())
-                        .idServicio(s.getServicio().getId())
-                        .build()).collect(Collectors.toList()))
-                .disponibilidades(disponibilidades.stream().map(d -> ServicioDisponibilidadResponse.builder()
-                        .id(d.getId())
-                        .idServicio(d.getServicio().getId())
-                        .dia(d.getDia())
-                        .horaInicio(d.getHoraInicio())
-                        .horaFin(d.getHoraFin())
-                        .build()).collect(Collectors.toList()))
-                .imagenes(imagenes.stream().map(i -> ServicioImagenResponse.builder()
-                        .id(i.getId())
-                        .urlImagen(i.getUrlImagen())
-                        .idServicio(i.getServicio().getId())
-                        .build()).collect(Collectors.toList()))
-                //.modalidadesPago(modalidadesPagoRegistered)
-                //.recursosMultimediaServicio(recursosMultimediaServicioRegistered)
-                .build();
-    }
-
-    @Override
-    public ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id, List<AsignacionModalidadPagoToServicioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        List<ModalidadPago> modalidadesPago = requestBody.stream().map(m -> ModalidadPago.builder()
-                        .id(UuidManager.randomUuid())
-                        .tipo(m.getTipo())
-                        .servicio(Servicio.builder()
-                                .id(id).build())
-                        .cuentaBancaria(m.getCuentaBancaria())
-                        .numeroCelular(m.getNumeroCelular())
-                        .url(m.getUrl())
-                        .build())
-                .collect(Collectors.toList());
-
-        return ServicioModalidadesPagoAsignadosResponse.builder()
-                .id(id)
-                .modalidadesPagoAsignado(modalidadPagoRepository.registrarMultiple(modalidadesPago).stream().map(m ->
-                        ModalidadPagoAsignado.builder()
-                                .id(m.getId())
-                                .tipo(m.getTipo())
-                                .cuentaBancaria(m.getCuentaBancaria())
-                                .numeroCelular(m.getNumeroCelular())
-                                .url(m.getUrl())
-                                .build()).toList())
-                .build();
-    }
-
-    @Override
-    public ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(UUID id, List<AsignacionRecursoMultimediaToServicioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        List<RecursoMultimediaServicio> recursosMultimediaServicio = requestBody.stream().map(r -> RecursoMultimediaServicio.builder()
-                        .id(UuidManager.randomUuid())
-                        .medio(r.getMedio())
-                        .servicio(Servicio.builder()
+                return ServicioModalidadesPagoAsignadosResponse.builder()
                                 .id(id)
-                                .build())
-                        .url(r.getUrl())
-                        .build())
-                .collect(Collectors.toList());
+                                .modalidadesPagoAsignado(modalidadPagoRepository.registrarMultiple(modalidadesPago)
+                                                .stream().map(m -> ModalidadPagoAsignado.builder()
+                                                                .id(m.getId())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .toList())
+                                .build();
+        }
 
-        return ServicioRecursosMultimediaAsignadosResponse.builder()
-                .id(id)
-                .recursosMultimediaAsignados(recursoMultimediaServicioRepository.registrarMultiple(recursosMultimediaServicio).stream().map(r ->
-                                RecursoMultimediaAsignado.builder()
-                                        .id(r.getId())
-                                        .url(r.getUrl())
-                                        .medio(r.getMedio())
-                                        .build())
-                        .toList())
-                .build();
-    }
+        @Override
+        public ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(UUID id,
+                        List<AsignacionRecursoMultimediaToServicioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                List<RecursoMultimediaServicio> recursosMultimediaServicio = requestBody
+                                .stream().map(r -> RecursoMultimediaServicio.builder()
+                                                .id(UuidManager.randomUuid())
+                                                .medio(r.getMedio())
+                                                .servicio(Servicio.builder()
+                                                                .id(id)
+                                                                .build())
+                                                .url(r.getUrl())
+                                                .build())
+                                .collect(Collectors.toList());
+
+                return ServicioRecursosMultimediaAsignadosResponse.builder()
+                                .id(id)
+                                .recursosMultimediaAsignados(recursoMultimediaServicioRepository
+                                                .registrarMultiple(recursosMultimediaServicio).stream()
+                                                .map(r -> RecursoMultimediaAsignado.builder()
+                                                                .id(r.getId())
+                                                                .url(r.getUrl())
+                                                                .medio(r.getMedio())
+                                                                .build())
+                                                .toList())
+                                .build();
+        }
 }
