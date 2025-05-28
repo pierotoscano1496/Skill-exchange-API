@@ -35,35 +35,40 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
 
-/*
-    @Bean
-    public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder passwordEncoder) {
-        UserDetails user = User.withUsername("spring")
-                .password(passwordEncoder.encode("secret"))
-                .roles("USER")
-                .build();
-        return new InMemoryUserDetailsManager(user);
-    }*/
+    /*
+     * @Bean
+     * public InMemoryUserDetailsManager userDetailsManager(PasswordEncoder
+     * passwordEncoder) {
+     * UserDetails user = User.withUsername("spring")
+     * .password(passwordEncoder.encode("secret"))
+     * .roles("USER")
+     * .build();
+     * return new InMemoryUserDetailsManager(user);
+     * }
+     */
 
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity,
-                                    AuthenticationManager authenticationManager) throws Exception {
+            AuthenticationManager authenticationManager) throws Exception {
         return httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/simple-check").permitAll()
-                        //.requestMatchers(HttpMethod.POST, "/usuario").permitAll()
+                        // .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.GET, "/testing/ex/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/usuario").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/categoria").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/categoria/details").permitAll()
                         .requestMatchers(HttpMethod.GET, "/sub-categoria").permitAll()
                         .requestMatchers(HttpMethod.GET, "/sub-categoria/categoria/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/skill").permitAll()
                         .requestMatchers(HttpMethod.GET, "/skill/sub-categoria/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/skills/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/messaging-socket/**").permitAll() // Check: Encontrar manera de establecerlo privado
+
+                        // Check: Encontrar manera de establecerlo privado:
+                        .requestMatchers(HttpMethod.GET, "/messaging-socket/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/servicio/details/preview/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/servicio/busqueda").permitAll()
                         .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
@@ -73,9 +78,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/swagger-ui-custom.html").permitAll()
                         .requestMatchers("/api/swagger-ui/**").permitAll()
                         .requestMatchers("/api/api-docs/**").permitAll()
-                        .anyRequest().authenticated()
-                )
-                //.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                        .anyRequest().authenticated())
+                // .exceptionHandling(exception ->
+                // exception.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .formLogin(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session

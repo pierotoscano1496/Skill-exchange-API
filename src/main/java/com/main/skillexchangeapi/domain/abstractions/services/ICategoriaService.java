@@ -8,4 +8,6 @@ import java.util.List;
 
 public interface ICategoriaService {
     List<CategoriaResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    List<CategoriaResponse> obtenerDetails() throws DatabaseNotWorkingException, ResourceNotFoundException;
 }
