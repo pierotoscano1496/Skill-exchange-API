@@ -4,6 +4,9 @@ import lombok.Getter;
 
 @Getter
 public class ModalidadPagoBody {
+    /**
+     * Valores posibles: "yape", "tarjeta", "linea", "efectivo"
+     */
     private String tipo;
     private String cuentaBancaria;
     private String numeroCelular;

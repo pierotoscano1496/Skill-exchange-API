@@ -5,6 +5,8 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 @Getter
 public class CreateServicioBody {
     private String titulo;
@@ -27,5 +29,5 @@ public class CreateServicioBody {
     private List<ServicioSkillBody> skills;
     private List<ServicioDisponibilidadBody> disponibilidades;
     private List<ModalidadPagoBody> modalidadesPago;
-    private List<RecursoMultimediaBody> recursosMultimedia;
+    private List<MultipartFile> recursosMultimedia;
 }

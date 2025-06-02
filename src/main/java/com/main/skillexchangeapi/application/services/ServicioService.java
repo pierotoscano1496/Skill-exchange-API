@@ -14,6 +14,7 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioImage
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
@@ -21,11 +22,14 @@ import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
+import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +54,9 @@ public class ServicioService implements IServicioService {
 
         @Autowired
         private IServicioImagenRepository servicioImagenRepository;
+
+        @Autowired
+        private IAWSS3ServicioService storageService;
 
         @Override
         public List<ServicioResponse> obtenerByUsuario(UUID idUsuario)
@@ -156,8 +163,15 @@ public class ServicioService implements IServicioService {
 
         @Override
         public ServicioRegisteredResponse registrar(CreateServicioBody requestBody)
-                        throws DatabaseNotWorkingException, NotCreatedException {
+                        throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
+                        FileNotUploadedException {
+                UUID idServicio = UuidManager.randomUuid();
+                // Guardar las imágenes de previsualización en el bucket de S3
+                List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
+                                .uploadMultimediaServiceResources(idServicio, requestBody.getRecursosMultimedia());
+
                 Servicio servicioRegistered = repository.registrar(Servicio.builder()
+                                .id(idServicio)
                                 .proveedor(Usuario.builder()
                                                 .id(requestBody.getIdProveedor())
                                                 .build())
@@ -187,9 +201,10 @@ public class ServicioService implements IServicioService {
                                                                 .url(m.getUrl())
                                                                 .build())
                                                 .collect(Collectors.toList()))
-                                .recursosMultimediaServicio(requestBody.getRecursosMultimedia()
+                                .recursosMultimediaServicio(resourceUploaded
                                                 .stream()
                                                 .map(r -> RecursoMultimediaServicio.builder()
+                                                                .id(UuidManager.randomUuid())
                                                                 .medio(r.getMedio())
                                                                 .url(r.getUrl())
                                                                 .build())

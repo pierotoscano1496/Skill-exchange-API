@@ -12,7 +12,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping(value = "plan-usuario", produces = "application/json")
-//@CrossOrigin(origins = "${url.allowed.host}")
 public class PlanUsuarioController {
     @Autowired
     private IPlanUsuarioService service;

@@ -5,7 +5,6 @@ import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.FileNotFoundException;
 import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
-import com.main.skillexchangeapi.domain.exceptions.MetadataInvalidException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -13,9 +12,11 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IAWSS3ServicioService {
-    List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResources(UUID idServicio, List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
+    List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResources(UUID idServicio,
+            List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
 
-    String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException;
+    String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod, MultipartFile multipartFiles)
+            throws IOException, InvalidFileException, FileNotUploadedException;
 
     String getFirstImageServicioPresignedUrl(UUID idServicio) throws FileNotFoundException;
 

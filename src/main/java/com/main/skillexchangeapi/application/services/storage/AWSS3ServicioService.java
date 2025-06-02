@@ -35,6 +35,12 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     @Value("${aws.credentials.servicio-bucket-name}")
     private String bucketName;
 
+    @Value("${spring.profiles.active:prod}")
+    private String profile;
+
+    @Value("${cloud.aws.s3.endpoint:}")
+    private String s3Endpoint;
+
     @Autowired
     private AmazonS3 s3Client;
 
@@ -45,10 +51,9 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
         expiration.setTime(expTimeMillis);
 
         // Crear la solicitud para generar la URL firmada
-        GeneratePresignedUrlRequest generatePresignedUrlRequest =
-                new GeneratePresignedUrlRequest(bucketName, objectKey)
-                        .withMethod(HttpMethod.GET)
-                        .withExpiration(expiration);
+        GeneratePresignedUrlRequest generatePresignedUrlRequest = new GeneratePresignedUrlRequest(bucketName, objectKey)
+                .withMethod(HttpMethod.GET)
+                .withExpiration(expiration);
 
         // Generar la URL firmada
         URL url = s3Client.generatePresignedUrl(generatePresignedUrlRequest);
@@ -75,18 +80,27 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResources(UUID idServicio, List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
+    public List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResources(UUID idServicio,
+            List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
         List<MultimediaResourceUploadedResponse> resourcesUploaded = new ArrayList<>();
 
         try {
             for (MultipartFile file : multipartFiles) {
-                Optional<String> fileExtension = FileUitls.getExtension(file.getOriginalFilename(), ResourceSource.MULTIMEDIA);
+                Optional<String> fileExtension = FileUitls.getExtension(file.getOriginalFilename(),
+                        ResourceSource.MULTIMEDIA);
                 if (fileExtension.isPresent()) {
                     String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
                     String pathFile = idServicio.toString() + "/multimedia/" + fileName;
                     s3Client.putObject(bucketName, pathFile, file.getInputStream(), null);
+
+                    String url = "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
+
+                    if (profile.equals("dev")) {
+                        url = s3Endpoint + "/" + bucketName + "/" + pathFile;
+                    }
+
                     resourcesUploaded.add(MultimediaResourceUploadedResponse.builder()
-                            .url("https://" + bucketName + ".s3.amazonaws.com/" + pathFile)
+                            .url(url)
                             .medio(FileUitls.getMedioFromMultimediaResource(pathFile).get())
                             .build());
                 } else {
@@ -103,12 +117,15 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod, MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
-        Optional<String> fileExtension = FileUitls.getExtension(multipartFiles.getOriginalFilename(), ResourceSource.PAYMENT);
+    public String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod,
+            MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
+        Optional<String> fileExtension = FileUitls.getExtension(multipartFiles.getOriginalFilename(),
+                ResourceSource.PAYMENT);
         try {
             if (fileExtension.isPresent()) {
                 String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
-                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName() + "/" + fileName;
+                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName() + "/"
+                        + fileName;
                 s3Client.putObject(bucketName, pathFile, multipartFiles.getInputStream(), null);
                 return "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
             } else {
@@ -130,7 +147,9 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
         ListObjectsV2Result result = s3Client.listObjectsV2(request);
         List<S3ObjectSummary> objects = result.getObjectSummaries();
 
-        Optional<S3ObjectSummary> firstImage = objects.stream().filter(obj -> FileUitls.checkFileType(obj.getKey(), ResourceSource.MULTIMEDIA, ResourceType.IMAGE)).findFirst();
+        Optional<S3ObjectSummary> firstImage = objects.stream()
+                .filter(obj -> FileUitls.checkFileType(obj.getKey(), ResourceSource.MULTIMEDIA, ResourceType.IMAGE))
+                .findFirst();
 
         if (firstImage.isEmpty()) {
             throw new FileNotFoundException("Imagen no encontrada");
@@ -140,7 +159,8 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public String getImageMetodoPagoPresignedUrl(UUID idServicio, PaymentMethod paymentMethod) throws FileNotFoundException {
+    public String getImageMetodoPagoPresignedUrl(UUID idServicio, PaymentMethod paymentMethod)
+            throws FileNotFoundException {
         String pathFolder = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName();
 
         ListObjectsV2Request request = new ListObjectsV2Request()
@@ -150,7 +170,9 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
         ListObjectsV2Result result = s3Client.listObjectsV2(request);
         List<S3ObjectSummary> objects = result.getObjectSummaries();
 
-        Optional<S3ObjectSummary> firstImage = objects.stream().filter(obj -> FileUitls.checkFileType(obj.getKey(), ResourceSource.MULTIMEDIA, ResourceType.IMAGE)).findFirst();
+        Optional<S3ObjectSummary> firstImage = objects.stream()
+                .filter(obj -> FileUitls.checkFileType(obj.getKey(), ResourceSource.MULTIMEDIA, ResourceType.IMAGE))
+                .findFirst();
 
         if (firstImage.isEmpty()) {
             throw new FileNotFoundException("Imagen no encontrada");

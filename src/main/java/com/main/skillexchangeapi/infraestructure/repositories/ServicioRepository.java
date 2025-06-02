@@ -214,9 +214,7 @@ public class ServicioRepository implements IServicioRepository {
     public Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection.prepareCall("{CALL registrar_servicio(?, ?, ?, ?, ?, ?)}")) {
-            UUID idServicio = UuidManager.randomUuid();
-
-            statement.setBytes("p_id", UuidManager.UuidToBytes(idServicio));
+            statement.setBytes("p_id", UuidManager.UuidToBytes(servicio.getId()));
             statement.setString("p_titulo", servicio.getTitulo());
             statement.setString("p_descripcion", servicio.getDescripcion());
             statement.setDouble("p_precio", servicio.getPrecio());
@@ -257,7 +255,7 @@ public class ServicioRepository implements IServicioRepository {
                     try (CallableStatement dispStmt = connection
                             .prepareCall("{CALL registrar_servicio_disponibilidad(?, ?, ?, ?, ?)}")) {
                         dispStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
-                        dispStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+                        dispStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
                         dispStmt.setString("p_dia", disp.getDia());
                         dispStmt.setTime("p_hora_inicio", java.sql.Time.valueOf(disp.getHoraInicio()));
                         dispStmt.setTime("p_hora_fin", java.sql.Time.valueOf(disp.getHoraFin()));
@@ -281,7 +279,7 @@ public class ServicioRepository implements IServicioRepository {
                     try (CallableStatement imgStmt = connection
                             .prepareCall("{CALL registrar_recurso_multimedia_servicio(?, ?, ?, ?)}")) {
                         imgStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
-                        imgStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+                        imgStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
                         imgStmt.setString("p_url", img.getUrl());
                         imgStmt.setString("p_medio", img.getMedio());
                         try (ResultSet rs = imgStmt.executeQuery()) {
@@ -302,7 +300,7 @@ public class ServicioRepository implements IServicioRepository {
                 for (ServicioSkill skill : servicio.getSkills()) {
                     try (CallableStatement skillStmt = connection
                             .prepareCall("{CALL registrar_servicio_skill(?, ?)}")) {
-                        skillStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+                        skillStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
                         skillStmt.setBytes("p_id_skill", UuidManager.UuidToBytes(skill.getSkill().getId()));
                         try (ResultSet rs = skillStmt.executeQuery()) {
                             if (rs.next()) {
@@ -323,7 +321,7 @@ public class ServicioRepository implements IServicioRepository {
                     try (CallableStatement mpStmt = connection
                             .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
                         mpStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
-                        mpStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
+                        mpStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
                         mpStmt.setString("p_tipo", modalidad.getTipo());
                         mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
                         mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());

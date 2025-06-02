@@ -18,7 +18,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping(value = "plan", produces = "application/json")
-//@CrossOrigin(origins = "${url.allowed.host}")
 public class PlanController {
     @Autowired
     private IPlanService service;

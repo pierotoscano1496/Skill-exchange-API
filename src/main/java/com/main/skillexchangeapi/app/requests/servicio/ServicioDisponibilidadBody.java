@@ -7,7 +7,6 @@ import lombok.Getter;
 
 @Getter
 public class ServicioDisponibilidadBody {
-    private UUID id;
     private UUID idServicio;
     private String dia;
     private LocalTime horaInicio;

@@ -7,8 +7,6 @@ import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
-import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageModalidadPagoService;
-import com.main.skillexchangeapi.domain.abstractions.services.storage.IBlobStorageRecursoMultimediaServicioService;
 import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
