@@ -13,7 +13,6 @@ public class CreateServicioBody {
     private String descripcion;
     private double precio;
     private UUID idProveedor;
-    private UUID idSkill;
     /**
      * Valores posibles: "fijo", "hora", "rango"
      */

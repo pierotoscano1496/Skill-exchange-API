@@ -9,6 +9,9 @@ import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.*;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -29,6 +32,8 @@ public class ServicioController {
 
     @Autowired
     private IAWSS3ServicioService storageService;
+
+    Logger logger = LoggerFactory.getLogger(ServicioController.class);
 
     @GetMapping("/usuario/{idUsuario}")
     private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
@@ -94,7 +99,12 @@ public class ServicioController {
     private ServicioRegisteredResponse registrar(@RequestBody CreateServicioBody requestBody) {
         try {
             return service.registrar(requestBody);
-        } catch (DatabaseNotWorkingException | NotCreatedException e) {
+        } catch (DatabaseNotWorkingException | NotCreatedException | IOException | InvalidFileException
+                | FileNotUploadedException e) {
+            if (e instanceof IOException) {
+                logger.error("Error al registrar el servicio: {}", e.getMessage(), e);
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al registrar el servicio");
+            }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
