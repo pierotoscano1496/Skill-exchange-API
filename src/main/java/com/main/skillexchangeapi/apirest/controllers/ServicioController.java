@@ -96,9 +96,25 @@ public class ServicioController {
     }
 
     @PostMapping
-    private ServicioRegisteredResponse registrar(@RequestBody CreateServicioBody requestBody) {
+    private ServicioRegisteredResponse registrar(@RequestPart("data") CreateServicioBody requestBody,
+            @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia) {
+        if (recursosMultimedia == null || recursosMultimedia.isEmpty()) {
+            logger.warn("No se han proporcionado recursos multimedia para el servicio.");
+        } else {
+            recursosMultimedia = recursosMultimedia.stream()
+                    .filter(file -> file != null && !file.isEmpty())
+                    .collect(Collectors.toList());
+            if (recursosMultimedia.isEmpty()) {
+                logger.warn("Todos los archivos multimedia proporcionados están vacíos.");
+            } else {
+                logger.info("Recursos multimedia proporcionados: {}", recursosMultimedia.size());
+            }
+        }
+        logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
         try {
-            return service.registrar(requestBody);
+            ServicioRegisteredResponse response = service.registrar(requestBody, recursosMultimedia);
+            logger.info("Registro de servicio exitoso. ID generado: {}", response.getId());
+            return response;
         } catch (DatabaseNotWorkingException | NotCreatedException | IOException | InvalidFileException
                 | FileNotUploadedException e) {
             if (e instanceof IOException) {

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public interface IServicioService {
 
         List<ServicioResponse> obtenerByUsuario(UUID idUsuario)
@@ -30,7 +32,7 @@ public interface IServicioService {
 
         ServicioResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-        ServicioRegisteredResponse registrar(CreateServicioBody requestBody)
+        ServicioRegisteredResponse registrar(CreateServicioBody requestBody, List<MultipartFile> recursosMultimedia)
                         throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
                         FileNotUploadedException;
 

@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.main.skillexchangeapi.app.responses.servicio.MultimediaResourceUploadedResponse;
 import com.main.skillexchangeapi.app.utils.FileUitls;
@@ -91,10 +92,15 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                 if (fileExtension.isPresent()) {
                     String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
                     String pathFile = idServicio.toString() + "/multimedia/" + fileName;
-                    s3Client.putObject(bucketName, pathFile, file.getInputStream(), null);
+
+                    // Solución: especificar metadata con content length
+                    ObjectMetadata metadata = new ObjectMetadata();
+                    metadata.setContentLength(file.getSize());
+                    metadata.setContentType(file.getContentType());
+
+                    s3Client.putObject(bucketName, pathFile, file.getInputStream(), metadata);
 
                     String url = "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
-
                     if (profile.equals("dev")) {
                         url = s3Endpoint + "/" + bucketName + "/" + pathFile;
                     }

@@ -28,6 +28,7 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -162,13 +163,14 @@ public class ServicioService implements IServicioService {
         }
 
         @Override
-        public ServicioRegisteredResponse registrar(CreateServicioBody requestBody)
+        public ServicioRegisteredResponse registrar(CreateServicioBody requestBody,
+                        List<MultipartFile> recursosMultimedia)
                         throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
                         FileNotUploadedException {
                 UUID idServicio = UuidManager.randomUuid();
                 // Guardar las imágenes de previsualización en el bucket de S3
                 List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
-                                .uploadMultimediaServiceResources(idServicio, requestBody.getRecursosMultimedia());
+                                .uploadMultimediaServiceResources(idServicio, recursosMultimedia);
 
                 Servicio servicioRegistered = repository.registrar(Servicio.builder()
                                 .id(idServicio)

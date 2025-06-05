@@ -28,5 +28,4 @@ public class CreateServicioBody {
     private List<ServicioSkillBody> skills;
     private List<ServicioDisponibilidadBody> disponibilidades;
     private List<ModalidadPagoBody> modalidadesPago;
-    private List<MultipartFile> recursosMultimedia;
 }
