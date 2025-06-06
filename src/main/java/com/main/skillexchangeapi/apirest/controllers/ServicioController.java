@@ -120,6 +120,8 @@ public class ServicioController {
             if (e instanceof IOException) {
                 logger.error("Error al registrar el servicio: {}", e.getMessage(), e);
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al registrar el servicio");
+            } else {
+                logger.error("Respuesta de error del servicio: {}", e.getMessage(), e);
             }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }

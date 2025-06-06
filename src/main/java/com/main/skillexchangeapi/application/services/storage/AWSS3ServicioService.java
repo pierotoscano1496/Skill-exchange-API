@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -93,16 +94,19 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                     String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
                     String pathFile = idServicio.toString() + "/multimedia/" + fileName;
 
-                    // Solución: especificar metadata con content length
+                    byte[] bytes = file.getBytes();
+                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+
                     ObjectMetadata metadata = new ObjectMetadata();
                     metadata.setContentLength(file.getSize());
                     metadata.setContentType(file.getContentType());
 
-                    s3Client.putObject(bucketName, pathFile, file.getInputStream(), metadata);
+                    s3Client.putObject(bucketName, pathFile, byteArrayInputStream, metadata);
 
                     String url = "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
                     if (profile.equals("dev")) {
                         url = s3Endpoint + "/" + bucketName + "/" + pathFile;
+                        logger.info("Endpoint localstack S3: {}", url);
                     }
 
                     resourcesUploaded.add(MultimediaResourceUploadedResponse.builder()

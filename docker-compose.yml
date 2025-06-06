@@ -8,17 +8,21 @@ services:
       - DEFAULT_REGION=us-east-1
     volumes:
       - ./localstack-data:/var/lib/localstack
+    networks:
+      - se-network
 
   backend:
     build: .
     container_name: skillexchange_api
     ports:
       - "9081:9081"
+      - "5005:5005" # Debugging port
     env_file:
       - .env.dev
     depends_on:
       - mysql-db
       - mongodb
+      - localstack
     networks:
       - se-network
     restart: on-failure
