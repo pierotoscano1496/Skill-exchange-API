@@ -213,7 +213,8 @@ public class ServicioRepository implements IServicioRepository {
     @Override
     public Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-                CallableStatement statement = connection.prepareCall("{CALL registrar_servicio(?, ?, ?, ?, ?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_servicio(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
             statement.setBytes("p_id", UuidManager.UuidToBytes(servicio.getId()));
             statement.setString("p_titulo", servicio.getTitulo());
             statement.setString("p_descripcion", servicio.getDescripcion());
