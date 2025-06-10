@@ -10,6 +10,9 @@ import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3Serv
 import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.exceptions.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "servicio", produces = "application/json")
+@Tag(name = "Servicio", description = "CRUD de los servicios")
 public class ServicioController {
     @Autowired
     private IServicioService service;
@@ -36,6 +40,7 @@ public class ServicioController {
     Logger logger = LoggerFactory.getLogger(ServicioController.class);
 
     @GetMapping("/usuario/{idUsuario}")
+    @Operation(summary = "Obtener servicios por usuario", description = "Devuelve una lista de servicios para un usuario dado")
     private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
         try {
             List<ServicioResponse> servicios = service.obtenerByUsuario(idUsuario).stream().map(servicio -> {
@@ -59,6 +64,7 @@ public class ServicioController {
     }
 
     @GetMapping("details/preview/{id}")
+    @Operation(summary = "Obtener detalles para previsualización por ID", description = "Muestra información de un servicio particular sin mucho detalle, solo para previsualización")
     public ServicioResponse obtenerDetailsPreview(@PathVariable UUID id) {
         try {
             return service.obtenerDetailsPreview(id);
@@ -73,6 +79,7 @@ public class ServicioController {
     }
 
     @GetMapping("/payment-method/image/{id}/{paymentMethod}")
+    @Operation(summary = "Obtener imágenes del método de pago por ID del servicio y el tipo de método de pago", description = "Busca un método de pago desde el bucket que corresponde a un servicio y especificando un tipo")
     public String obtenerImagenMetodoPago(@PathVariable UUID id, @PathVariable PaymentMethod paymentMethod) {
         try {
             return storageService.getImageMetodoPagoPresignedUrl(id, paymentMethod);
@@ -85,6 +92,7 @@ public class ServicioController {
      * Búsquedas personalizadas
      */
     @PostMapping("busqueda")
+    @Operation(summary = "Busca servicios a través de parámetros de diversos", description = "Buscar servicios por: palabra clave, ID de habilidad, ID de subcategoría o ID de categoría")
     private List<ServicioResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
         try {
             return service.searchByParameters(parameters);
@@ -96,6 +104,7 @@ public class ServicioController {
     }
 
     @PostMapping
+    @Operation(summary = "Guarda un servicio con su metadata", description = "Guarda primero los archivos de los recursos multimedia de un servicio a S3: imágenes, videos cortos, etc. y la información del servicio adicionalmente con: habilidades, disponibilidades y modalidades de pago")
     private ServicioRegisteredResponse registrar(@RequestPart("data") CreateServicioBody requestBody,
             @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia) {
         if (recursosMultimedia == null || recursosMultimedia.isEmpty()) {
@@ -128,6 +137,7 @@ public class ServicioController {
     }
 
     @PatchMapping("/modalidad-pago/{id}")
+    @Operation(summary = "Asigna modalidades de pago a un servicio", description = "Mediante el ID del servicio, se le asigna las modalidades de pago")
     private ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id,
             @RequestBody List<AsignacionModalidadPagoToServicioRequest> requestBody) {
         try {
@@ -138,6 +148,7 @@ public class ServicioController {
     }
 
     @PatchMapping("/upload-multimedia/{id}")
+    @Operation(summary = "Asigna archivos multimedia a un servicio", description = "Agrega archivos a S3 y después los registros, tales como su url")
     private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id,
             @RequestParam("files") List<MultipartFile> files) {
         try {
@@ -152,6 +163,7 @@ public class ServicioController {
     }
 
     @PatchMapping("/upload-metadata-modalidad-pago/{id}/{paymentMethod}")
+    @Operation(summary = "Agrega archivos multimedia a una modalidad de pago de un servicio", description = "Agrega archivos a la modalidad de pago de un servicio de un servicio por su ID")
     private String uploadMetadataModalidadPagoToService(@PathVariable UUID id,
             @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
         try {
@@ -166,6 +178,7 @@ public class ServicioController {
     }
 
     @PatchMapping("recursos-multimedia/{id}")
+    @Operation(summary = "Asigna recursos multimedia a un servicio", description = "Agrega los archivos de los recursos a S3 y las anexa al servicio indicado por su ID")
     private ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(@PathVariable UUID id,
             @RequestBody List<AsignacionRecursoMultimediaToServicioRequest> requestBody) {
         try {
