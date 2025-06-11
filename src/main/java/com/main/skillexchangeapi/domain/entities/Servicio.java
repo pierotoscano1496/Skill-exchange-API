@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.domain.entities;
 
+import com.main.skillexchangeapi.app.constants.TipoPrecio;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
@@ -19,7 +20,7 @@ public class Servicio {
     private double precio;
     private double precioMaximo;
     private double precioMinimo;
-    private String tipoPrecio;
+    private TipoPrecio tipoPrecio;
     private String ubicacion;
     private String modalidad;
     private boolean aceptaTerminos;

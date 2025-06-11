@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.web.multipart.MultipartFile;
+import com.main.skillexchangeapi.app.constants.ServicioConstants;
 
 @Getter
 public class CreateServicioBody {
@@ -13,17 +13,11 @@ public class CreateServicioBody {
     private String descripcion;
     private double precio;
     private UUID idProveedor;
-    /**
-     * Valores posibles: "fijo", "hora", "rango"
-     */
-    private String tipoPrecio;
+    private ServicioConstants.TipoPrecio tipoPrecio;
     private double precioMinimo;
     private double precioMaximo;
     private String ubicacion;
-    /**
-     * Valores posibles: "presencial", "remoto", "mixto"
-     */
-    private String modalidad;
+    private ServicioConstants.Modalidad modalidad;
     private boolean aceptaTerminos;
     private List<ServicioSkillBody> skills;
     private List<ServicioDisponibilidadBody> disponibilidades;

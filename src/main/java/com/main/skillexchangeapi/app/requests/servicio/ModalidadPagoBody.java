@@ -1,13 +1,12 @@
 package com.main.skillexchangeapi.app.requests.servicio;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
+
 import lombok.Getter;
 
 @Getter
 public class ModalidadPagoBody {
-    /**
-     * Valores posibles: "yape", "tarjeta", "linea", "efectivo"
-     */
-    private String tipo;
+    private ModalidadPagoConstants.Tipo tipo;
     private String cuentaBancaria;
     private String numeroCelular;
     private String url;
