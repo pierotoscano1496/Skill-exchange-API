@@ -34,201 +34,212 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService implements IUsuarioService {
-    @Autowired
-    private IUsuarioRepository repository;
+        @Autowired
+        private IUsuarioRepository repository;
 
-    @Autowired
-    private ISkillUsuarioRepository skillUsuarioRepository;
+        @Autowired
+        private ISkillUsuarioRepository skillUsuarioRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+        @Autowired
+        private PasswordEncoder passwordEncoder;
 
-    @Override
-    public UsuarioResponse obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        Usuario usuario = repository.obtenerById(id);
-        return UsuarioResponse.builder()
-                .id(usuario.getId())
-                .dni(usuario.getDni())
-                .carnetExtranjeria(usuario.getCarnetExtranjeria())
-                .tipoDocumento(usuario.getTipoDocumento())
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .correo(usuario.getCorreo())
-                .fechaNacimiento(usuario.getFechaNacimiento())
-                .introduccion(usuario.getIntroduccion())
-                .perfilFacebook(usuario.getPerfilFacebook())
-                .perfilInstagram(usuario.getPerfilInstagram())
-                .perfilLinkedin(usuario.getPerfilLinkedin())
-                .perfilTiktok(usuario.getPerfilTiktok())
-                .build();
-    }
-
-    @Override
-    public UsuarioRegisteredResponse obtener(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        Usuario usuario = repository.obtenerByCorreo(correo);
-        return UsuarioRegisteredResponse.builder()
-                .id(usuario.getId())
-                .dni(usuario.getDni())
-                .carnetExtranjeria(usuario.getCarnetExtranjeria())
-                .tipoDocumento(usuario.getTipoDocumento())
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .correo(usuario.getCorreo())
-                .fechaNacimiento(usuario.getFechaNacimiento())
-                .introduccion(usuario.getIntroduccion())
-                .perfilFacebook(usuario.getPerfilFacebook())
-                .perfilInstagram(usuario.getPerfilInstagram())
-                .perfilLinkedin(usuario.getPerfilLinkedin())
-                .perfilTiktok(usuario.getPerfilTiktok())
-                .build();
-    }
-
-    @Override
-    public UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
-        // Cifrar clave de usuario
-        credenciales.setClave(passwordEncoder.encode(credenciales.getClave()));
-
-        Usuario usuario = repository.login(credenciales);
-
-        return UsuarioResponse.builder()
-                .id(usuario.getId())
-                .dni(usuario.getDni())
-                .carnetExtranjeria(usuario.getCarnetExtranjeria())
-                .tipoDocumento(usuario.getTipoDocumento())
-                .nombres(usuario.getNombres())
-                .apellidos(usuario.getApellidos())
-                .fechaNacimiento(usuario.getFechaNacimiento())
-                .correo(usuario.getCorreo())
-                .perfilLinkedin(usuario.getPerfilLinkedin())
-                .perfilFacebook(usuario.getPerfilFacebook())
-                .perfilInstagram(usuario.getPerfilInstagram())
-                .perfilTiktok(usuario.getPerfilTiktok())
-                .build();
-    }
-
-    @Override
-    public UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.getUserCred(correo);
-    }
-
-    @Override
-    public UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
-        // Cifrar clave de usuario
-        // Validar existencia de usuario previa antes de registrar
-        Usuario usuarioExistente = null;
-        switch (requestBody.getTipoDocumento()) {
-            case "dni":
-                usuarioExistente = repository.validarExistenciaByDni(requestBody.getDni(), requestBody.getCorreo());
-                break;
-            case "carnet-extranjeria":
-                usuarioExistente = repository.validarExistenciaByCarnetExtranjeria(requestBody.getCarnetExtranjeria(), requestBody.getCorreo());
-                break;
-            default:
-                throw new NotCreatedException("El usuario no tiene una identificación válida");
+        @Override
+        public UsuarioResponse obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Usuario usuario = repository.obtenerById(id);
+                return UsuarioResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .correo(usuario.getCorreo())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .introduccion(usuario.getIntroduccion())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilTiktok(usuario.getPerfilTiktok())
+                                .build();
         }
 
-        if (usuarioExistente == null) {
-            String claveCifrada = passwordEncoder.encode(requestBody.getClave());
-            requestBody.setClave(claveCifrada);
-
-            Usuario usuarioRegistered = repository.registrar(Usuario.builder()
-                    .dni(requestBody.getDni())
-                    .carnetExtranjeria(requestBody.getCarnetExtranjeria())
-                    .tipoDocumento(requestBody.getTipoDocumento())
-                    .correo(requestBody.getCorreo())
-                    .nombres(requestBody.getNombres())
-                    .apellidos(requestBody.getApellidos())
-                    .fechaNacimiento(requestBody.getFechaNacimiento())
-                    .clave(requestBody.getClave())
-                    .perfilLinkedin(requestBody.getPerfilLinkedin())
-                    .perfilFacebook(requestBody.getPerfilFacebook())
-                    .perfilInstagram(requestBody.getPerfilInstagram())
-                    .perfilTiktok(requestBody.getPerfilTiktok())
-                    .introduccion(requestBody.getIntroduccion())
-                    .build());
-
-            UsuarioSkillsAsignadosResponse skillsAsignados = asignarSkills(usuarioRegistered.getId(), requestBody.getSkills());
-
-            return UsuarioRegisteredResponse.builder()
-                    .id(usuarioRegistered.getId())
-                    .dni(usuarioRegistered.getDni())
-                    .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
-                    .tipoDocumento(usuarioRegistered.getTipoDocumento())
-                    .correo(usuarioRegistered.getCorreo())
-                    .nombres(usuarioRegistered.getNombres())
-                    .apellidos(usuarioRegistered.getApellidos())
-                    .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
-                    .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
-                    .perfilFacebook(usuarioRegistered.getPerfilFacebook())
-                    .perfilInstagram(usuarioRegistered.getPerfilInstagram())
-                    .perfilTiktok(usuarioRegistered.getPerfilTiktok())
-                    .introduccion(usuarioRegistered.getIntroduccion())
-                    .skills(skillsAsignados.getSkillsAsignados())
-                    .build();
-        } else {
-            throw new NotCreatedException("El usuario ya existe");
+        @Override
+        public UsuarioRegisteredResponse obtener(String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Usuario usuario = repository.obtenerByCorreo(correo);
+                return UsuarioRegisteredResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .correo(usuario.getCorreo())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .introduccion(usuario.getIntroduccion())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilTiktok(usuario.getPerfilTiktok())
+                                .build();
         }
-    }
 
-    @Override
-    public UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        List<SkillUsuario> skillsUsuario = requestBody.stream().map(s -> SkillUsuario.builder()
-                .skill(Skill.builder()
-                        .id(s.getIdSkill())
-                        .build())
-                .usuario(Usuario.builder()
-                        .id(id)
-                        .build())
-                .nivelConocimiento(s.getNivelConocimiento())
-                .descripcion(s.getDescripcion())
-                .build()).collect(Collectors.toList());
+        @Override
+        public UsuarioResponse login(UsuarioCredenciales credenciales)
+                        throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException {
+                // Cifrar clave de usuario
+                credenciales.setClave(passwordEncoder.encode(credenciales.getClave()));
 
-        List<SkillUsuario> skillsUsuarioRegistered = skillUsuarioRepository.registrarMultiple(skillsUsuario);
+                Usuario usuario = repository.login(credenciales);
 
-        List<SkillAsignado> skillAsignadosRegistered = skillsUsuarioRegistered.stream().map(su ->
-                        SkillAsignado.builder()
-                                .id(su.getSkill().getId())
-                                .nivelConocimiento(su.getNivelConocimiento())
-                                .descripcion(su.getDescripcion())
-                                .build())
-                .toList();
+                return UsuarioResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .correo(usuario.getCorreo())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilTiktok(usuario.getPerfilTiktok())
+                                .build();
+        }
 
-        return UsuarioSkillsAsignadosResponse.builder()
-                .id(id)
-                .skillsAsignados(skillAsignadosRegistered)
-                .build();
-    }
+        @Override
+        public UsuarioPersonalInfo getUserCred(String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.getUserCred(correo);
+        }
 
-    @Override
-    public List<SkillResponse> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return skillUsuarioRepository.obtenerByIdUsuario(id)
-                .stream().map(s -> SkillResponse.builder()
-                        .id(s.getSkill().getId())
-                        .descripcion(s.getSkill().getDescripcion())
-                        .idSubCategoria(s.getSkill().getSubCategoria().getId())
-                        .build()).collect(Collectors.toList());
-    }
+        @Override
+        public UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+                // Cifrar clave de usuario
+                // Validar existencia de usuario previa antes de registrar
+                Usuario usuarioExistente = null;
+                switch (requestBody.getTipoDocumento()) {
+                        case dni:
+                                usuarioExistente = repository.validarExistenciaByDni(requestBody.getDni(),
+                                                requestBody.getCorreo());
+                                break;
+                        case carnet_extranjeria:
+                                usuarioExistente = repository.validarExistenciaByCarnetExtranjeria(
+                                                requestBody.getCarnetExtranjeria(), requestBody.getCorreo());
+                                break;
+                        default:
+                                throw new NotCreatedException("El usuario no tiene una identificación válida");
+                }
 
-    @Override
-    public PlanAsignado asignarPlan(UUID id, SetPlanToUsuarioRequest requestBody) throws DatabaseNotWorkingException, NotCreatedException {
-        PlanUsuario planUsuarioAsignado = repository.asignarPlan(PlanUsuario.builder()
-                .plan(Plan.builder()
-                        .id(requestBody.getIdPlan())
-                        .build())
-                .usuario(Usuario.builder()
-                        .id(id)
-                        .build())
-                .isActive(requestBody.isActive())
-                .monto(requestBody.getMonto())
-                .moneda(requestBody.getMoneda())
-                .build());
+                if (usuarioExistente == null) {
+                        String claveCifrada = passwordEncoder.encode(requestBody.getClave());
+                        requestBody.setClave(claveCifrada);
 
-        return PlanAsignado.builder()
-                .idPlan(planUsuarioAsignado.getPlan().getId())
-                .idUsuario(planUsuarioAsignado.getUsuario().getId())
-                .isActive(planUsuarioAsignado.isActive())
-                .monto(planUsuarioAsignado.getMonto())
-                .moneda(planUsuarioAsignado.getMoneda())
-                .build();
-    }
+                        Usuario usuarioRegistered = repository.registrar(Usuario.builder()
+                                        .dni(requestBody.getDni())
+                                        .carnetExtranjeria(requestBody.getCarnetExtranjeria())
+                                        .tipoDocumento(requestBody.getTipoDocumento())
+                                        .correo(requestBody.getCorreo())
+                                        .nombres(requestBody.getNombres())
+                                        .apellidos(requestBody.getApellidos())
+                                        .fechaNacimiento(requestBody.getFechaNacimiento())
+                                        .clave(requestBody.getClave())
+                                        .perfilLinkedin(requestBody.getPerfilLinkedin())
+                                        .perfilFacebook(requestBody.getPerfilFacebook())
+                                        .perfilInstagram(requestBody.getPerfilInstagram())
+                                        .perfilTiktok(requestBody.getPerfilTiktok())
+                                        .introduccion(requestBody.getIntroduccion())
+                                        .build());
+
+                        UsuarioSkillsAsignadosResponse skillsAsignados = asignarSkills(usuarioRegistered.getId(),
+                                        requestBody.getSkills());
+
+                        return UsuarioRegisteredResponse.builder()
+                                        .id(usuarioRegistered.getId())
+                                        .dni(usuarioRegistered.getDni())
+                                        .carnetExtranjeria(usuarioRegistered.getCarnetExtranjeria())
+                                        .tipoDocumento(usuarioRegistered.getTipoDocumento())
+                                        .correo(usuarioRegistered.getCorreo())
+                                        .nombres(usuarioRegistered.getNombres())
+                                        .apellidos(usuarioRegistered.getApellidos())
+                                        .fechaNacimiento(usuarioRegistered.getFechaNacimiento())
+                                        .perfilLinkedin(usuarioRegistered.getPerfilLinkedin())
+                                        .perfilFacebook(usuarioRegistered.getPerfilFacebook())
+                                        .perfilInstagram(usuarioRegistered.getPerfilInstagram())
+                                        .perfilTiktok(usuarioRegistered.getPerfilTiktok())
+                                        .introduccion(usuarioRegistered.getIntroduccion())
+                                        .skills(skillsAsignados.getSkillsAsignados())
+                                        .build();
+                } else {
+                        throw new NotCreatedException("El usuario ya existe");
+                }
+        }
+
+        @Override
+        public UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                List<SkillUsuario> skillsUsuario = requestBody.stream().map(s -> SkillUsuario.builder()
+                                .skill(Skill.builder()
+                                                .id(s.getIdSkill())
+                                                .build())
+                                .usuario(Usuario.builder()
+                                                .id(id)
+                                                .build())
+                                .nivelConocimiento(s.getNivelConocimiento())
+                                .descripcion(s.getDescripcion())
+                                .build()).collect(Collectors.toList());
+
+                List<SkillUsuario> skillsUsuarioRegistered = skillUsuarioRepository.registrarMultiple(skillsUsuario);
+
+                List<SkillAsignado> skillAsignadosRegistered = skillsUsuarioRegistered.stream()
+                                .map(su -> SkillAsignado.builder()
+                                                .id(su.getSkill().getId())
+                                                .nivelConocimiento(su.getNivelConocimiento())
+                                                .descripcion(su.getDescripcion())
+                                                .build())
+                                .toList();
+
+                return UsuarioSkillsAsignadosResponse.builder()
+                                .id(id)
+                                .skillsAsignados(skillAsignadosRegistered)
+                                .build();
+        }
+
+        @Override
+        public List<SkillResponse> obtenerSkills(UUID id)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return skillUsuarioRepository.obtenerByIdUsuario(id)
+                                .stream().map(s -> SkillResponse.builder()
+                                                .id(s.getSkill().getId())
+                                                .descripcion(s.getSkill().getDescripcion())
+                                                .idSubCategoria(s.getSkill().getSubCategoria().getId())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        public PlanAsignado asignarPlan(UUID id, SetPlanToUsuarioRequest requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                PlanUsuario planUsuarioAsignado = repository.asignarPlan(PlanUsuario.builder()
+                                .plan(Plan.builder()
+                                                .id(requestBody.getIdPlan())
+                                                .build())
+                                .usuario(Usuario.builder()
+                                                .id(id)
+                                                .build())
+                                .isActive(requestBody.isActive())
+                                .monto(requestBody.getMonto())
+                                .moneda(requestBody.getMoneda())
+                                .build());
+
+                return PlanAsignado.builder()
+                                .idPlan(planUsuarioAsignado.getPlan().getId())
+                                .idUsuario(planUsuarioAsignado.getUsuario().getId())
+                                .isActive(planUsuarioAsignado.isActive())
+                                .monto(planUsuarioAsignado.getMonto())
+                                .moneda(planUsuarioAsignado.getMoneda())
+                                .build();
+        }
 }

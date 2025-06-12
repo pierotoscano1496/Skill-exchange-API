@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.constants.PlanConstants.Tipo;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IPlanRepository;
 import com.main.skillexchangeapi.domain.entities.Plan;
@@ -32,7 +33,7 @@ public class PlanRepository implements IPlanRepository {
 
                 Plan plan = Plan.builder()
                         .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                        .tipo(resultSet.getString("TIPO"))
+                        .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
                         .isFree(resultSet.getBoolean("IS_FREE"))
                         .codigo(resultSet.getString("CODIGO"))
                         .montoBasico(resultSet.getDouble("MONTO_BASICO"))
@@ -69,7 +70,7 @@ public class PlanRepository implements IPlanRepository {
             while (resultSet.next()) {
                 plan = Plan.builder()
                         .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                        .tipo(resultSet.getString("TIPO"))
+                        .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
                         .isFree(resultSet.getBoolean("IS_FREE"))
                         .codigo(resultSet.getString("CODIGO"))
                         .montoBasico(resultSet.getDouble("MONTO_BASICO"))

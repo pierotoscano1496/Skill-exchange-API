@@ -4,10 +4,12 @@ import lombok.Builder;
 
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
+
 @Builder
 public class ModalidadPagoAsignadoToServicioResponse {
     private UUID id;
-    private String tipo;
+    private Tipo tipo;
     private String cuentaBancaria;
     private String numeroCelular;
     private UUID idServicio;

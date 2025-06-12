@@ -6,6 +6,9 @@ import lombok.Data;
 import java.util.List;
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
+
 @Data
 @Builder
 public class ServicioRegisteredResponse {
@@ -16,9 +19,9 @@ public class ServicioRegisteredResponse {
     private double precio;
     private double precioMaximo;
     private double precioMinimo;
-    private String tipoPrecio;
+    private TipoPrecio tipoPrecio;
     private String ubicacion;
-    private String modalidad;
+    private Modalidad modalidad;
     private boolean aceptaTerminos;
     private List<ServicioSkillResponse> skills;
     private List<ServicioDisponibilidadResponse> disponibilidades;

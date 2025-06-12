@@ -5,11 +5,13 @@ import lombok.Data;
 
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
+
 @Data
 @Builder
 public class MedioPagoResponse {
     private UUID id;
-    private String tipo;
+    private Tipo tipo;
     private String cuentaBancaria;
     private String numeroCelular;
     private String url;

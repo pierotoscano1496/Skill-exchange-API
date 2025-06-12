@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
 import com.main.skillexchangeapi.domain.entities.ModalidadPago;
@@ -35,7 +36,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                 while (resultSet.next()) {
                     modalidadesPago.add(ModalidadPago.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .tipo(resultSet.getString("TIPO"))
+                            .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                             .url(resultSet.getString("URL"))
@@ -63,7 +64,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                 CallableStatement statement = connection
                         .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(modalidadPago.getId()));
-            statement.setString("p_tipo", modalidadPago.getTipo());
+            statement.setString("p_tipo", modalidadPago.getTipo().toString());
             statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
             statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
             statement.setString("p_url", modalidadPago.getUrl());
@@ -75,7 +76,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                 while (resultSet.next()) {
                     modalidadPagoRegistered = ModalidadPago.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .tipo(resultSet.getString("TIPO"))
+                            .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
                             .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                             .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                             .url(resultSet.getString("URL"))
@@ -111,7 +112,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                 try {
                     byte[] idModalidadPagoToBytes = UuidManager.randomUuidToBytes();
                     statement.setObject("p_id", idModalidadPagoToBytes);
-                    statement.setString("p_tipo", modalidadPago.getTipo());
+                    statement.setString("p_tipo", modalidadPago.getTipo().toString());
                     statement.setString("p_cuenta_bancaria", modalidadPago.getCuentaBancaria());
                     statement.setString("p_numero_celular", modalidadPago.getNumeroCelular());
                     statement.setString("p_url", modalidadPago.getUrl());
@@ -123,7 +124,7 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
                         while (resultSet.next()) {
                             modalidadPagoRegistered = ModalidadPago.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                                    .tipo(resultSet.getString("TIPO"))
+                                    .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
                                     .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
                                     .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
                                     .url(resultSet.getString("URL"))

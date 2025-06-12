@@ -1,23 +1,16 @@
 package com.main.skillexchangeapi.controller;
 
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
-import com.main.skillexchangeapi.application.services.UsuarioService;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.Usuario;
-import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
-import org.junit.Assert;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.*;
-import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -45,10 +38,13 @@ public class UsuarioControllerTester {
             .withPassword("piero1496")
             .withInitScript("init.sql");
 
-    /*@BeforeAll
-    static void prepareContainer(@Autowired IUsuarioRepository repository) throws DatabaseNotWorkingException {
-        mySqlContainer.e;
-    }*/
+    /*
+     * @BeforeAll
+     * static void prepareContainer(@Autowired IUsuarioRepository repository) throws
+     * DatabaseNotWorkingException {
+     * mySqlContainer.e;
+     * }
+     */
 
     @Test
     void registrarShouldGiveUUID() throws URISyntaxException {
@@ -61,7 +57,7 @@ public class UsuarioControllerTester {
                     .id(null)
                     .dni("98765451")
                     .carnetExtranjeria("")
-                    .tipoDocumento("dni")
+                    .tipoDocumento(TipoDocumento.dni)
                     .correo("yop@mail.com")
                     .nombres("Juan")
                     .apellidos("Perez")
@@ -79,7 +75,7 @@ public class UsuarioControllerTester {
             HttpEntity<Usuario> request = new HttpEntity<>(usuario, headers);
 
             ResponseEntity<Usuario> response = testRestTemplate.postForEntity(uri, request, Usuario.class);
-            //response.getStatusCode();
+            // response.getStatusCode();
             Usuario usuarioRegistered = response.getBody();
 
             Assertions.assertEquals(response.getStatusCode(), HttpStatus.CREATED);

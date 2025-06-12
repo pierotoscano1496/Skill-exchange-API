@@ -7,17 +7,20 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.Tipo;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
+
 @Data
 @Builder
 public class UsuarioRegisteredResponse {
     private UUID id;
     private String dni;
     private String carnetExtranjeria;
-    private String tipoDocumento;
+    private TipoDocumento tipoDocumento;
     private String correo;
     private String nombres;
     private String apellidos;
-    private String tipo;
+    private Tipo tipo;
     private LocalDate fechaNacimiento;
     private String perfilLinkedin;
     private String perfilFacebook;

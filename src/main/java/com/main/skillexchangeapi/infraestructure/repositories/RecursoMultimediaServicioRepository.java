@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.constants.RecursoMultimediaContants.Medio;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IRecursoMultimediaServicioRepository;
 import com.main.skillexchangeapi.domain.entities.RecursoMultimediaServicio;
@@ -25,9 +26,11 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
     private DatabaseConnection databaseConnection;
 
     @Override
-    public List<RecursoMultimediaServicio> obtenerByServicio(UUID idServicio) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<RecursoMultimediaServicio> obtenerByServicio(UUID idServicio)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("CALL obtener_recursos_multimedia_servicio_by_servicio(?)")) {
+                CallableStatement statement = connection
+                        .prepareCall("CALL obtener_recursos_multimedia_servicio_by_servicio(?)")) {
             statement.setBytes("p_id_servicio", UuidManager.UuidToBytes(idServicio));
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -39,7 +42,7 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
                             .servicio(Servicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())
-                            .medio(resultSet.getString("MEDIO"))
+                            .medio(Medio.valueOf(resultSet.getString("MEDIO")))
                             .url(resultSet.getString("URL"))
                             .build());
                 }
@@ -56,19 +59,22 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
     }
 
     @Override
-    public List<RecursoMultimediaServicio> registrarMultiple(List<RecursoMultimediaServicio> recursosMultimediaServicio) throws DatabaseNotWorkingException, NotCreatedException {
+    public List<RecursoMultimediaServicio> registrarMultiple(List<RecursoMultimediaServicio> recursosMultimediaServicio)
+            throws DatabaseNotWorkingException, NotCreatedException {
         List<RecursoMultimediaServicio> recursosMultimediaServicioRegistered = new ArrayList<>();
 
         try (Connection connection = databaseConnection.getConnection();
-             CallableStatement statement = connection.prepareCall("{CALL registrar_recurso_multimedia_servicio(?, ?, ?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_recurso_multimedia_servicio(?, ?, ?, ?)}")) {
 
             for (RecursoMultimediaServicio recursoMultimediaServicio : recursosMultimediaServicio) {
                 try {
                     byte[] idRecursoMultimediaToBytes = UuidManager.randomUuidToBytes();
                     statement.setObject("p_id", idRecursoMultimediaToBytes);
                     statement.setString("p_url", recursoMultimediaServicio.getUrl());
-                    statement.setString("p_medio", recursoMultimediaServicio.getMedio());
-                    statement.setObject("p_id_servicio", UuidManager.UuidToBytes(recursoMultimediaServicio.getServicio().getId()));
+                    statement.setString("p_medio", recursoMultimediaServicio.getMedio().toString());
+                    statement.setObject("p_id_servicio",
+                            UuidManager.UuidToBytes(recursoMultimediaServicio.getServicio().getId()));
 
                     try (ResultSet resultSet = statement.executeQuery()) {
                         RecursoMultimediaServicio recursoMultimediaServicioRegistered = null;
@@ -77,7 +83,7 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
                             recursoMultimediaServicioRegistered = RecursoMultimediaServicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                                     .url(resultSet.getString("URL"))
-                                    .medio(resultSet.getString("MEDIO"))
+                                    .medio(Medio.valueOf(resultSet.getString("MEDIO")))
                                     .servicio(Servicio.builder()
                                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                             .build())

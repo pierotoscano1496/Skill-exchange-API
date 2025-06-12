@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -20,7 +21,7 @@ public interface IMatchServicioRepository {
 
     MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
 
-    MatchServicio actualizarEstado(UUID id, String estado) throws DatabaseNotWorkingException, NotUpdatedException;
+    MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;
 
     MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
 }

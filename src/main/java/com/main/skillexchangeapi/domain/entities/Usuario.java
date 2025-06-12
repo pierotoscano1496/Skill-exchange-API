@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.domain.entities;
 
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import lombok.Builder;
@@ -15,7 +16,7 @@ public class Usuario {
     private final UUID id;
     private String dni;
     private String carnetExtranjeria;
-    private String tipoDocumento;
+    private TipoDocumento tipoDocumento;
     private String correo;
     private String nombres;
     private String apellidos;

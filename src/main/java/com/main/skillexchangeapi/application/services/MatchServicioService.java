@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.application.services;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
@@ -179,30 +180,30 @@ public class MatchServicioService implements IMatchServicioService {
                 final String[] estadosReadyForSolicitado = { "pendiente-pago", "rechazado" };
                 final String estadoReadyForPendientePago = "ejecucion";
                 final String estadoReadyForEjecucion = "finalizado";
-                String estado = requestBody.getEstado();
+                Estado estado = requestBody.getEstado();
 
                 String servicioClosedMessage = null;
 
                 switch (matchServicio.getEstado()) {
-                        case "solicitado":
+                        case solicitado:
                                 if (Arrays.asList(estadosReadyForSolicitado).contains(estado)) {
                                         estadoIsCorrect = true;
                                 }
                                 break;
-                        case "pendiente-pago":
+                        case pendiente_pago:
                                 if (estado.equals(estadoReadyForPendientePago)) {
                                         estadoIsCorrect = true;
                                 }
                                 break;
-                        case "ejecucion":
+                        case ejecucion:
                                 if (estado.equals(estadoReadyForEjecucion)) {
                                         estadoIsCorrect = true;
                                 }
                                 break;
-                        case "rechazado":
+                        case rechazado:
                                 servicioClosedMessage = "El servicio ya está rechazado";
                                 break;
-                        case "finalizado":
+                        case finalizado:
                                 servicioClosedMessage = "El servicio ya finalizó";
                                 break;
                 }

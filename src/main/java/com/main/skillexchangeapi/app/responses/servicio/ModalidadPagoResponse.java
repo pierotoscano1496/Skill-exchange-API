@@ -2,6 +2,8 @@ package com.main.skillexchangeapi.app.responses.servicio;
 
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,7 +11,7 @@ import lombok.Data;
 @Builder
 public class ModalidadPagoResponse {
     private UUID id;
-    private String tipo;
+    private Tipo tipo;
     private String cuentaBancaria;
     private String numeroCelular;
     private String url;

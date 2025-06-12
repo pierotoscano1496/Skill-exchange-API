@@ -1,5 +1,11 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
+import com.main.skillexchangeapi.app.constants.RecursoMultimediaContants.Medio;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Dia;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
 import com.main.skillexchangeapi.domain.entities.*;
@@ -49,9 +55,9 @@ public class ServicioRepository implements IServicioRepository {
                                 .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO"))
                                 .precioMinimo(resultSet.getDouble("PRECIO_MINIMO"))
                                 .titulo(resultSet.getString("TITULO"))
-                                .tipoPrecio(resultSet.getString("TIPO_PRECIO"))
+                                .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO")))
                                 .ubicacion(resultSet.getString("UBICACION"))
-                                .modalidad(resultSet.getString("MODALIDAD"))
+                                .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD")))
                                 .aceptaTerminos(resultSet.getBoolean("ACEPTA_TERMINOS"))
                                 .proveedor(Usuario.builder()
                                         .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
@@ -59,7 +65,8 @@ public class ServicioRepository implements IServicioRepository {
                                         .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
                                         .dni(resultSet.getString("DNI_PROVEEDOR"))
                                         .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
-                                        .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
+                                        .tipoDocumento(
+                                                TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR")))
                                         .correo(resultSet.getString("CORREO_PROVEEDOR"))
                                         .introduccion(resultSet.getString("INTRODUCCION_PROVEEDOR"))
                                         .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
@@ -72,7 +79,7 @@ public class ServicioRepository implements IServicioRepository {
                         while (resultSet.next()) {
                             disponibilidades.add(ServicioDisponibilidad.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                                    .dia(resultSet.getString("DIA"))
+                                    .dia(Dia.valueOf(resultSet.getString("DIA")))
                                     .horaInicio(resultSet.getTime("HORA_INICIO").toLocalTime())
                                     .horaFin(resultSet.getTime("HORA_FIN").toLocalTime())
                                     .build());
@@ -81,7 +88,7 @@ public class ServicioRepository implements IServicioRepository {
                         while (resultSet.next()) {
                             recursosMultimedia.add(RecursoMultimediaServicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                                    .medio(resultSet.getString("MEDIO"))
+                                    .medio(Medio.valueOf(resultSet.getString("MEDIO")))
                                     .url(resultSet.getString("URL"))
                                     .build());
                         }
@@ -156,9 +163,9 @@ public class ServicioRepository implements IServicioRepository {
                             .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO"))
                             .precioMinimo(resultSet.getDouble("PRECIO_MINIMO"))
                             .titulo(resultSet.getString("TITULO"))
-                            .tipoPrecio(resultSet.getString("TIPO_PRECIO"))
+                            .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO")))
                             .ubicacion(resultSet.getString("UBICACION"))
-                            .modalidad(resultSet.getString("MODALIDAD"))
+                            .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD")))
                             .aceptaTerminos(resultSet.getBoolean("ACEPTA_TERMINOS"))
                             .build());
                 }
@@ -192,9 +199,9 @@ public class ServicioRepository implements IServicioRepository {
                             .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO"))
                             .precioMinimo(resultSet.getDouble("PRECIO_MINIMO"))
                             .titulo(resultSet.getString("TITULO"))
-                            .tipoPrecio(resultSet.getString("TIPO_PRECIO"))
+                            .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO")))
                             .ubicacion(resultSet.getString("UBICACION"))
-                            .modalidad(resultSet.getString("MODALIDAD"))
+                            .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD")))
                             .aceptaTerminos(resultSet.getBoolean("ACEPTA_TERMINOS"))
                             .build());
                 }
@@ -219,11 +226,11 @@ public class ServicioRepository implements IServicioRepository {
             statement.setString("p_titulo", servicio.getTitulo());
             statement.setString("p_descripcion", servicio.getDescripcion());
             statement.setDouble("p_precio", servicio.getPrecio());
-            statement.setString("p_tipo_precio", servicio.getTipoPrecio());
+            statement.setString("p_tipo_precio", servicio.getTipoPrecio().toString());
             statement.setDouble("p_precio_minimo", servicio.getPrecioMinimo());
             statement.setDouble("p_precio_maximo", servicio.getPrecioMaximo());
             statement.setString("p_ubicacion", servicio.getUbicacion());
-            statement.setString("p_modalidad", servicio.getModalidad());
+            statement.setString("p_modalidad", servicio.getModalidad().toString());
             statement.setBoolean("p_acepta_terminos", servicio.isAceptaTerminos());
             statement.setBytes("p_id_proveedor", UuidManager.UuidToBytes(servicio.getProveedor().getId()));
 
@@ -240,11 +247,11 @@ public class ServicioRepository implements IServicioRepository {
                             .titulo(resultSet.getString("TITULO"))
                             .descripcion(resultSet.getString("DESCRIPCION"))
                             .precio(resultSet.getDouble("PRECIO"))
-                            .tipoPrecio(resultSet.getString("TIPO_PRECIO"))
+                            .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO")))
                             .precioMinimo(resultSet.getDouble("PRECIO_MINIMO"))
                             .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO"))
                             .ubicacion(resultSet.getString("UBICACION"))
-                            .modalidad(resultSet.getString("MODALIDAD"))
+                            .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD")))
                             .aceptaTerminos(resultSet.getBoolean("ACEPTA_TERMINOS"))
                             .proveedor(servicio.getProveedor());
                 }
@@ -257,14 +264,14 @@ public class ServicioRepository implements IServicioRepository {
                             .prepareCall("{CALL registrar_servicio_disponibilidad(?, ?, ?, ?, ?)}")) {
                         dispStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
                         dispStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
-                        dispStmt.setString("p_dia", disp.getDia());
+                        dispStmt.setString("p_dia", disp.getDia().toString());
                         dispStmt.setTime("p_hora_inicio", java.sql.Time.valueOf(disp.getHoraInicio()));
                         dispStmt.setTime("p_hora_fin", java.sql.Time.valueOf(disp.getHoraFin()));
                         try (ResultSet rs = dispStmt.executeQuery()) {
                             if (rs.next()) {
                                 disponibilidades.add(ServicioDisponibilidad.builder()
                                         .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
-                                        .dia(rs.getString("DIA"))
+                                        .dia(Dia.valueOf(rs.getString("DIA")))
                                         .horaInicio(rs.getTime("HORA_INICIO").toLocalTime())
                                         .horaFin(rs.getTime("HORA_FIN").toLocalTime())
                                         .build());
@@ -282,12 +289,12 @@ public class ServicioRepository implements IServicioRepository {
                         imgStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
                         imgStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
                         imgStmt.setString("p_url", img.getUrl());
-                        imgStmt.setString("p_medio", img.getMedio());
+                        imgStmt.setString("p_medio", img.getMedio().toString());
                         try (ResultSet rs = imgStmt.executeQuery()) {
                             if (rs.next()) {
                                 recursosMultimedia.add(RecursoMultimediaServicio.builder()
                                         .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
-                                        .medio(rs.getString("MEDIO"))
+                                        .medio(Medio.valueOf(rs.getString("MEDIO")))
                                         .url(rs.getString("URL"))
                                         .build());
                             }
@@ -323,7 +330,7 @@ public class ServicioRepository implements IServicioRepository {
                             .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
                         mpStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
                         mpStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
-                        mpStmt.setString("p_tipo", modalidad.getTipo());
+                        mpStmt.setString("p_tipo", modalidad.getTipo().toString());
                         mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
                         mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());
                         mpStmt.setString("p_url", modalidad.getUrl());
@@ -331,7 +338,7 @@ public class ServicioRepository implements IServicioRepository {
                             if (rs.next()) {
                                 modalidadesPago.add(ModalidadPago.builder()
                                         .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
-                                        .tipo(rs.getString("TIPO"))
+                                        .tipo(Tipo.valueOf(rs.getString("TIPO")))
                                         .cuentaBancaria(rs.getString("CUENTA_BANCARIA"))
                                         .numeroCelular(rs.getString("NUMERO_CELULAR"))
                                         .url(rs.getString("URL"))

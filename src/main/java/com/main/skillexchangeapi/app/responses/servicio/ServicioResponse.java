@@ -1,5 +1,7 @@
 package com.main.skillexchangeapi.app.responses.servicio;
 
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,9 +21,9 @@ public class ServicioResponse {
     private double precio;
     private double precioMaximo;
     private double precioMinimo;
-    private String tipoPrecio;
+    private TipoPrecio tipoPrecio;
     private String ubicacion;
-    private String modalidad;
+    private Modalidad modalidad;
     private boolean aceptaTerminos;
     private List<ServicioDisponibilidadResponse> disponibilidades;
     private List<ServicioSkillResponse> skills;

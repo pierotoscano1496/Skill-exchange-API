@@ -5,11 +5,13 @@ import lombok.Data;
 
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.RecursoMultimediaContants.Medio;
+
 @Data
 @Builder
 public class RecursoMultimediaServicio {
     private final UUID id;
     private Servicio servicio;
     private String url;
-    private String medio;
+    private Medio medio;
 }

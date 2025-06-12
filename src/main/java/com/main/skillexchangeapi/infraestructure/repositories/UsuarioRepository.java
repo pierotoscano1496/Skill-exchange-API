@@ -5,6 +5,7 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioReposi
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
@@ -40,7 +41,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .dni(resultSet.getString("DNI"))
                             .correo(resultSet.getString("CORREO"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                             .nombres(resultSet.getNString("NOMBRES"))
                             .apellidos(resultSet.getNString("APELLIDOS"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
@@ -80,7 +81,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .apellidos(resultSet.getNString("APELLIDOS"))
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -120,7 +121,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .apellidos(resultSet.getNString("APELLIDOS"))
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -162,7 +163,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .apellidos(resultSet.getNString("APELLIDOS"))
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -201,7 +202,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                             .apellidos(resultSet.getNString("APELLIDOS"))
                             .dni(resultSet.getString("DNI"))
                             .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                             .correo(resultSet.getString("CORREO"))
                             .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
                             .introduccion(resultSet.getString("INTRODUCCION"))
@@ -263,7 +264,7 @@ public class UsuarioRepository implements IUsuarioRepository {
             statement.setObject("p_id", idUsuarioToBytes);
             statement.setString("p_dni", usuario.getDni());
             statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
-            statement.setString("p_tipo_documento", usuario.getTipoDocumento());
+            statement.setString("p_tipo_documento", usuario.getTipoDocumento().toString());
             statement.setString("p_introduccion", usuario.getIntroduccion());
             statement.setString("p_correo", usuario.getCorreo());
             statement.setString("p_nombres", usuario.getNombres());
@@ -289,7 +290,7 @@ public class UsuarioRepository implements IUsuarioRepository {
                                 .id(uuid)
                                 .dni(resultSet.getString("DNI"))
                                 .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
-                                .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO"))
+                                .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
                                 .introduccion(resultSet.getString("INTRODUCCION"))
                                 .correo(resultSet.getString("CORREO"))
                                 .nombres(resultSet.getString("NOMBRES"))

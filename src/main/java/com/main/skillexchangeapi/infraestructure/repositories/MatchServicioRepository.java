@@ -1,5 +1,7 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
@@ -65,7 +67,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
                             .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(Servicio.builder()
@@ -84,7 +86,8 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                             .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
                                             .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
                                             .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
-                                            .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
+                                            .tipoDocumento(TipoDocumento
+                                                    .valueOf(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR")))
                                             .build())
                                     .build())
                             .cliente(Usuario.builder()
@@ -144,7 +147,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
                             .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(Servicio.builder()
@@ -167,7 +170,8 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
                                     .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
                                     .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
-                                    .tipoDocumento(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR"))
+                                    .tipoDocumento(
+                                            TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR")))
                                     .build())
                             .build());
                 }
@@ -208,7 +212,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
                             .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(Servicio.builder()
@@ -251,7 +255,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(null)
                             .fechaCierre(null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(match.getServicio())
@@ -273,13 +277,13 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public MatchServicio actualizarEstado(UUID id, String estado)
+    public MatchServicio actualizarEstado(UUID id, Estado estado)
             throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection
                         .prepareCall("{CALL actualizar_match_servicio_estado (?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
-            statement.setString("p_estado", estado);
+            statement.setString("p_estado", estado.toString());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchServicioUpdated = null;
@@ -300,7 +304,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
                             .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(Servicio.builder()
@@ -352,7 +356,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .fecha(resultSet.getDate("FECHA").toLocalDate())
                             .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
                             .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
-                            .estado(resultSet.getString("ESTADO"))
+                            .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(Servicio.builder()

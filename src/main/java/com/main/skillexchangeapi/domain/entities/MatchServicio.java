@@ -6,6 +6,8 @@ import lombok.Data;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+
 @Data
 @Builder
 public class MatchServicio {
@@ -15,7 +17,7 @@ public class MatchServicio {
     private LocalDate fecha;
     private LocalDate fechaInicio;
     private LocalDate fechaCierre;
-    private String estado;
+    private Estado estado;
     private int puntuacion;
     private double costo;
 }

@@ -1,5 +1,8 @@
 package com.main.skillexchangeapi.repositories;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants.Tipo;
+import com.main.skillexchangeapi.app.constants.RecursoMultimediaContants.Medio;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.*;
@@ -666,7 +669,7 @@ public class MatchRepositoryTester extends MySQLContainer<MatchRepositoryTester>
                  */
                 Usuario proveedor = Usuario.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
-                                .tipoDocumento("dni")
+                                .tipoDocumento(TipoDocumento.dni)
                                 .dni("76543210")
                                 .nombres("Piero")
                                 .apellidos("Toscano")
@@ -702,7 +705,7 @@ public class MatchRepositoryTester extends MySQLContainer<MatchRepositoryTester>
 
                 Usuario cliente = Usuario.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440001"))
-                                .tipoDocumento("dni")
+                                .tipoDocumento(TipoDocumento.dni)
                                 .dni("87654321")
                                 .nombres("Christian")
                                 .apellidos("Burgos")
@@ -741,14 +744,14 @@ public class MatchRepositoryTester extends MySQLContainer<MatchRepositoryTester>
                 // Recursos multimedia
                 RecursoMultimediaServicio linkVideoTiktok = RecursoMultimediaServicio.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
-                                .medio("tiktok")
+                                .medio(Medio.tiktok)
                                 .servicio(servicioBackend)
                                 .url("https://www.tiktok.com/@pierotoscano1496/video/7065210063484357894?is_from_webapp=1&sender_device=pc&web_id=7320697309019588101")
                                 .build();
 
                 RecursoMultimediaServicio linkVideoInstagram = RecursoMultimediaServicio.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
-                                .medio("tiktok")
+                                .medio(Medio.tiktok)
                                 .servicio(servicioBackend)
                                 .url("https://www.instagram.com/reel/CbCLRhNgPJK/?utm_source=ig_web_copy_link&igsh=MzRlODBiNWFlZA==")
                                 .build();
@@ -758,14 +761,14 @@ public class MatchRepositoryTester extends MySQLContainer<MatchRepositoryTester>
                  */
                 ModalidadPago yape = ModalidadPago.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440000"))
-                                .tipo("yape")
+                                .tipo(Tipo.yape)
                                 .numeroCelular("987654321")
                                 .servicio(servicioBackend)
                                 .build();
 
                 ModalidadPago tarjeta = ModalidadPago.builder()
                                 .id(UUID.fromString("550e8400-e29b-41d4-a716-446655440001"))
-                                .tipo("tarjeta")
+                                .tipo(Tipo.tarjeta)
                                 .cuentaBancaria("1122334455667")
                                 .servicio(servicioBackend)
                                 .build();

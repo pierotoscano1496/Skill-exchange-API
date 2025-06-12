@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.repositories;
 
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.entities.Usuario;
@@ -7,7 +8,6 @@ import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
-import com.main.skillexchangeapi.infraestructure.repositories.UsuarioRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -21,8 +21,6 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import javax.sql.DataSource;
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
@@ -67,7 +65,7 @@ public class UsuarioRepositoryTester extends MySQLContainer<UsuarioRepositoryTes
     @Test
     void testTableExists() throws SQLException {
         try (Connection connection = databaseConnection.getConnection();
-             ResultSet resultSet = connection.prepareStatement("SHOW TABLES").executeQuery()) {
+                ResultSet resultSet = connection.prepareStatement("SHOW TABLES").executeQuery()) {
             int tablesCount = 0;
             while (resultSet.next()) {
                 tablesCount++;
@@ -78,12 +76,13 @@ public class UsuarioRepositoryTester extends MySQLContainer<UsuarioRepositoryTes
     }
 
     @Test
-    public void userRegisteredHasOwn16BytesId() throws DatabaseNotWorkingException, EncryptionAlghorithmException, NotCreatedException {
+    public void userRegisteredHasOwn16BytesId()
+            throws DatabaseNotWorkingException, EncryptionAlghorithmException, NotCreatedException {
         Usuario usuario = Usuario.builder()
                 .id(null)
                 .dni("98765432")
                 .carnetExtranjeria(null)
-                .tipoDocumento("dni")
+                .tipoDocumento(TipoDocumento.dni)
                 .correo("yop@mail.com")
                 .nombres("Juan")
                 .apellidos("Perez")
@@ -104,13 +103,13 @@ public class UsuarioRepositoryTester extends MySQLContainer<UsuarioRepositoryTes
     }
 
     /*
-    public static String asJsonString(final Object object) {
-        try {
-            return new ObjectMapper().writeValueAsString(object)
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
+     * public static String asJsonString(final Object object) {
+     * try {
+     * return new ObjectMapper().writeValueAsString(object)
+     * } catch (JsonProcessingException e) {
+     * throw new RuntimeException(e);
+     * }
+     * }
+     * 
      */
 }

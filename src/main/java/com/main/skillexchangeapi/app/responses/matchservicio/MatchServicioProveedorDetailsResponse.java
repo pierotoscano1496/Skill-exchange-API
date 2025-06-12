@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.app.responses.matchservicio;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class MatchServicioProveedorDetailsResponse {
     private LocalDate fecha;
     private LocalDate fechaInicio;
     private LocalDate fechaCierre;
-    private String estado;
+    private Estado estado;
     private int puntuacion;
     private double costo;
 }

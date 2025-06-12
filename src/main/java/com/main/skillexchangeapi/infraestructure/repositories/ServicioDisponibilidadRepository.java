@@ -9,6 +9,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Dia;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioDisponibilidadRepository;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
@@ -34,7 +35,7 @@ public class ServicioDisponibilidadRepository implements IServicioDisponibilidad
                     statement.setBytes("p_id", UuidManager.randomUuidToBytes());
                     statement.setBytes("p_id_servicio",
                             UuidManager.UuidToBytes(servicioDisponibilidad.getServicio().getId()));
-                    statement.setString("p_dia", servicioDisponibilidad.getDia());
+                    statement.setString("p_dia", servicioDisponibilidad.getDia().toString());
                     statement.setTime("p_hora_inicio", java.sql.Time.valueOf(servicioDisponibilidad.getHoraInicio()));
                     statement.setTime("p_hora_fin", java.sql.Time.valueOf(servicioDisponibilidad.getHoraFin()));
 
@@ -45,7 +46,7 @@ public class ServicioDisponibilidadRepository implements IServicioDisponibilidad
                             servicioDisponibilidadRegistered = ServicioDisponibilidad.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
                                     .servicio(servicioDisponibilidad.getServicio())
-                                    .dia(resultSet.getString("DIA"))
+                                    .dia(Dia.valueOf(resultSet.getString("DIA")))
                                     .horaInicio(resultSet.getTime("HORA_INICIO").toLocalTime())
                                     .horaFin(resultSet.getTime("HORA_FIN").toLocalTime())
                                     .build();

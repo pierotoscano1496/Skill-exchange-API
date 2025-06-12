@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.app.utils;
 
+import com.main.skillexchangeapi.app.constants.RecursoMultimediaContants.Medio;
 import com.main.skillexchangeapi.domain.constants.ResourceSource;
 import com.main.skillexchangeapi.domain.constants.ResourceType;
 
@@ -7,14 +8,18 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class FileUitls {
-    static final String[] ACCEPTED_CHAT_FILES_EXTENSIONS = {"jpg", "jpeg", "png", "doc", "pdf", "docx", "ppt", "pptx", "xls", "xlsx", "txt"};
-    static final String[] ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS = {"jpg", "jpeg", "png", "bmp", "gif", "mp4", "mov", "wmv", "avi"};
-    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_IMAGES = {"jpg", "jpeg", "png", "bmp", "gif"};
-    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_VIDEOS = {"mp4", "mov", "wmv", "avi"};
-    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS = {"doc", "pdf", "docx", "ppt", "pptx", "xls", "xlsx", "txt"};
-    static final String[] MEDIOS_MULTIMEDIA_RESOURCES = {"video", "imagen", "web-externa", "facebook", "instagram", "tiktok", "youtube", "twitter", "linkedin"};
-    static final String[] ACCEPTED_METADATA_MODALIDAD_PAGO = {"jpg", "jpeg", "png"};
-    static final String[] METADATA_SERVICIO_TYPE = {"payment", "recurso-multimedia"};
+    static final String[] ACCEPTED_CHAT_FILES_EXTENSIONS = { "jpg", "jpeg", "png", "doc", "pdf", "docx", "ppt", "pptx",
+            "xls", "xlsx", "txt" };
+    static final String[] ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS = { "jpg", "jpeg", "png", "bmp", "gif", "mp4", "mov",
+            "wmv", "avi" };
+    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_IMAGES = { "jpg", "jpeg", "png", "bmp", "gif" };
+    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_VIDEOS = { "mp4", "mov", "wmv", "avi" };
+    static final String[] ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS = { "doc", "pdf", "docx", "ppt", "pptx", "xls",
+            "xlsx", "txt" };
+    static final String[] MEDIOS_MULTIMEDIA_RESOURCES = { "video", "imagen", "web-externa", "facebook", "instagram",
+            "tiktok", "youtube", "twitter", "linkedin" };
+    static final String[] ACCEPTED_METADATA_MODALIDAD_PAGO = { "jpg", "jpeg", "png" };
+    static final String[] METADATA_SERVICIO_TYPE = { "payment", "recurso-multimedia" };
 
     public static Optional<String> getExtension(String fileName, ResourceSource resourceSource) {
         if (fileName == null || !fileName.contains(".")) {
@@ -27,7 +32,7 @@ public class FileUitls {
         boolean admitExtension = switch (source) {
             case CHAT -> Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
             case MULTIMEDIA ->
-                    Arrays.stream(ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
+                Arrays.stream(ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
             case PAYMENT -> Arrays.stream(ACCEPTED_METADATA_MODALIDAD_PAGO).anyMatch(extension::equalsIgnoreCase);
         };
 
@@ -43,7 +48,7 @@ public class FileUitls {
                 case IMAGE -> Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_IMAGES).anyMatch(extension::equalsIgnoreCase);
                 case VIDEO -> Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_VIDEOS).anyMatch(extension::equalsIgnoreCase);
                 case DOCUMENT ->
-                        Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS).anyMatch(extension::equalsIgnoreCase);
+                    Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS).anyMatch(extension::equalsIgnoreCase);
             };
         } else {
             return false;
@@ -66,10 +71,10 @@ public class FileUitls {
     }
 
     /**/
-    public static Optional<String> getMedioFromMultimediaResource(String fileName) {
+    public static Optional<Medio> getMedioFromMultimediaResource(String fileName) {
         Optional<String> extension = getExtensionFromMultimediaResource(fileName);
         if (extension.isPresent()) {
-            String medio = null;
+            Medio medio = null;
 
             switch (extension.get().toLowerCase()) {
                 case "jpg":
@@ -77,13 +82,13 @@ public class FileUitls {
                 case "png":
                 case "bmp":
                 case "gif":
-                    medio = "imagen";
+                    medio = Medio.imagen;
                     break;
                 case "mp4":
                 case "mov":
                 case "wmv":
                 case "avi":
-                    medio = "video";
+                    medio = Medio.video;
                     break;
             }
             return Optional.of(medio);
