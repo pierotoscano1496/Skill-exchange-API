@@ -52,21 +52,21 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 List<MatchServicio> matchServicios = new ArrayList<>();
 
                 while (resultSet.next()) {
-                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    Timestamp fechaInicio = resultSet.getTimestamp("FECHA_INICIO");
                     if (resultSet.wasNull()) {
                         fechaInicio = null;
                     }
 
-                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    Timestamp fechaCierre = resultSet.getTimestamp("FECHA_CIERRE");
                     if (resultSet.wasNull()) {
                         fechaCierre = null;
                     }
 
                     matchServicios.add(MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDateTime() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDateTime() : null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
@@ -108,7 +108,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, String estado)
+    public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, Estado estado)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
         return obtenerDetailsFromPrestamista(idPrestamista, estado, MatchServicioFromPrestamista.BY_OPTIONAL_ESTADO);
     }
@@ -119,37 +119,38 @@ public class MatchServicioRepository implements IMatchServicioRepository {
         return obtenerDetailsFromPrestamista(idPrestamista, null, MatchServicioFromPrestamista.IN_SERVING);
     }
 
-    public List<MatchServicio> obtenerDetailsFromPrestamista(UUID idPrestamista, String estado,
+    public List<MatchServicio> obtenerDetailsFromPrestamista(UUID idPrestamista, Estado estado,
             MatchServicioFromPrestamista match) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection
                         .prepareCall("{CALL matchs_servicio_details_from_proveedor(?, ?, ?)}")) {
             statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
-            statement.setString("p_estado", estado);
+            statement.setString("p_estado", estado.toString());
             statement.setInt("p_type_query", match.getValor());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<MatchServicio> matchServicios = new ArrayList<>();
 
                 while (resultSet.next()) {
-                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    Timestamp fechaInicio = resultSet.getTimestamp("FECHA_INICIO");
                     if (resultSet.wasNull()) {
                         fechaInicio = null;
                     }
 
-                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    Timestamp fechaCierre = resultSet.getTimestamp("FECHA_CIERRE");
                     if (resultSet.wasNull()) {
                         fechaCierre = null;
                     }
 
                     matchServicios.add(MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDateTime() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDateTime() : null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
+                            .mensaje(resultSet.getString("MENSAJE"))
                             .servicio(Servicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
@@ -197,24 +198,25 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 MatchServicio matchServicio = null;
 
                 while (resultSet.next()) {
-                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    Timestamp fechaInicio = resultSet.getTimestamp("FECHA_INICIO");
                     if (resultSet.wasNull()) {
                         fechaInicio = null;
                     }
 
-                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    Timestamp fechaCierre = resultSet.getTimestamp("FECHA_CIERRE");
                     if (resultSet.wasNull()) {
                         fechaCierre = null;
                     }
 
                     matchServicio = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDateTime() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDateTime() : null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
+                            .mensaje(resultSet.getString("MENSAJE"))
                             .servicio(Servicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())
@@ -240,11 +242,16 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Override
     public MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();
-                CallableStatement statement = connection.prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?)}")) {
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?, ?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(match.getId()));
+            statement.setTimestamp("p_fecha", Timestamp.valueOf(match.getFecha()));
+            statement.setTimestamp("p_fecha_inicio", Timestamp.valueOf(match.getFechaInicio()));
+            statement.setTimestamp("p_fecha_cierre", Timestamp.valueOf(match.getFechaCierre()));
             statement.setDouble("p_costo", match.getCosto());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(match.getCliente().getId()));
+            statement.setString("p_mensaje", match.getMensaje());
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchRegistered = null;
@@ -252,7 +259,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 while (resultSet.next()) {
                     matchRegistered = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
                             .fechaInicio(null)
                             .fechaCierre(null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
@@ -260,6 +267,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                             .costo(resultSet.getDouble("COSTO"))
                             .servicio(match.getServicio())
                             .cliente(match.getCliente())
+                            .mensaje(resultSet.getString("MENSAJE"))
                             .build();
 
                     break;
@@ -289,24 +297,25 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 MatchServicio matchServicioUpdated = null;
 
                 while (resultSet.next()) {
-                    Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                    Timestamp fechaInicio = resultSet.getTimestamp("FECHA_INICIO");
                     if (resultSet.wasNull()) {
                         fechaInicio = null;
                     }
 
-                    Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                    Timestamp fechaCierre = resultSet.getTimestamp("FECHA_CIERRE");
                     if (resultSet.wasNull()) {
                         fechaCierre = null;
                     }
 
                     matchServicioUpdated = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDateTime() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDateTime() : null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
+                            .mensaje(resultSet.getString("MENSAJE"))
                             .servicio(Servicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())
@@ -340,12 +349,12 @@ public class MatchServicioRepository implements IMatchServicioRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchServicioUpdated = null;
 
-                Date fechaInicio = resultSet.getDate("FECHA_INICIO");
+                Timestamp fechaInicio = resultSet.getTimestamp("FECHA_INICIO");
                 if (resultSet.wasNull()) {
                     fechaInicio = null;
                 }
 
-                Date fechaCierre = resultSet.getDate("FECHA_CIERRE");
+                Timestamp fechaCierre = resultSet.getTimestamp("FECHA_CIERRE");
                 if (resultSet.wasNull()) {
                     fechaCierre = null;
                 }
@@ -353,12 +362,13 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 while (resultSet.next()) {
                     matchServicioUpdated = MatchServicio.builder()
                             .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                            .fecha(resultSet.getDate("FECHA").toLocalDate())
-                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDate() : null)
-                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDate() : null)
+                            .fecha(resultSet.getTimestamp("FECHA").toLocalDateTime())
+                            .fechaInicio(fechaInicio != null ? fechaInicio.toLocalDateTime() : null)
+                            .fechaCierre(fechaCierre != null ? fechaCierre.toLocalDateTime() : null)
                             .estado(Estado.valueOf(resultSet.getString("ESTADO")))
                             .puntuacion(resultSet.getInt("PUNTUACION"))
                             .costo(resultSet.getDouble("COSTO"))
+                            .mensaje(resultSet.getString("MENSAJE"))
                             .servicio(Servicio.builder()
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .build())

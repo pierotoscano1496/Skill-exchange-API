@@ -74,7 +74,7 @@ public class MatchServicioService implements IMatchServicioService {
 
         @Override
         public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista,
-                        String estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
+                        Estado estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
                 return repository.obtenerDetailsFromPrestamistaByOptionalEstado(idPrestamista, estado)
                                 .stream()
                                 .map(m -> MatchServicioDetailsResponse.builder()
@@ -99,6 +99,7 @@ public class MatchServicioService implements IMatchServicioService {
                                                 .estado(m.getEstado())
                                                 .puntuacion(m.getPuntuacion())
                                                 .costo(m.getCosto())
+                                                .mensaje(m.getMensaje())
                                                 .servicio(ServicioResponse.builder()
                                                                 .id(m.getServicio().getId())
                                                                 .descripcion(m.getServicio().getDescripcion())

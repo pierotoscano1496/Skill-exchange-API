@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
@@ -35,8 +36,9 @@ public class MatchServicioController {
         }
     }
 
-    @GetMapping({"details/prestamista/{idPrestamista}/estado/{estado}", "details/prestamista/{idPrestamista}"})
-    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(@PathVariable UUID idPrestamista, @PathVariable(required = false) String estado) {
+    @GetMapping({ "details/prestamista/{idPrestamista}/estado/{estado}", "details/prestamista/{idPrestamista}" })
+    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(
+            @PathVariable UUID idPrestamista, @PathVariable(required = false) Estado estado) {
         try {
             return service.obtenerDetailsFromPrestamistaByOptionalEstado(idPrestamista, estado);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
@@ -71,7 +73,8 @@ public class MatchServicioController {
     }
 
     @PatchMapping("estado/{id}")
-    public MatchServicioResponse actualizarEstado(@PathVariable UUID id, @RequestBody UpdateEstadoMatchServicioBody requestBody) {
+    public MatchServicioResponse actualizarEstado(@PathVariable UUID id,
+            @RequestBody UpdateEstadoMatchServicioBody requestBody) {
         try {
             return service.actualizarEstado(id, requestBody);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException | NotUpdatedException e) {
