@@ -178,9 +178,9 @@ public class MatchServicioService implements IMatchServicioService {
                 // Corroborar que el estado sea el correcto según el ciclo de vida del match
                 MatchServicio matchServicio = repository.obtener(id);
                 boolean estadoIsCorrect = false;
-                final String[] estadosReadyForSolicitado = { "pendiente-pago", "rechazado" };
-                final String estadoReadyForPendientePago = "ejecucion";
-                final String estadoReadyForEjecucion = "finalizado";
+                final Estado[] estadosReadyForSolicitado = { Estado.pendiente_pago, Estado.rechazado };
+                final Estado estadoReadyForPendientePago = Estado.ejecucion;
+                final Estado estadoReadyForEjecucion = Estado.finalizado;
                 Estado estado = requestBody.getEstado();
 
                 String servicioClosedMessage = null;

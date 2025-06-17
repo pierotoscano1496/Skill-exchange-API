@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -292,6 +293,15 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                         .prepareCall("{CALL actualizar_match_servicio_estado (?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setString("p_estado", estado.toString());
+
+            statement.setTimestamp("p_fecha_inicio", switch (estado) {
+                case ejecucion -> Timestamp.valueOf(LocalDateTime.now());
+                default -> null;
+            });
+            statement.setTimestamp("p_fecha_cierre", switch (estado) {
+                case finalizado, rechazado -> Timestamp.valueOf(LocalDateTime.now());
+                default -> null;
+            });
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 MatchServicio matchServicioUpdated = null;
