@@ -13,6 +13,7 @@ import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.messaging.Contact;
 import com.main.skillexchangeapi.domain.entities.messaging.Conversation;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
+import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -47,7 +48,8 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public MensajeChat saveFirstMensaje(HttpServletRequest request, FirstMessageChatBody requestBody) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public MensajeChat saveFirstMensaje(HttpServletRequest request, FirstMessageChatBody requestBody)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
 
@@ -132,18 +134,22 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public List<MensajeChat> obtenerNoMessages(HttpServletRequest request) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<MensajeChat> obtenerNoMessages(HttpServletRequest request)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idUsuarioLogged = usuarioRepository.obtenerByCorreo(correo).getId();
         return repository.findByIdContactExcludeMessages(idUsuarioLogged);
     }
 
     @Override
-    public MensajeChat obtenerWithUser(HttpServletRequest request, UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public MensajeChat obtenerWithUser(HttpServletRequest request, UUID idUsuario)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
 
-        //Optional<MensajeChat> mensajeChat = repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor), UuidManager.UuidToBytes(idUsuario));
+        // Optional<MensajeChat> mensajeChat =
+        // repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor),
+        // UuidManager.UuidToBytes(idUsuario));
         Optional<MensajeChat> mensajeChat = repository.findByIdContacts(idEmisor, idUsuario);
         if (mensajeChat.isPresent()) {
             return mensajeChat.get();
@@ -153,16 +159,27 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public MensajeChat obtenerWithUserNoMessages(HttpServletRequest request, UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public MensajeChat obtenerWithUserNoMessages(HttpServletRequest request, UUID idUsuario)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
 
-        //Optional<MensajeChat> mensajeChat = repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor), UuidManager.UuidToBytes(idUsuario));
+        // Optional<MensajeChat> mensajeChat =
+        // repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor),
+        // UuidManager.UuidToBytes(idUsuario));
         Optional<MensajeChat> mensajeChat = repository.findByIdContactExcludeMessages(idEmisor, idUsuario);
         if (mensajeChat.isPresent()) {
             return mensajeChat.get();
         } else {
             throw new ResourceNotFoundException("No existe la conversación");
         }
+    }
+
+    @Override
+    public List<MensajeChatProjection> obtenerChatsWithLasMessage(HttpServletRequest request)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        String correo = tokenUtils.extractEmailFromRequest(request);
+        UUID idUsuarioLogged = usuarioRepository.obtenerByCorreo(correo).getId();
+        return repository.findChatsWithLastMessage(idUsuarioLogged);
     }
 }

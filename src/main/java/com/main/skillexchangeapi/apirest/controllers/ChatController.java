@@ -7,6 +7,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.abstractions.services.messaging.IConversationService;
 import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatService;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
+import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -93,6 +94,15 @@ public class ChatController {
                 statusError = HttpStatus.NOT_FOUND;
             }
             throw new ResponseStatusException(statusError, e.getMessage());
+        }
+    }
+
+    @GetMapping("/own-last-message")
+    public List<MensajeChatProjection> obtenerConversacionesConUltimoMensaje(HttpServletRequest request) {
+        try {
+            return service.obtenerChatsWithLasMessage(request);
+        } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

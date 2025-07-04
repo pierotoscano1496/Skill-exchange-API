@@ -1,14 +1,14 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories.reviews;
 
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
+import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
+
+import org.springframework.data.mongodb.repository.Aggregation;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
-import org.springframework.stereotype.Repository;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
 
 public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
     @Query(value = "{'contacts.idContact': ?0}", fields = "{messages: 0}")
@@ -19,4 +19,10 @@ public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
 
     @Query(value = "{$and: [{'contacts.idContact': ?0}, {'contacts.idContact': ?1}]}", fields = "{messages: 0}")
     Optional<MensajeChat> findByIdContactExcludeMessages(UUID idContact1, UUID idContact2);
+
+    @Aggregation(pipeline = {
+            "{ '$match': { 'contacts.idContact': ?0 } }",
+            "{ '$project': { 'contacts': 1, 'lastMessage': { $arrayElemAt: ['$messages', -1] } } }"
+    })
+    List<MensajeChatProjection> findChatsWithLastMessage(UUID idContact);
 }
