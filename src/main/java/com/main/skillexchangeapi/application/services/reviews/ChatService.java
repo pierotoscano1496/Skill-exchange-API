@@ -2,7 +2,8 @@ package com.main.skillexchangeapi.application.services.reviews;
 
 import com.main.skillexchangeapi.app.requests.messaging.FirstMessageChatBody;
 import com.main.skillexchangeapi.app.requests.messaging.MessageBody;
-import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.messaging.ChatWithLastMessageResponse;
+import com.main.skillexchangeapi.app.responses.messaging.ConversationResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
@@ -124,10 +125,23 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public MensajeChat obtenerConversacion(UUID id) throws ResourceNotFoundException {
-        Optional<MensajeChat> mensajeChatFound = repository.findById(id);
+    public ConversationResponse getConversationById(UUID idConversation, UUID idLoggedUser)
+            throws ResourceNotFoundException {
+        Optional<MensajeChat> mensajeChatFound = repository.findById(idConversation);
         if (mensajeChatFound.isPresent()) {
-            return mensajeChatFound.get();
+            MensajeChat mensajeChat = mensajeChatFound.get();
+            Contact otherContact = null;
+            for (Contact contact : mensajeChat.getContacts()) {
+                if (!contact.getIdContact().equals(idLoggedUser)) {
+                    otherContact = contact;
+                    break;
+                }
+            }
+            return ConversationResponse.builder()
+                    .conversationId(mensajeChat.getId())
+                    .otherContact(otherContact)
+                    .messages(mensajeChat.getMessages())
+                    .build();
         } else {
             throw new ResourceNotFoundException("No existe la conversación");
         }
@@ -142,44 +156,29 @@ public class ChatService implements IChatService {
     }
 
     @Override
-    public MensajeChat obtenerWithUser(HttpServletRequest request, UUID idUsuario)
-            throws DatabaseNotWorkingException, ResourceNotFoundException {
-        String correo = tokenUtils.extractEmailFromRequest(request);
-        UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
-
-        // Optional<MensajeChat> mensajeChat =
-        // repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor),
-        // UuidManager.UuidToBytes(idUsuario));
-        Optional<MensajeChat> mensajeChat = repository.findByIdContacts(idEmisor, idUsuario);
-        if (mensajeChat.isPresent()) {
-            return mensajeChat.get();
-        } else {
-            throw new ResourceNotFoundException("No existe la conversación");
-        }
-    }
-
-    @Override
-    public MensajeChat obtenerWithUserNoMessages(HttpServletRequest request, UUID idUsuario)
-            throws DatabaseNotWorkingException, ResourceNotFoundException {
-        String correo = tokenUtils.extractEmailFromRequest(request);
-        UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
-
-        // Optional<MensajeChat> mensajeChat =
-        // repository.findByIdContacts(UuidManager.UuidToBytes(idEmisor),
-        // UuidManager.UuidToBytes(idUsuario));
-        Optional<MensajeChat> mensajeChat = repository.findByIdContactExcludeMessages(idEmisor, idUsuario);
-        if (mensajeChat.isPresent()) {
-            return mensajeChat.get();
-        } else {
-            throw new ResourceNotFoundException("No existe la conversación");
-        }
-    }
-
-    @Override
-    public List<MensajeChatProjection> obtenerChatsWithLasMessage(HttpServletRequest request)
+    public List<ChatWithLastMessageResponse> obtenerChatsWithLasMessage(HttpServletRequest request)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
         String correo = tokenUtils.extractEmailFromRequest(request);
         UUID idUsuarioLogged = usuarioRepository.obtenerByCorreo(correo).getId();
-        return repository.findChatsWithLastMessage(idUsuarioLogged);
+        List<MensajeChatProjection> projections = repository.findChatsWithLastMessage(idUsuarioLogged);
+        List<ChatWithLastMessageResponse> response = new ArrayList<>();
+
+        for (MensajeChatProjection projection : projections) {
+            Contact otherContact = null;
+            for (Contact contact : projection.getContacts()) {
+                if (!contact.getIdContact().equals(idUsuarioLogged)) {
+                    otherContact = contact;
+                    break;
+                }
+            }
+
+            response.add(
+                    ChatWithLastMessageResponse.builder()
+                            .conversationId(projection.getId())
+                            .contact(otherContact)
+                            .lastMessage(projection.getLastMessage())
+                            .build());
+        }
+        return response;
     }
 }

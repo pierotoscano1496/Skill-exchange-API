@@ -5,13 +5,12 @@ import com.main.skillexchangeapi.domain.entities.messaging.Message;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
 import java.util.UUID;
 
 @Data
 @Builder
-public class ConversationResponse {
+public class ChatWithLastMessageResponse {
     private UUID conversationId;
-    private Contact otherContact;
-    private List<Message> messages;
+    private Contact contact;
+    private Message lastMessage;
 }

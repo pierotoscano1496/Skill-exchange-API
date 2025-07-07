@@ -21,8 +21,8 @@ public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
     Optional<MensajeChat> findByIdContactExcludeMessages(UUID idContact1, UUID idContact2);
 
     @Aggregation(pipeline = {
-            "{ '$match': { 'contacts.idContact': ?0 } }",
-            "{ '$project': { 'contacts': 1, 'lastMessage': { $arrayElemAt: ['$messages', -1] } } }"
+            " { '$match': { 'contacts.idContact': ?0 } }",
+            " { '$project': { 'id': '$_id', 'contacts': 1, 'lastMessage': { $arrayElemAt: ['$messages', -1] } } }"
     })
     List<MensajeChatProjection> findChatsWithLastMessage(UUID idContact);
 }
