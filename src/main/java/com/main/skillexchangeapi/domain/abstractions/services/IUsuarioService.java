@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
@@ -26,15 +27,22 @@ public interface IUsuarioService {
 
     UsuarioRegisteredResponse obtener(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    UsuarioResponse login(UsuarioCredenciales credenciales) throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException;
+    UsuarioResponse login(UsuarioCredenciales credenciales)
+            throws DatabaseNotWorkingException, EncryptionAlghorithmException, ResourceNotFoundException;
 
     UsuarioPersonalInfo getUserCred(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody) throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
+    UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody)
+            throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
 
-    UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody) throws DatabaseNotWorkingException, NotCreatedException;
+    UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody)
+            throws DatabaseNotWorkingException, NotCreatedException;
 
     List<SkillResponse> obtenerSkills(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    PlanAsignado asignarPlan(UUID id, SetPlanToUsuarioRequest request) throws DatabaseNotWorkingException, NotCreatedException;
+    List<SkillInfoResponse> obtenerSkillsInfo(String correo)
+            throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    PlanAsignado asignarPlan(UUID id, SetPlanToUsuarioRequest request)
+            throws DatabaseNotWorkingException, NotCreatedException;
 }

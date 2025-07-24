@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.domain.abstractions.services;
 
 import com.main.skillexchangeapi.app.requests.CreateSkillRequest;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -13,6 +14,11 @@ import java.util.UUID;
 
 public interface ISkillService {
     List<SkillResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException;
-    List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    List<SkillInfoResponse> obtenerInfo() throws DatabaseNotWorkingException, ResourceNotFoundException;
+
+    List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria)
+            throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     SkillResponse registrar(CreateSkillRequest request) throws DatabaseNotWorkingException, NotCreatedException;
 }

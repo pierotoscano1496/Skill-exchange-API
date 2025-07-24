@@ -4,17 +4,22 @@ import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.domain.abstractions.services.ITokenBlackList;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
+import com.main.skillexchangeapi.domain.entities.detail.SkillInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,6 +41,8 @@ public class UsuarioController {
     @Autowired
     private TokenUtils tokenUtils;
 
+    Logger logger = LoggerFactory.getLogger(UsuarioController.class);
+
     @GetMapping
     public ResponseEntity<UsuarioRegisteredResponse> obtener(HttpServletRequest request) {
         try {
@@ -53,6 +60,20 @@ public class UsuarioController {
         } catch (DatabaseNotWorkingException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @GetMapping("/own/skills/info")
+    public List<SkillInfoResponse> obtenerSkillsInfo(HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return service.obtenerSkillsInfo(correo);
+        } catch (DatabaseNotWorkingException e) {
+            logger.error("Error en GET /own/skills/info: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            logger.error("Error en GET /own/skills/info: {}", e.getMessage(), e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -77,7 +98,8 @@ public class UsuarioController {
     }
 
     @PatchMapping("/skills/{id}")
-    public UsuarioSkillsAsignadosResponse asignarSkills(@PathVariable UUID id, @RequestBody List<AsignacionSkillToUsuarioRequest> requestBody) {
+    public UsuarioSkillsAsignadosResponse asignarSkills(@PathVariable UUID id,
+            @RequestBody List<AsignacionSkillToUsuarioRequest> requestBody) {
         try {
             return service.asignarSkills(id, requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {

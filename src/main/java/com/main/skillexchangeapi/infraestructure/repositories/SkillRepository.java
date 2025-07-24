@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.infraestructure.repositories;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.entities.*;
+import com.main.skillexchangeapi.domain.entities.detail.SkillInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
@@ -38,6 +39,33 @@ public class SkillRepository implements ISkillRepository {
                         .subCategoria(SubCategoria.builder()
                                 .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
                                 .build())
+                        .build());
+            }
+
+            if (!skills.isEmpty()) {
+                return skills;
+            } else {
+                throw new ResourceNotFoundException("No se encontraron habilidades para la subcategoría indicada");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de habilidades");
+        }
+    }
+
+    @Override
+    public List<SkillInfo> obtenerInfo() throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("CALL obtener_skills_info()");
+                ResultSet resultSet = statement.executeQuery()) {
+
+            List<SkillInfo> skills = new ArrayList<>();
+
+            while (resultSet.next()) {
+                skills.add(SkillInfo.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .nombreCategoria(resultSet.getString("NOMBRE_CATEGORIA"))
+                        .nombreSubCategoria(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
                         .build());
             }
 

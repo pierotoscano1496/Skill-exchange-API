@@ -6,6 +6,7 @@ import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
@@ -217,6 +218,19 @@ public class UsuarioService implements IUsuarioService {
                                                 .idSubCategoria(s.getSkill().getSubCategoria().getId())
                                                 .build())
                                 .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<SkillInfoResponse> obtenerSkillsInfo(String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                UUID id = repository.obtenerByCorreo(correo).getId();
+                return skillUsuarioRepository.obtenerByIdUsuario(id).stream().map(s -> SkillInfoResponse.builder()
+                                .id(s.getSkill().getId())
+                                .descripcion(s.getSkill().getDescripcion())
+                                .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
+                                .nombreCategoria(s.getSkill().getSubCategoria().getCategoria()
+                                                .getNombre())
+                                .build()).collect(Collectors.toList());
         }
 
         @Override

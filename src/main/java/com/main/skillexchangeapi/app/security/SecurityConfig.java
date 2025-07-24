@@ -61,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/sub-categoria/categoria/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/skill").permitAll()
                         .requestMatchers(HttpMethod.GET, "/skill/sub-categoria/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/skill/info").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/skills/*").permitAll()
                         .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
 

@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.CreateSkillRequest;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ICategoriaRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.ISkillService;
@@ -22,46 +23,58 @@ import java.util.stream.Collectors;
 
 @Service
 public class SkillService implements ISkillService {
-    @Autowired
-    private ISkillRepository repository;
+        @Autowired
+        private ISkillRepository repository;
 
-    @Autowired
-    private ICategoriaRepository categoriaRepository;
+        @Autowired
+        private ICategoriaRepository categoriaRepository;
 
-    @Override
-    public List<SkillResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.obtener().stream().map(s -> SkillResponse.builder()
-                .id(s.getId())
-                .descripcion(s.getDescripcion())
-                .idSubCategoria(s.getSubCategoria().getId())
-                .build()).collect(Collectors.toList());
-    }
+        @Override
+        public List<SkillResponse> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.obtener().stream().map(s -> SkillResponse.builder()
+                                .id(s.getId())
+                                .descripcion(s.getDescripcion())
+                                .idSubCategoria(s.getSubCategoria().getId())
+                                .build()).collect(Collectors.toList());
+        }
 
-    @Override
-    public List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria) throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return repository.obtenerBySubCategoria(idSubcategoria).stream().map(s -> SkillResponse.builder()
-                .id(s.getId())
-                .descripcion(s.getDescripcion())
-                .idSubCategoria(s.getSubCategoria().getId())
-                .build()).collect(Collectors.toList());
-    }
+        @Override
+        public List<SkillInfoResponse> obtenerInfo() throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.obtenerInfo().stream().map(s -> SkillInfoResponse.builder()
+                                .id(s.getId())
+                                .descripcion(s.getDescripcion())
+                                .nombreSubCategoria(s.getNombreSubCategoria())
+                                .nombreCategoria(s.getNombreCategoria())
+                                .build()).collect(Collectors.toList());
+        }
 
-    @Override
-    public SkillResponse registrar(CreateSkillRequest request) throws DatabaseNotWorkingException, NotCreatedException {
-        SubCategoria subCategoria = SubCategoria.builder()
-                .id(request.getIdSubcategoria()).build();
+        @Override
+        public List<SkillResponse> obtenerBySubCategoria(UUID idSubcategoria)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.obtenerBySubCategoria(idSubcategoria).stream().map(s -> SkillResponse.builder()
+                                .id(s.getId())
+                                .descripcion(s.getDescripcion())
+                                .idSubCategoria(s.getSubCategoria().getId())
+                                .build()).collect(Collectors.toList());
+        }
 
-        Skill skill = Skill.builder()
-                .descripcion(request.getDescripcion())
-                .subCategoria(subCategoria)
-                .build();
+        @Override
+        public SkillResponse registrar(CreateSkillRequest request)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                SubCategoria subCategoria = SubCategoria.builder()
+                                .id(request.getIdSubcategoria()).build();
 
-        Skill skillRegistered = repository.registrar(skill);
+                Skill skill = Skill.builder()
+                                .descripcion(request.getDescripcion())
+                                .subCategoria(subCategoria)
+                                .build();
 
-        return SkillResponse.builder()
-                .id(skillRegistered.getId())
-                .descripcion(skillRegistered.getDescripcion())
-                .idSubCategoria(skillRegistered.getSubCategoria().getId())
-                .build();
-    }
+                Skill skillRegistered = repository.registrar(skill);
+
+                return SkillResponse.builder()
+                                .id(skillRegistered.getId())
+                                .descripcion(skillRegistered.getDescripcion())
+                                .idSubCategoria(skillRegistered.getSubCategoria().getId())
+                                .build();
+        }
 }

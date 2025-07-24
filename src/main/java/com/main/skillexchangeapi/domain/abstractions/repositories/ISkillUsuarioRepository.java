@@ -9,7 +9,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ISkillUsuarioRepository {
-    List<SkillUsuario> registrarMultiple(List<SkillUsuario> skillsUsuario) throws DatabaseNotWorkingException, NotCreatedException;
+    List<SkillUsuario> registrarMultiple(List<SkillUsuario> skillsUsuario)
+            throws DatabaseNotWorkingException, NotCreatedException;
 
     List<SkillUsuario> obtenerByIdUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
 }
