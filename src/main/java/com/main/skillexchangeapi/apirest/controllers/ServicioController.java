@@ -5,6 +5,7 @@ import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimed
 import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParametersBody;
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
+import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
 import com.main.skillexchangeapi.domain.constants.PaymentMethod;
@@ -12,6 +13,7 @@ import com.main.skillexchangeapi.domain.exceptions.*;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,12 +39,16 @@ public class ServicioController {
     @Autowired
     private IAWSS3ServicioService storageService;
 
+    @Autowired
+    private TokenUtils tokenUtils;
+
     Logger logger = LoggerFactory.getLogger(ServicioController.class);
 
-    @GetMapping("/usuario/{idUsuario}")
-    @Operation(summary = "Obtener servicios por usuario", description = "Devuelve una lista de servicios para un usuario dado")
-    private List<ServicioResponse> obtenerByUsuario(@PathVariable UUID idUsuario) {
+    @GetMapping("/usuario")
+    @Operation(summary = "Obtener servicios por usuario", description = "Devuelve los servicios creados por el usuario del sistema")
+    private List<ServicioResponse> obtenerByUsuario(HttpServletRequest request) {
         try {
+            UUID idUsuario = tokenUtils.extractIdFromRequest(request);
             List<ServicioResponse> servicios = service.obtenerByUsuario(idUsuario).stream().map(servicio -> {
                 try {
                     servicio.setUrlImagePreview(storageService.getFirstImageServicioPresignedUrl(servicio.getId()));

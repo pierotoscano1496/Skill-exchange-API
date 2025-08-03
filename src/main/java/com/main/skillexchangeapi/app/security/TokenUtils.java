@@ -5,21 +5,33 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
+import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class TokenUtils {
     private final String accessTokenSignature;
     private final static Long ACCESS_TOKEN_VALIDITY_MILI_SECONDS = 1000 * 60 * (long) 60 * 5; // 5 horas
+
+    @Autowired
+    private IUsuarioRepository usuarioRepository;
 
     @Autowired
     public TokenUtils(@Value("${jwt.secret}") String accessTokenSignature) {
@@ -70,6 +82,22 @@ public class TokenUtils {
         } catch (JwtException ex) {
             return null;
         }
+    }
+
+    public UUID extractIdFromRequest(HttpServletRequest request) {
+        Logger logger = LoggerFactory.getLogger(TokenUtils.class);
+        logger.info("Extracting user ID from request");
+        String email = extractEmailFromRequest(request);
+        if (email != null) {
+            try {
+                return usuarioRepository.obtenerByCorreo(email).getId();
+            } catch (DatabaseNotWorkingException e) {
+                logger.error("Database not working: {}", e.getMessage(), e);
+            } catch (ResourceNotFoundException e) {
+                logger.error("Resource not found: {}", e.getMessage(), e);
+            }
+        }
+        return null;
     }
 
     public String extractTokenFromRequest(HttpServletRequest request) {
