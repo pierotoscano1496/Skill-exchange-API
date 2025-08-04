@@ -1,6 +1,8 @@
 package com.main.skillexchangeapi.app.requests.servicio;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.UUID;
@@ -8,6 +10,8 @@ import java.util.UUID;
 import com.main.skillexchangeapi.app.constants.ServicioConstants;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class CreateServicioBody {
     private String titulo;
     private String descripcion;

@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -46,7 +47,7 @@ public class ServicioController {
 
     @GetMapping("/usuario")
     @Operation(summary = "Obtener servicios por usuario", description = "Devuelve los servicios creados por el usuario del sistema")
-    private List<ServicioResponse> obtenerByUsuario(HttpServletRequest request) {
+    public List<ServicioResponse> obtenerByUsuario(HttpServletRequest request) {
         try {
             UUID idUsuario = tokenUtils.extractIdFromRequest(request);
             List<ServicioResponse> servicios = service.obtenerByUsuario(idUsuario).stream().map(servicio -> {
@@ -99,7 +100,7 @@ public class ServicioController {
      */
     @PostMapping("busqueda")
     @Operation(summary = "Busca servicios a través de parámetros de diversos", description = "Buscar servicios por: palabra clave, ID de habilidad, ID de subcategoría o ID de categoría")
-    private List<ServicioResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
+    public List<ServicioResponse> searchByParameters(@RequestBody SearchServiciosParametersBody parameters) {
         try {
             return service.searchByParameters(parameters);
         } catch (DatabaseNotWorkingException e) {
@@ -109,11 +110,20 @@ public class ServicioController {
         }
     }
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @Operation(summary = "Guarda un servicio con su metadata", description = "Guarda primero los archivos de los recursos multimedia de un servicio a S3: imágenes, videos cortos, etc. y la información del servicio adicionalmente con: habilidades, disponibilidades y modalidades de pago")
-    private ServicioRegisteredResponse registrar(@RequestPart("data") CreateServicioBody requestBody,
+    public ServicioRegisteredResponse registrar(@RequestPart("data") CreateServicioBody requestBody,
             @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia) {
+        logger.info("Recibiendo solicitud para registrar un servicio con los siguientes datos: {}", requestBody);
         if (recursosMultimedia == null || recursosMultimedia.isEmpty()) {
+            recursosMultimedia.forEach(file -> {
+                if (file == null || file.isEmpty()) {
+                    logger.warn("Archivo multimedia vacío recibido.");
+                } else {
+                    logger.info("Archivo multimedia recibido: {} ({} bytes)", file.getOriginalFilename(),
+                            file.getSize());
+                }
+            });
             logger.warn("No se han proporcionado recursos multimedia para el servicio.");
         } else {
             recursosMultimedia = recursosMultimedia.stream()
@@ -144,7 +154,7 @@ public class ServicioController {
 
     @PatchMapping("/modalidad-pago/{id}")
     @Operation(summary = "Asigna modalidades de pago a un servicio", description = "Mediante el ID del servicio, se le asigna las modalidades de pago")
-    private ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id,
+    public ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(@PathVariable UUID id,
             @RequestBody List<AsignacionModalidadPagoToServicioRequest> requestBody) {
         try {
             return service.asignarModalidadesPago(id, requestBody);
@@ -155,7 +165,7 @@ public class ServicioController {
 
     @PatchMapping("/upload-multimedia/{id}")
     @Operation(summary = "Asigna archivos multimedia a un servicio", description = "Agrega archivos a S3 y después los registros, tales como su url")
-    private List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id,
+    public List<MultimediaResourceUploadedResponse> uploadMultimediaServiceResource(@PathVariable UUID id,
             @RequestParam("files") List<MultipartFile> files) {
         try {
             return storageService.uploadMultimediaServiceResources(id, files);
@@ -170,7 +180,7 @@ public class ServicioController {
 
     @PatchMapping("/upload-metadata-modalidad-pago/{id}/{paymentMethod}")
     @Operation(summary = "Agrega archivos multimedia a una modalidad de pago de un servicio", description = "Agrega archivos a la modalidad de pago de un servicio de un servicio por su ID")
-    private String uploadMetadataModalidadPagoToService(@PathVariable UUID id,
+    public String uploadMetadataModalidadPagoToService(@PathVariable UUID id,
             @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
         try {
             return storageService.uploadModalidadPagoResource(id, paymentMethod, file);
@@ -185,7 +195,7 @@ public class ServicioController {
 
     @PatchMapping("recursos-multimedia/{id}")
     @Operation(summary = "Asigna recursos multimedia a un servicio", description = "Agrega los archivos de los recursos a S3 y las anexa al servicio indicado por su ID")
-    private ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(@PathVariable UUID id,
+    public ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(@PathVariable UUID id,
             @RequestBody List<AsignacionRecursoMultimediaToServicioRequest> requestBody) {
         try {
             return service.asignarRecursosMultimedia(id, requestBody);
