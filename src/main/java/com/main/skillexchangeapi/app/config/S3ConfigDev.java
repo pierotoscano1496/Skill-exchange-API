@@ -26,6 +26,9 @@ public class S3ConfigDev {
     @Value("${cloud.aws.s3.endpoint}")
     private String endpoint;
 
+    @Value("${aws.credentials.region:us-east-1}")
+    private String region;
+
     @Bean
     public AmazonS3 s3Client() {
         Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -40,7 +43,7 @@ public class S3ConfigDev {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         return AmazonS3ClientBuilder.standard()
                 .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(endpoint, "us-east-1"))
+                        new AwsClientBuilder.EndpointConfiguration(endpoint, region))
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withPathStyleAccessEnabled(true)
                 .build();

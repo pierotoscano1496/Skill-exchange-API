@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface IServicioService {
 
-        List<ServicioResponse> obtenerByUsuario(UUID idUsuario)
+        List<ServicioResponse> obtenerByProveedor(UUID idProveedor)
                         throws DatabaseNotWorkingException, ResourceNotFoundException;
 
         List<ServicioResponse> searchByParameters(SearchServiciosParametersBody requestBody)

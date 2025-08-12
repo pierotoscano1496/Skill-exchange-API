@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,9 +61,9 @@ public class ServicioService implements IServicioService {
         private IAWSS3ServicioService storageService;
 
         @Override
-        public List<ServicioResponse> obtenerByUsuario(UUID idUsuario)
+        public List<ServicioResponse> obtenerByProveedor(UUID idProveedor)
                         throws DatabaseNotWorkingException, ResourceNotFoundException {
-                return repository.obtenerByUsuario(idUsuario).stream().map(s -> ServicioResponse.builder()
+                return repository.obtenerByProveedor(idProveedor).stream().map(s -> ServicioResponse.builder()
                                 .id(s.getId())
                                 .descripcion(s.getDescripcion())
                                 .precio(s.getPrecio())
@@ -147,7 +148,6 @@ public class ServicioService implements IServicioService {
                                 .skills(servicio.getSkills().stream()
                                                 .map(s -> ServicioSkillResponse.builder()
                                                                 .idSkill(s.getSkill().getId())
-                                                                .idServicio(s.getServicio().getId())
                                                                 .build())
                                                 .collect(Collectors.toList()))
                                 .modalidadesPago(modalidadesPago.stream()
@@ -157,6 +157,14 @@ public class ServicioService implements IServicioService {
                                                                 .tipo(m.getTipo())
                                                                 .cuentaBancaria(m.getCuentaBancaria())
                                                                 .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .disponibilidades(servicio.getDisponibilidades().stream()
+                                                .map(d -> ServicioDisponibilidadResponse.builder()
+                                                                .id(d.getId())
+                                                                .dia(d.getDia())
+                                                                .horaInicio(d.getHoraInicio())
+                                                                .horaFin(d.getHoraFin())
                                                                 .build())
                                                 .collect(Collectors.toList()))
                                 .build();

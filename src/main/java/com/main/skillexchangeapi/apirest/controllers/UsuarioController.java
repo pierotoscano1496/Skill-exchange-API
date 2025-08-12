@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.azure.core.annotation.Get;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
@@ -34,9 +35,6 @@ import java.util.UUID;
 public class UsuarioController {
     @Autowired
     private IUsuarioService service;
-
-    @Autowired
-    private ITokenBlackList tokenBlackList;
 
     @Autowired
     private TokenUtils tokenUtils;
@@ -105,13 +103,5 @@ public class UsuarioController {
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletRequest request) {
-        String token = tokenUtils.extractTokenFromRequest(request);
-        tokenBlackList.addToBlacklist(token);
-
-        return ResponseEntity.ok("Logout succesfull");
     }
 }

@@ -42,6 +42,7 @@ public class ServicioRepository implements IServicioRepository {
             Servicio servicio = null;
             List<ServicioDisponibilidad> disponibilidades = new ArrayList<>();
             List<RecursoMultimediaServicio> recursosMultimedia = new ArrayList<>();
+            List<ModalidadPago> modalidadesPago = new ArrayList<>();
             List<ServicioSkill> servicioSkills = new ArrayList<>();
             int index = 0;
 
@@ -94,10 +95,20 @@ public class ServicioRepository implements IServicioRepository {
                         }
                     } else if (index == 3) {
                         while (resultSet.next()) {
+                            modalidadesPago.add(ModalidadPago.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                                    .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
+                                    .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
+                                    .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                                    .url(resultSet.getString("URL"))
+                                    .build());
+                        }
+                    } else if (index == 4) {
+                        while (resultSet.next()) {
                             servicioSkills.add(ServicioSkill.builder()
                                     .skill(Skill.builder()
-                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SKILL")))
-                                            .descripcion(resultSet.getString("DESCRIPCION_SKILL"))
+                                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                                            .descripcion(resultSet.getString("DESCRIPCION"))
                                             .subCategoria(SubCategoria.builder()
                                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
                                                     .nombre(resultSet.getString("NOMBRE_SUB_CATEGORIA"))
@@ -119,6 +130,8 @@ public class ServicioRepository implements IServicioRepository {
             if (servicio != null) {
                 servicio.setDisponibilidades(disponibilidades);
                 servicio.setRecursosMultimediaServicio(recursosMultimedia);
+                servicio.setModalidadesPago(modalidadesPago);
+                servicio.setSkills(servicioSkills);
                 return servicio;
             } else {
                 throw new ResourceNotFoundException("No existe el servicio");
@@ -182,11 +195,11 @@ public class ServicioRepository implements IServicioRepository {
     }
 
     @Override
-    public List<Servicio> obtenerByUsuario(UUID idUsuario)
+    public List<Servicio> obtenerByProveedor(UUID idProveedor)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-                CallableStatement statement = connection.prepareCall("{CALL obtener_servicios_by_usuario(?)}")) {
-            statement.setObject("p_id_usuario", UuidManager.UuidToBytes(idUsuario));
+                CallableStatement statement = connection.prepareCall("{CALL obtener_servicios_by_proveedor(?)}")) {
+            statement.setObject("p_id_proveedor", UuidManager.UuidToBytes(idProveedor));
 
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<Servicio> servicios = new ArrayList<>();

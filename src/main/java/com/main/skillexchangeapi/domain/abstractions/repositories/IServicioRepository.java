@@ -12,11 +12,13 @@ import java.util.UUID;
 public interface IServicioRepository {
     Servicio obtenerDetails(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException;
 
-    List<Servicio> obtenerServiciosClienteNoRechazados(UUID idCliente) throws DatabaseNotWorkingException, ResourceNotFoundException;
+    List<Servicio> obtenerServiciosClienteNoRechazados(UUID idCliente)
+            throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<Servicio> searchByParams(SearchServicioParams params) throws DatabaseNotWorkingException, ResourceNotFoundException;
+    List<Servicio> searchByParams(SearchServicioParams params)
+            throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<Servicio> obtenerByUsuario(UUID idUsuario) throws DatabaseNotWorkingException, ResourceNotFoundException;
+    List<Servicio> obtenerByProveedor(UUID idProveedor) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException;
 }

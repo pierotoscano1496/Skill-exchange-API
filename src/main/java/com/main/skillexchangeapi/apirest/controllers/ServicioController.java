@@ -45,12 +45,12 @@ public class ServicioController {
 
     Logger logger = LoggerFactory.getLogger(ServicioController.class);
 
-    @GetMapping("/usuario")
+    @GetMapping("/proveedor")
     @Operation(summary = "Obtener servicios por usuario", description = "Devuelve los servicios creados por el usuario del sistema")
     public List<ServicioResponse> obtenerByUsuario(HttpServletRequest request) {
         try {
             UUID idUsuario = tokenUtils.extractIdFromRequest(request);
-            List<ServicioResponse> servicios = service.obtenerByUsuario(idUsuario).stream().map(servicio -> {
+            List<ServicioResponse> servicios = service.obtenerByProveedor(idUsuario).stream().map(servicio -> {
                 try {
                     servicio.setUrlImagePreview(storageService.getFirstImageServicioPresignedUrl(servicio.getId()));
                 } catch (FileNotFoundException e) {
