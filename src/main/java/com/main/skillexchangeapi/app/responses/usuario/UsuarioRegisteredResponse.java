@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.Tipo;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
+import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 
 @Data
 @Builder
@@ -27,5 +28,5 @@ public class UsuarioRegisteredResponse {
     private String perfilInstagram;
     private String perfilTiktok;
     private String introduccion;
-    private List<SkillAsignado> skills;
+    private List<SkillAsignadoResponse> skills;
 }

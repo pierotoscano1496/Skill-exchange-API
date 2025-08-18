@@ -1,33 +1,36 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
-import com.azure.core.annotation.Get;
+import com.google.auto.value.AutoValue.Builder;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
-import com.main.skillexchangeapi.domain.abstractions.services.ITokenBlackList;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
-import com.main.skillexchangeapi.domain.entities.detail.SkillInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -41,7 +44,7 @@ public class UsuarioController {
 
     Logger logger = LoggerFactory.getLogger(UsuarioController.class);
 
-    @GetMapping
+    @GetMapping("/auth")
     public ResponseEntity<UsuarioRegisteredResponse> obtener(HttpServletRequest request) {
         try {
             String correo = tokenUtils.extractEmailFromRequest(request);
@@ -102,6 +105,58 @@ public class UsuarioController {
             return service.asignarSkills(id, requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> checkIfExists(@RequestParam(required = false) TipoDocumento tipoDocumento,
+            @RequestParam(required = false) String documento,
+            @RequestParam(required = false) String correo) {
+        try {
+            return ResponseEntity.ok(service.existsBy(tipoDocumento, documento, correo));
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tipo de documento invalido");
+        } catch (DatabaseNotWorkingException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+        }
+    }
+
+    @Profile("dev")
+    @RestController
+    @RequestMapping(value = "usuario", produces = "application/json")
+    public static class UsuarioDevController {
+        @Autowired
+        private IUsuarioService service;
+
+        @GetMapping
+        public List<UsuarioResponse> obtenerTodos() {
+            try {
+                return service.obtenerTodos();
+            } catch (DatabaseNotWorkingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        }
+
+        @Getter
+        @Builder
+        public static class RestorePasswordBody {
+            private String password;
+
+            public String getPassword() {
+                return password;
+            }
+        }
+
+        @PatchMapping("/restore/password/{id}")
+        public ResponseEntity<UsuarioResponse> restorePassword(@PathVariable UUID id,
+                @RequestBody Map<String, Object> body) {
+            try {
+                return ResponseEntity.ok(service.restorePassword(id, body));
+            } catch (DatabaseNotWorkingException | ResourceNotFoundException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
         }
     }
 }

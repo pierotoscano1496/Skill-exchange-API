@@ -4,9 +4,10 @@ import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 public class SkillInfoResponse {
     private UUID id;
     private String descripcion;

@@ -5,6 +5,8 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioReposi
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
+import com.amazonaws.services.kms.model.NotFoundException;
+import com.main.skillexchangeapi.apirest.controllers.CategoriaController;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -13,16 +15,25 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.checkerframework.checker.units.qual.s;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Repository
 public class UsuarioRepository implements IUsuarioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
 
     @Override
     public Usuario login(UsuarioCredenciales credenciales)
@@ -355,6 +366,105 @@ public class UsuarioRepository implements IUsuarioRepository {
             return statement.executeUpdate("DELETE FROM USUARIO");
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("Error al eliminar los usuarios");
+        }
+    }
+
+    @Override
+    public boolean existsByParams(Map<String, String> params)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_usuario(?, ?, ?)}");) {
+            params.entrySet().forEach(paramSet -> {
+                try {
+                    if (paramSet.getValue() != null) {
+                        statement.setString(paramSet.getKey(), paramSet.getValue());
+                    } else {
+                        statement.setNull(paramSet.getKey(), Types.VARCHAR);
+                    }
+                } catch (SQLException e) {
+                    logger.error("Error en parámetro {}", e.getMessage());
+                }
+            });
+            /*
+             * switch (tipoCredencial) {
+             * case correo:
+             * statement.setString("p_correo", pa);
+             * break;
+             * 
+             * default:
+             * break;
+             * }
+             */
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                UUID idUsuario = null;
+                while (resultSet.next()) {
+                    idUsuario = UuidManager.bytesToUuid(resultSet.getBytes("ID"));
+                    break;
+                }
+
+                if (idUsuario != null) {
+                    return true;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error al verificar la existencia del usuario: {}", e.getMessage());
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public List<Usuario> obtenerTodos() throws DatabaseNotWorkingException {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM USUARIO");
+                    ResultSet resultSet = statement.executeQuery()) {
+                List<Usuario> usuarios = new ArrayList<>();
+                while (resultSet.next()) {
+                    Usuario usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+                    usuarios.add(usuario);
+                }
+                return usuarios;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al obtener todos los usuarios");
+        }
+    }
+
+    @Override
+    public Usuario updatePassword(UUID id, String password)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE USUARIO SET CLAVE = ? WHERE ID = ?")) {
+            statement.setString(1, password);
+            statement.setBytes(2, UuidManager.UuidToBytes(id));
+            int rows = statement.executeUpdate();
+
+            if (rows == 0) {
+                throw new ResourceNotFoundException("Usuario no existe");
+            }
+            // Devuelve el usuario actualizado
+            return obtenerById(id);
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al actualizar la contraseña");
         }
     }
 }

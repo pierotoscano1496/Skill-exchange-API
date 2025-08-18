@@ -1,11 +1,13 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
+import com.main.skillexchangeapi.apirest.controllers.UsuarioController;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
-import com.main.skillexchangeapi.app.responses.UsuarioSkillsResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
@@ -29,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -64,10 +68,47 @@ public class UsuarioService implements IUsuarioService {
                                 .build();
         }
 
+        public UsuarioResponse obtenerWithSkills(UUID id)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Usuario usuario = repository.obtenerById(id);
+                List<SkillUsuario> skillsUsuario = skillUsuarioRepository.obtenerByIdUsuario(id);
+
+                return UsuarioResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .correo(usuario.getCorreo())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .introduccion(usuario.getIntroduccion())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilTiktok(usuario.getPerfilTiktok())
+                                .skillsAsignados(skillsUsuario.stream()
+                                                .map(s -> SkillAsignadoResponse.builder()
+                                                                .id(s.getSkill().getId())
+                                                                .descripcion(s.getSkill().getDescripcion())
+                                                                .nombreSubCategoria(s.getSkill().getSubCategoria()
+                                                                                .getNombre())
+                                                                .nombreCategoria(s.getSkill().getSubCategoria()
+                                                                                .getCategoria().getNombre())
+                                                                .nivelConocimiento(s.getNivelConocimiento())
+                                                                .descripcionDesempeno(s.getDescripcion())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build();
+        }
+
         @Override
         public UsuarioRegisteredResponse obtener(String correo)
                         throws DatabaseNotWorkingException, ResourceNotFoundException {
                 Usuario usuario = repository.obtenerByCorreo(correo);
+
+                List<SkillUsuario> skillsUsuario = skillUsuarioRepository.obtenerByIdUsuario(usuario.getId());
+
                 return UsuarioRegisteredResponse.builder()
                                 .id(usuario.getId())
                                 .dni(usuario.getDni())
@@ -82,6 +123,18 @@ public class UsuarioService implements IUsuarioService {
                                 .perfilInstagram(usuario.getPerfilInstagram())
                                 .perfilLinkedin(usuario.getPerfilLinkedin())
                                 .perfilTiktok(usuario.getPerfilTiktok())
+                                .skills(skillsUsuario.stream()
+                                                .map(s -> SkillAsignadoResponse.builder()
+                                                                .id(s.getSkill().getId())
+                                                                .descripcion(s.getSkill().getDescripcion())
+                                                                .nombreSubCategoria(s.getSkill().getSubCategoria()
+                                                                                .getNombre())
+                                                                .nombreCategoria(s.getSkill().getSubCategoria()
+                                                                                .getCategoria().getNombre())
+                                                                .nivelConocimiento(s.getNivelConocimiento())
+                                                                .descripcionDesempeno(s.getDescripcion())
+                                                                .build())
+                                                .collect(Collectors.toList()))
                                 .build();
         }
 
@@ -194,13 +247,13 @@ public class UsuarioService implements IUsuarioService {
 
                 List<SkillUsuario> skillsUsuarioRegistered = skillUsuarioRepository.registrarMultiple(skillsUsuario);
 
-                List<SkillAsignado> skillAsignadosRegistered = skillsUsuarioRegistered.stream()
-                                .map(su -> SkillAsignado.builder()
+                List<SkillAsignadoResponse> skillAsignadosRegistered = skillsUsuarioRegistered.stream()
+                                .map(su -> SkillAsignadoResponse.builder()
                                                 .id(su.getSkill().getId())
                                                 .nivelConocimiento(su.getNivelConocimiento())
                                                 .descripcion(su.getDescripcion())
                                                 .build())
-                                .toList();
+                                .collect(Collectors.toList());
 
                 return UsuarioSkillsAsignadosResponse.builder()
                                 .id(id)
@@ -254,6 +307,64 @@ public class UsuarioService implements IUsuarioService {
                                 .isActive(planUsuarioAsignado.isActive())
                                 .monto(planUsuarioAsignado.getMonto())
                                 .moneda(planUsuarioAsignado.getMoneda())
+                                .build();
+        }
+
+        @Override
+        public boolean existsBy(TipoDocumento tipoDocumento, String documento, String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Map<String, String> params = new HashMap<>();
+                params.put("p_documento", documento);
+                params.put("p_tipo_documento", tipoDocumento != null ? tipoDocumento.toString() : null);
+                params.put("p_correo", correo);
+                return repository.existsByParams(params);
+        }
+
+        // Métodos para ambiente de desarrollo o pruebas
+        @Override
+        public List<UsuarioResponse> obtenerTodos() throws DatabaseNotWorkingException {
+                List<Usuario> usuarios = repository.obtenerTodos();
+                return usuarios.stream().map(u -> UsuarioResponse.builder()
+                                .id(u.getId())
+                                .dni(u.getDni())
+                                .carnetExtranjeria(u.getCarnetExtranjeria())
+                                .tipoDocumento(u.getTipoDocumento())
+                                .nombres(u.getNombres())
+                                .apellidos(u.getApellidos())
+                                .correo(u.getCorreo())
+                                .fechaNacimiento(u.getFechaNacimiento())
+                                .introduccion(u.getIntroduccion())
+                                .perfilFacebook(u.getPerfilFacebook())
+                                .perfilInstagram(u.getPerfilInstagram())
+                                .perfilLinkedin(u.getPerfilLinkedin())
+                                .perfilTiktok(u.getPerfilTiktok())
+                                .build()).collect(Collectors.toList());
+        }
+
+        @Override
+        public UsuarioResponse restorePassword(UUID id, Map<String, Object> body)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                String password = (String) body.get("password");
+                if (password == null || password.isEmpty()) {
+                        throw new IllegalArgumentException("La contraseña no puede estar vacía");
+                }
+                password = passwordEncoder.encode(password);
+
+                Usuario usuario = repository.updatePassword(id, password);
+                return UsuarioResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .correo(usuario.getCorreo())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .introduccion(usuario.getIntroduccion())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilTiktok(usuario.getPerfilTiktok())
                                 .build();
         }
 }

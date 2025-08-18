@@ -11,20 +11,20 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IMatchServicioRepository {
-    List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, Estado estado)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicio> obtenerDetailsFromProveedorAndOptionalEstado(UUID idProveedor, Estado estado)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicio> obtenerDetailsFromProveedorInServing(UUID idProveedor)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
+        MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
+        MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
 
-    MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;
+        MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;
 
-    MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
+        MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
 }

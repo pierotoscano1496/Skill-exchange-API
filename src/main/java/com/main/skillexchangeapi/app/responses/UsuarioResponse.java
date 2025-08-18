@@ -5,9 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
+import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 
 @Setter
 @Getter
@@ -26,4 +29,5 @@ public class UsuarioResponse {
     private String perfilFacebook;
     private String perfilInstagram;
     private String perfilTiktok;
+    private List<SkillAsignadoResponse> skillsAsignados;
 }

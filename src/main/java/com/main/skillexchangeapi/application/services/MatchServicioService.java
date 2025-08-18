@@ -73,9 +73,9 @@ public class MatchServicioService implements IMatchServicioService {
         }
 
         @Override
-        public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista,
+        public List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorAndOptionalEstado(UUID idProveedor,
                         Estado estado) throws DatabaseNotWorkingException, ResourceNotFoundException {
-                return repository.obtenerDetailsFromPrestamistaByOptionalEstado(idPrestamista, estado)
+                return repository.obtenerDetailsFromProveedorAndOptionalEstado(idProveedor, estado)
                                 .stream()
                                 .map(m -> MatchServicioDetailsResponse.builder()
                                                 .id(m.getId())
@@ -111,9 +111,9 @@ public class MatchServicioService implements IMatchServicioService {
         }
 
         @Override
-        public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista)
+        public List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorInServing(UUID idProveedor)
                         throws DatabaseNotWorkingException, ResourceNotFoundException {
-                return repository.obtenerDetailsFromPrestamistaInServing(idPrestamista)
+                return repository.obtenerDetailsFromProveedorInServing(idProveedor)
                                 .stream().map(m -> MatchServicioDetailsResponse.builder()
                                                 .id(m.getId())
                                                 .cliente(UsuarioResponse.builder()
@@ -144,6 +144,20 @@ public class MatchServicioService implements IMatchServicioService {
                                                                 .build())
                                                 .build())
                                 .collect(Collectors.toList());
+        }
+
+        @Override
+        public Double obtenerPuntajeFromProveedor(UUID idProveedor) throws DatabaseNotWorkingException {
+                try {
+                        List<MatchServicio> matchs = repository
+                                        .obtenerDetailsFromProveedorAndOptionalEstado(idProveedor,
+                                                        Estado.finalizado);
+
+                        return matchs.stream().mapToDouble(MatchServicio::getPuntuacion).average()
+                                        .orElse(0.0);
+                } catch (ResourceNotFoundException e) {
+                        return 0.0;
+                }
         }
 
         @Override

@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.azure.core.annotation.Get;
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
@@ -36,11 +37,11 @@ public class MatchServicioController {
         }
     }
 
-    @GetMapping({ "details/prestamista/{idPrestamista}/estado/{estado}", "details/prestamista/{idPrestamista}" })
-    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(
-            @PathVariable UUID idPrestamista, @PathVariable(required = false) Estado estado) {
+    @GetMapping({ "details/proveedor/{idProveedor}/estado/{estado}", "details/proveedor/{idProveedor}" })
+    public List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorAndOptionalEstado(
+            @PathVariable UUID idProveedor, @PathVariable(required = false) Estado estado) {
         try {
-            return service.obtenerDetailsFromPrestamistaByOptionalEstado(idPrestamista, estado);
+            return service.obtenerDetailsFromProveedorAndOptionalEstado(idProveedor, estado);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof ResourceNotFoundException) {
@@ -50,10 +51,20 @@ public class MatchServicioController {
         }
     }
 
-    @GetMapping("details/prestamista/{idPrestamista}/serving")
-    public List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaInServing(@PathVariable UUID idPrestamista) {
+    @GetMapping("average-score/proveedor/{idProveedor}")
+    public Double obtenerPuntajeFromProveedor(@PathVariable UUID idProveedor) {
         try {
-            return service.obtenerDetailsFromPrestamistaInServing(idPrestamista);
+            return service.obtenerPuntajeFromProveedor(idProveedor);
+        } catch (DatabaseNotWorkingException e) {
+            HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+            throw new ResponseStatusException(errorStatus, e.getMessage());
+        }
+    }
+
+    @GetMapping("details/proveedor/{idProveedor}/serving")
+    public List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorInServing(@PathVariable UUID idProveedor) {
+        try {
+            return service.obtenerDetailsFromProveedorInServing(idProveedor);
         } catch (ResourceNotFoundException | DatabaseNotWorkingException e) {
             HttpStatus errorStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             if (e instanceof ResourceNotFoundException) {

@@ -103,6 +103,7 @@ public class SkillUsuarioRepository implements ISkillUsuarioRepository {
 
                     SkillUsuario skillUsuario = SkillUsuario.builder()
                             .nivelConocimiento(resultSet.getInt("NIVEL_CONOCIMIENTO"))
+                            .descripcion(resultSet.getString("DESCRIPCION_DESEMPENO"))
                             .skill(skill)
                             .build();
 

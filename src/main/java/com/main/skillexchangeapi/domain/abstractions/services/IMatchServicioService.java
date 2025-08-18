@@ -14,21 +14,25 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IMatchServicioService {
-    List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(UUID idCliente)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(UUID idCliente)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, Estado estado)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorAndOptionalEstado(UUID idProveedor,
+                        Estado estado)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    List<MatchServicioDetailsResponse> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista)
-            throws DatabaseNotWorkingException, ResourceNotFoundException;
+        List<MatchServicioDetailsResponse> obtenerDetailsFromProveedorInServing(UUID idProveedor)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-    MatchServicioResponse registrar(CreateMatchServicioBody requestBody)
-            throws DatabaseNotWorkingException, NotCreatedException;
+        Double obtenerPuntajeFromProveedor(UUID idProveedor) throws DatabaseNotWorkingException;
 
-    MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody)
-            throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException, BadRequestException;
+        MatchServicioResponse registrar(CreateMatchServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException;
 
-    MatchServicioResponse puntuarServicio(UUID id, PuntajeServicioRequest request)
-            throws DatabaseNotWorkingException, NotUpdatedException;
+        MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException,
+                        BadRequestException;
+
+        MatchServicioResponse puntuarServicio(UUID id, PuntajeServicioRequest request)
+                        throws DatabaseNotWorkingException, NotUpdatedException;
 }

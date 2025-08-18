@@ -14,5 +14,6 @@ public class SubCategoriaResponse {
     private UUID id;
     private String nombre;
     private UUID idCategoria;
+    private CategoriaResponse categoria;
     private List<SkillResponse> skills;
 }

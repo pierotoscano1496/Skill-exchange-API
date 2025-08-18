@@ -23,13 +23,13 @@ import java.util.UUID;
 
 @Repository
 public class MatchServicioRepository implements IMatchServicioRepository {
-    private enum MatchServicioFromPrestamista {
+    private enum MatchServicioFromProveedor {
         BY_OPTIONAL_ESTADO(1),
         IN_SERVING(2);
 
         private final int valor;
 
-        MatchServicioFromPrestamista(int valor) {
+        MatchServicioFromProveedor(int valor) {
             this.valor = valor;
         }
 
@@ -109,24 +109,24 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromPrestamistaByOptionalEstado(UUID idPrestamista, Estado estado)
+    public List<MatchServicio> obtenerDetailsFromProveedorAndOptionalEstado(UUID idProveedor, Estado estado)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return obtenerDetailsFromPrestamista(idPrestamista, estado, MatchServicioFromPrestamista.BY_OPTIONAL_ESTADO);
+        return obtenerDetailsFromProveedor(idProveedor, estado, MatchServicioFromProveedor.BY_OPTIONAL_ESTADO);
     }
 
     @Override
-    public List<MatchServicio> obtenerDetailsFromPrestamistaInServing(UUID idPrestamista)
+    public List<MatchServicio> obtenerDetailsFromProveedorInServing(UUID idProveedor)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
-        return obtenerDetailsFromPrestamista(idPrestamista, null, MatchServicioFromPrestamista.IN_SERVING);
+        return obtenerDetailsFromProveedor(idProveedor, null, MatchServicioFromProveedor.IN_SERVING);
     }
 
-    public List<MatchServicio> obtenerDetailsFromPrestamista(UUID idPrestamista, Estado estado,
-            MatchServicioFromPrestamista match) throws DatabaseNotWorkingException, ResourceNotFoundException {
+    public List<MatchServicio> obtenerDetailsFromProveedor(UUID idProveedor, Estado estado,
+            MatchServicioFromProveedor match) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection
                         .prepareCall("{CALL matchs_servicio_details_from_proveedor(?, ?, ?)}")) {
-            statement.setObject("p_id_prestamista", UuidManager.UuidToBytes(idPrestamista));
-            statement.setString("p_estado", estado.toString());
+            statement.setObject("p_id_proveedor", UuidManager.UuidToBytes(idProveedor));
+            statement.setString("p_estado", estado != null ? estado.toString() : null);
             statement.setInt("p_type_query", match.getValor());
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -158,7 +158,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .precio(resultSet.getDouble("PRECIO_SERVICIO"))
                                     .titulo(resultSet.getString("TITULO_SERVICIO"))
                                     .proveedor(Usuario.builder()
-                                            .id(idPrestamista)
+                                            .id(idProveedor)
                                             .build())
                                     .build())
                             .cliente(Usuario.builder()
