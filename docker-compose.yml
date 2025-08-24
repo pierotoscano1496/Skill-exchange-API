@@ -1,8 +1,7 @@
 services:
   localstack:
     image: localstack/localstack:3
-    ports:
-      - "4566:4566"
+    ports: ["4566:4566"]
     environment:
       - SERVICES=s3
       - DEFAULT_REGION=us-east-1
@@ -10,34 +9,27 @@ services:
     volumes:
       - ./localstack-data:/var/lib/localstack
       - "/var/run/docker.sock:/var/run/docker.sock"
-    networks:
-      - se-network
+    networks: [se-network]
 
   backend:
     build: .
     container_name: skillexchange_api
     ports:
       - "9081:9081"
-      - "5005:5005" # Debugging port
+      # - "5005:5005" # Debugging port, solo si QA lo requiere
     env_file:
-      - .env.dev
-    depends_on:
-      - mysql-db
-      - mongodb
-      - localstack
-    networks:
-      - se-network
+      - .env.${ENV_STAGE:-qa}
+    depends_on: [mysql-db, mongodb, localstack]
+    networks: [se-network]
     restart: on-failure
 
   mysql-db:
     image: mysql:8.0
     container_name: mysql_skillexchange
     env_file:
-      - .env.db.dev
-    ports:
-      - "3306:3306"
-    networks:
-      - se-network
+      - .env.db.${ENV_STAGE:-qa}
+    ports: ["3306:3306"]
+    networks: [se-network]
     volumes:
       - mysql_data:/var/lib/mysql
 
@@ -45,17 +37,14 @@ services:
     image: mongodb/mongodb-community-server:5.0-ubuntu2004
     container_name: mongodb_skillexchange
     env_file:
-      - .env.mongo.dev
-    ports:
-      - "27017:27017"
+      - .env.mongo.${ENV_STAGE:-qa}
+    ports: ["27017:27017"]
     volumes:
       - mongo-data:/data/db
-    networks:
-      - se-network
+    networks: [se-network]
 
 networks:
-  se-network:
-    driver: bridge
+  se-network: { driver: bridge }
 
 volumes:
   mysql_data:

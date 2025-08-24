@@ -27,5 +27,5 @@ public class Servicio {
     private List<ModalidadPago> modalidadesPago;
     private List<RecursoMultimediaServicio> recursosMultimediaServicio;
     private List<ServicioDisponibilidad> disponibilidades;
-    private List<ServicioSkill> skills;
+    private List<ServicioSkill> servicioSkills;
 }

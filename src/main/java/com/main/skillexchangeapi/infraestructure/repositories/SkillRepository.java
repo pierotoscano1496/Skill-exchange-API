@@ -53,6 +53,38 @@ public class SkillRepository implements ISkillRepository {
     }
 
     @Override
+    public Skill obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("CALL obtener_skill(?)")) {
+            statement.setBytes("p_id", UuidManager.UuidToBytes(id));
+
+            ResultSet resultSet = statement.executeQuery();
+
+            Skill skill = null;
+
+            if (resultSet.first()) {
+                skill = Skill.builder()
+                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                        .descripcion(resultSet.getString("DESCRIPCION"))
+                        .subCategoria(SubCategoria.builder()
+                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                .build())
+                        .build();
+            }
+
+            resultSet.close();
+
+            if (skill != null) {
+                return skill;
+            } else {
+                throw new ResourceNotFoundException("No se encontró la habilidad con el ID indicado");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda de habilidad por ID");
+        }
+    }
+
+    @Override
     public List<SkillInfo> obtenerInfo() throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection.prepareCall("CALL obtener_skills_info()");

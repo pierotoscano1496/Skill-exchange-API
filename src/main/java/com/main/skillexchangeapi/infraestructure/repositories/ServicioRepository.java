@@ -131,7 +131,7 @@ public class ServicioRepository implements IServicioRepository {
                 servicio.setDisponibilidades(disponibilidades);
                 servicio.setRecursosMultimediaServicio(recursosMultimedia);
                 servicio.setModalidadesPago(modalidadesPago);
-                servicio.setSkills(servicioSkills);
+                servicio.setServicioSkills(servicioSkills);
                 return servicio;
             } else {
                 throw new ResourceNotFoundException("No existe el servicio");
@@ -317,8 +317,8 @@ public class ServicioRepository implements IServicioRepository {
             }
 
             // Registrar skills y obtenerlas
-            if (servicio.getSkills() != null) {
-                for (ServicioSkill skill : servicio.getSkills()) {
+            if (servicio.getServicioSkills() != null) {
+                for (ServicioSkill skill : servicio.getServicioSkills()) {
                     try (CallableStatement skillStmt = connection
                             .prepareCall("{CALL registrar_servicio_skill(?, ?)}")) {
                         skillStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
@@ -364,7 +364,7 @@ public class ServicioRepository implements IServicioRepository {
 
             servicioBuilder.disponibilidades(disponibilidades);
             servicioBuilder.recursosMultimediaServicio(recursosMultimedia);
-            servicioBuilder.skills(skills);
+            servicioBuilder.servicioSkills(skills);
             servicioBuilder.modalidadesPago(modalidadesPago);
 
             Servicio servicioRegistered = servicioBuilder.build();

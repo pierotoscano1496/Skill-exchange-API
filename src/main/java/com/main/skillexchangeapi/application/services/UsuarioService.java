@@ -13,20 +13,29 @@ import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.entities.Plan;
+import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Skill;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotDeletedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -44,6 +53,12 @@ public class UsuarioService implements IUsuarioService {
 
         @Autowired
         private ISkillUsuarioRepository skillUsuarioRepository;
+
+        @Autowired
+        private IServicioSkillRepository servicioSkillRepository;
+
+        @Autowired
+        private ISkillRepository skillRepository;
 
         @Autowired
         private PasswordEncoder passwordEncoder;
@@ -262,6 +277,48 @@ public class UsuarioService implements IUsuarioService {
         }
 
         @Override
+        public UsuarioSkillsAsignadosResponse asignarSkills(String correo,
+                        List<AsignacionSkillToUsuarioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                try {
+                        UUID id = repository.obtenerByCorreo(correo).getId();
+                        return asignarSkills(id, requestBody);
+                } catch (ResourceNotFoundException e) {
+                        throw new NotCreatedException("Usuario no encontrado con el correo: " + correo);
+                }
+        }
+
+        @Override
+        public SkillAsignadoResponse asignarSkill(String correo,
+                        AsignacionSkillToUsuarioRequest requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                try {
+                        UUID id = repository.obtenerByCorreo(correo).getId();
+                        SkillUsuario skillUsuarioRegistered = skillUsuarioRepository.registrar(SkillUsuario.builder()
+                                        .skill(Skill.builder()
+                                                        .id(requestBody.getIdSkill())
+                                                        .build())
+                                        .usuario(Usuario.builder()
+                                                        .id(id)
+                                                        .build())
+                                        .nivelConocimiento(requestBody.getNivelConocimiento())
+                                        .descripcion(requestBody.getDescripcion())
+                                        .build());
+
+                        Skill skill = skillRepository.obtenerById(requestBody.getIdSkill());
+
+                        return SkillAsignadoResponse.builder()
+                                        .id(skillUsuarioRegistered.getSkill().getId())
+                                        .descripcionDesempeno(skillUsuarioRegistered.getDescripcion())
+                                        .nivelConocimiento(skillUsuarioRegistered.getNivelConocimiento())
+                                        .descripcion(skill.getDescripcion())
+                                        .build();
+                } catch (ResourceNotFoundException e) {
+                        throw new NotCreatedException("Usuario no encontrado con el correo: " + correo);
+                }
+        }
+
+        @Override
         public List<SkillResponse> obtenerSkills(UUID id)
                         throws DatabaseNotWorkingException, ResourceNotFoundException {
                 return skillUsuarioRepository.obtenerByIdUsuario(id)
@@ -284,6 +341,20 @@ public class UsuarioService implements IUsuarioService {
                                 .nombreCategoria(s.getSkill().getSubCategoria().getCategoria()
                                                 .getNombre())
                                 .build()).collect(Collectors.toList());
+        }
+
+        @Override
+        public Boolean checkIfSkillExistsInServicios(UUID idSkill, String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                UUID idProveedor = repository.obtenerByCorreo(correo).getId();
+                try {
+                        List<ServicioSkill> servicioskillsFromProveedor = servicioSkillRepository
+                                        .obtenerDetailsByProveedor(idProveedor);
+                        return servicioskillsFromProveedor.stream()
+                                        .anyMatch(servicioSkill -> servicioSkill.getSkill().getId().equals(idSkill));
+                } catch (ResourceNotFoundException e) {
+                        return false;
+                }
         }
 
         @Override
@@ -318,6 +389,13 @@ public class UsuarioService implements IUsuarioService {
                 params.put("p_tipo_documento", tipoDocumento != null ? tipoDocumento.toString() : null);
                 params.put("p_correo", correo);
                 return repository.existsByParams(params);
+        }
+
+        @Override
+        public boolean deleteSkil(UUID idSkill, String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException, NotDeletedException {
+                UUID idUsuario = repository.obtenerByCorreo(correo).getId();
+                return skillUsuarioRepository.delete(idSkill, idUsuario);
         }
 
         // Métodos para ambiente de desarrollo o pruebas

@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ISkillRepository {
+    Skill obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
+
     List<Skill> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException;
 
     List<SkillInfo> obtenerInfo() throws DatabaseNotWorkingException, ResourceNotFoundException;

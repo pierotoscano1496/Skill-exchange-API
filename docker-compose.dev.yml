@@ -1,0 +1,25 @@
+services:
+  backend-dev:
+    image: maven:3.9-eclipse-temurin-17
+    working_dir: /workspace
+    command: >
+      mvn -q -DskipTests
+      -Dspring-boot.run.profiles=${SPRING_PROFILES_ACTIVE:-dev}
+      -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
+      spring-boot:run
+    volumes:
+      - ./:/workspace:cached
+      - maven_repo:/root/.m2
+    ports:
+      - "9081:9081"
+      - "5005:5005"
+    env_file:
+      - .env.${ENV_STAGE:-dev}
+    depends_on: [mysql-db, mongodb, localstack]
+    networks: [se-network]
+    restart: on-failure
+
+  # (mysql-db, mongodb, localstack) idénticos al base pero con .env.* dinámicos
+
+volumes:
+  maven_repo:

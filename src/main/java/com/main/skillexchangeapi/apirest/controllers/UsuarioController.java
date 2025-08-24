@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.azure.core.annotation.Get;
 import com.google.auto.value.AutoValue.Builder;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
@@ -7,6 +8,7 @@ import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRe
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
@@ -16,6 +18,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotDeletedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
@@ -79,6 +82,20 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/own/skill/{idSkill}/exists-in-servicios")
+    public ResponseEntity<Boolean> checkIfSkillExistsInServicios(@PathVariable UUID idSkill,
+            HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return ResponseEntity.ok(service.checkIfSkillExistsInServicios(idSkill, correo));
+        } catch (DatabaseNotWorkingException e) {
+            logger.error("Error en GET /own/skill/{}/exists-in-servicios", idSkill, e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+        }
+    }
+
     @PostMapping
     public ResponseEntity<UsuarioRegisteredResponse> registrar(@RequestBody CreateUsuarioBody requestBody) {
         try {
@@ -108,6 +125,28 @@ public class UsuarioController {
         }
     }
 
+    @PatchMapping("/own/skills")
+    public UsuarioSkillsAsignadosResponse asignarSkills(@RequestBody List<AsignacionSkillToUsuarioRequest> requestBody,
+            HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return service.asignarSkills(correo, requestBody);
+        } catch (DatabaseNotWorkingException | NotCreatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/own/skill")
+    public ResponseEntity<SkillAsignadoResponse> asignarSkill(@RequestBody AsignacionSkillToUsuarioRequest requestBody,
+            HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return ResponseEntity.ok(service.asignarSkill(correo, requestBody));
+        } catch (DatabaseNotWorkingException | NotCreatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @GetMapping("/exists")
     public ResponseEntity<Boolean> checkIfExists(@RequestParam(required = false) TipoDocumento tipoDocumento,
             @RequestParam(required = false) String documento,
@@ -120,6 +159,18 @@ public class UsuarioController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(false);
+        }
+    }
+
+    @DeleteMapping("/own/skill/{idSkill}")
+    public ResponseEntity<Boolean> deleteSkillFromUsuario(@PathVariable UUID idSkill, HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return ResponseEntity.ok(service.deleteSkil(idSkill, correo));
+        } catch (DatabaseNotWorkingException | NotDeletedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
 
