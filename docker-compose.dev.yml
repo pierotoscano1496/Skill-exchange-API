@@ -1,3 +1,5 @@
+name: skillexchange
+
 services:
   backend-dev:
     image: maven:3.9-eclipse-temurin-17

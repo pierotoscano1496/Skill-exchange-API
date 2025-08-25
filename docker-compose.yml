@@ -1,3 +1,5 @@
+name: skillexchange
+
 services:
   localstack:
     image: localstack/localstack:3
