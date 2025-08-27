@@ -82,6 +82,20 @@ public class UsuarioController {
         }
     }
 
+    @GetMapping("/own/skills")
+    public List<SkillAsignadoResponse> obtenerSkillsAsignados(HttpServletRequest request) {
+        try {
+            String correo = tokenUtils.extractEmailFromRequest(request);
+            return service.obtenerSkillsAsignados(correo);
+        } catch (DatabaseNotWorkingException e) {
+            logger.error("Error en GET /own/skills/asignados: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (ResourceNotFoundException e) {
+            logger.error("Error en GET /own/skills/asignados: {}", e.getMessage(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
     @GetMapping("/own/skill/{idSkill}/exists-in-servicios")
     public ResponseEntity<Boolean> checkIfSkillExistsInServicios(@PathVariable UUID idSkill,
             HttpServletRequest request) {

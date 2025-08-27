@@ -8,6 +8,9 @@ import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +26,8 @@ import java.util.UUID;
 public class SkillRepository implements ISkillRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public List<Skill> obtener() throws DatabaseNotWorkingException, ResourceNotFoundException {
@@ -55,31 +60,31 @@ public class SkillRepository implements ISkillRepository {
     @Override
     public Skill obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
         try (Connection connection = databaseConnection.getConnection();
-                CallableStatement statement = connection.prepareCall("CALL obtener_skill(?)")) {
+                CallableStatement statement = connection.prepareCall("{CALL obtener_skill(?)}")) {
             statement.setBytes("p_id", UuidManager.UuidToBytes(id));
 
-            ResultSet resultSet = statement.executeQuery();
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Skill skill = null;
 
-            Skill skill = null;
+                while (resultSet.next()) {
+                    skill = Skill.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .subCategoria(SubCategoria.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
+                                    .build())
+                            .build();
 
-            if (resultSet.first()) {
-                skill = Skill.builder()
-                        .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
-                        .descripcion(resultSet.getString("DESCRIPCION"))
-                        .subCategoria(SubCategoria.builder()
-                                .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SUB_CATEGORIA")))
-                                .build())
-                        .build();
-            }
-
-            resultSet.close();
-
-            if (skill != null) {
-                return skill;
-            } else {
-                throw new ResourceNotFoundException("No se encontró la habilidad con el ID indicado");
+                    break;
+                }
+                if (skill != null) {
+                    return skill;
+                } else {
+                    throw new ResourceNotFoundException("No se encontró la habilidad con el ID indicado");
+                }
             }
         } catch (SQLException e) {
+            logger.error("Error al obtener skill por ID", e);
             throw new DatabaseNotWorkingException("Error de búsqueda de habilidad por ID");
         }
     }

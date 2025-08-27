@@ -36,6 +36,8 @@ import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -62,6 +64,8 @@ public class UsuarioService implements IUsuarioService {
 
         @Autowired
         private PasswordEncoder passwordEncoder;
+
+        Logger logger = LoggerFactory.getLogger(this.getClass());
 
         @Override
         public UsuarioResponse obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
@@ -304,7 +308,7 @@ public class UsuarioService implements IUsuarioService {
                                         .nivelConocimiento(requestBody.getNivelConocimiento())
                                         .descripcion(requestBody.getDescripcion())
                                         .build());
-
+                        logger.info("ID skill asignado {}", requestBody.getIdSkill());
                         Skill skill = skillRepository.obtenerById(requestBody.getIdSkill());
 
                         return SkillAsignadoResponse.builder()
@@ -337,6 +341,21 @@ public class UsuarioService implements IUsuarioService {
                 return skillUsuarioRepository.obtenerByIdUsuario(id).stream().map(s -> SkillInfoResponse.builder()
                                 .id(s.getSkill().getId())
                                 .descripcion(s.getSkill().getDescripcion())
+                                .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
+                                .nombreCategoria(s.getSkill().getSubCategoria().getCategoria()
+                                                .getNombre())
+                                .build()).collect(Collectors.toList());
+        }
+
+        @Override
+        public List<SkillAsignadoResponse> obtenerSkillsAsignados(String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                UUID id = repository.obtenerByCorreo(correo).getId();
+                return skillUsuarioRepository.obtenerByIdUsuario(id).stream().map(s -> SkillAsignadoResponse.builder()
+                                .id(s.getSkill().getId())
+                                .descripcion(s.getSkill().getDescripcion())
+                                .descripcionDesempeno(s.getDescripcion())
+                                .nivelConocimiento(s.getNivelConocimiento())
                                 .nombreSubCategoria(s.getSkill().getSubCategoria().getNombre())
                                 .nombreCategoria(s.getSkill().getSubCategoria().getCategoria()
                                                 .getNombre())

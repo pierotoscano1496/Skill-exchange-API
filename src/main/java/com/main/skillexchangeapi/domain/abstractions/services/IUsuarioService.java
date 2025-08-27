@@ -53,6 +53,9 @@ public interface IUsuarioService {
         List<SkillInfoResponse> obtenerSkillsInfo(String correo)
                         throws DatabaseNotWorkingException, ResourceNotFoundException;
 
+        List<SkillAsignadoResponse> obtenerSkillsAsignados(String correo)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException;
+
         Boolean checkIfSkillExistsInServicios(UUID idSkill, String correo) throws DatabaseNotWorkingException,
                         ResourceNotFoundException;
 
