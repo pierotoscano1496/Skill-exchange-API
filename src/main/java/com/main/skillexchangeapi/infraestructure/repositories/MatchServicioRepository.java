@@ -12,6 +12,9 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -40,6 +43,8 @@ public class MatchServicioRepository implements IMatchServicioRepository {
 
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente)
@@ -281,6 +286,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 }
             }
         } catch (SQLException e) {
+            logger.error("No se creó el match {}", e);
             throw new DatabaseNotWorkingException("No se creó el match");
         }
     }

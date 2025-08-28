@@ -4,21 +4,27 @@ import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRe
 import com.main.skillexchangeapi.apirest.controllers.UsuarioController;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.CreateFirstMatchServicioBody;
+import com.main.skillexchangeapi.app.requests.messaging.FirstMessageChatBody;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.SkillAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.ISkillUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
+import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatService;
+import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.entities.Plan;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Skill;
@@ -26,7 +32,10 @@ import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
+import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -42,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,10 +70,22 @@ public class UsuarioService implements IUsuarioService {
         private IServicioSkillRepository servicioSkillRepository;
 
         @Autowired
+        private IServicioRepository servicioRepository;
+
+        @Autowired
         private ISkillRepository skillRepository;
 
         @Autowired
+        private IMatchServicioRepository matchServicioRepository;
+
+        @Autowired
+        private IChatService chatService;
+
+        @Autowired
         private PasswordEncoder passwordEncoder;
+
+        @Autowired
+        private TokenUtils tokenUtils;
 
         Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -250,6 +272,7 @@ public class UsuarioService implements IUsuarioService {
                 }
         }
 
+        // Gestión de skills para usuario autenticado
         @Override
         public UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody)
                         throws DatabaseNotWorkingException, NotCreatedException {
@@ -415,6 +438,49 @@ public class UsuarioService implements IUsuarioService {
                         throws DatabaseNotWorkingException, ResourceNotFoundException, NotDeletedException {
                 UUID idUsuario = repository.obtenerByCorreo(correo).getId();
                 return skillUsuarioRepository.delete(idSkill, idUsuario);
+        }
+
+        // Gestión de matchs para usuario autenticado
+        @Override
+        public MatchServicioResponse registrarMatch(CreateFirstMatchServicioBody requestBody,
+                        HttpServletRequest request)
+                        throws ResourceNotFoundException, DatabaseNotWorkingException, NotCreatedException {
+                try {
+                        UUID idUsuario = tokenUtils.extractIdFromRequest(request);
+                        MatchServicio matchServicioRegistered = matchServicioRepository
+                                        .registrar(MatchServicio.builder()
+                                                        .servicio(Servicio.builder()
+                                                                        .id(requestBody.getIdServicio())
+                                                                        .build())
+                                                        .fecha(LocalDateTime.now())
+                                                        .costo(0)
+                                                        .cliente(Usuario.builder()
+                                                                        .id(idUsuario)
+                                                                        .build())
+                                                        .mensaje(requestBody.getMensaje())
+                                                        .build());
+
+                        // Enviar mensaje de chat al proveedor del servicio
+                        Servicio servicio = servicioRepository.obtenerDetails(requestBody.getIdServicio());
+                        UUID idProveedor = servicio.getProveedor().getId();
+
+                        MensajeChat firstMessage = chatService.saveFirstMensaje(request, FirstMessageChatBody.builder()
+                                        .idReceptor(idProveedor)
+                                        .mensaje(requestBody.getMensaje())
+                                        .build());
+
+                        return MatchServicioResponse.builder()
+                                        .id(matchServicioRegistered.getId())
+                                        .idServicio(matchServicioRegistered.getServicio().getId())
+                                        .idCliente(matchServicioRegistered.getCliente().getId())
+                                        .fecha(matchServicioRegistered.getFecha())
+                                        .estado(matchServicioRegistered.getEstado())
+                                        .costo(matchServicioRegistered.getCosto())
+                                        .build();
+                } catch (Exception e) {
+                        logger.error("No se pudo registrar el match del servicio", e);
+                        throw new NotCreatedException("No se pudo registrar el match");
+                }
         }
 
         // Métodos para ambiente de desarrollo o pruebas

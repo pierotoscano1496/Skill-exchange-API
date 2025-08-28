@@ -3,9 +3,11 @@ package com.main.skillexchangeapi.domain.abstractions.services;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.CreateFirstMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
@@ -38,6 +40,7 @@ public interface IUsuarioService {
         UsuarioRegisteredResponse registrar(CreateUsuarioBody requestBody)
                         throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException;
 
+        // Gestión de skills para usuario autenticado
         UsuarioSkillsAsignadosResponse asignarSkills(UUID id, List<AsignacionSkillToUsuarioRequest> requestBody)
                         throws DatabaseNotWorkingException, NotCreatedException;
 
@@ -67,6 +70,10 @@ public interface IUsuarioService {
 
         boolean deleteSkil(UUID idSkill, String correo)
                         throws DatabaseNotWorkingException, ResourceNotFoundException, NotDeletedException;
+
+        // Gestión de matchs para usuario autenticado
+        MatchServicioResponse registrarMatch(CreateFirstMatchServicioBody requestBody, HttpServletRequest request)
+                        throws ResourceNotFoundException, DatabaseNotWorkingException, NotCreatedException;
 
         // Métodos para ambiente de desarrollo o pruebas
         List<UsuarioResponse> obtenerTodos() throws DatabaseNotWorkingException;

@@ -4,10 +4,12 @@ import com.azure.core.annotation.Get;
 import com.google.auto.value.AutoValue.Builder;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
+import com.main.skillexchangeapi.app.requests.matchservicio.CreateFirstMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
 import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
@@ -129,6 +131,7 @@ public class UsuarioController {
         }
     }
 
+    // Gestión de skills para usuario autenticado
     @PatchMapping("/skills/{id}")
     public UsuarioSkillsAsignadosResponse asignarSkills(@PathVariable UUID id,
             @RequestBody List<AsignacionSkillToUsuarioRequest> requestBody) {
@@ -185,6 +188,19 @@ public class UsuarioController {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    // Gestión de matchs para usuario autenticado
+    @PostMapping("/own/match")
+    public MatchServicioResponse registrarMatch(@RequestBody CreateFirstMatchServicioBody requestBody,
+            HttpServletRequest request) {
+        try {
+            return service.registrarMatch(requestBody, request);
+        } catch (ResourceNotFoundException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+        } catch (DatabaseNotWorkingException | NotCreatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
 

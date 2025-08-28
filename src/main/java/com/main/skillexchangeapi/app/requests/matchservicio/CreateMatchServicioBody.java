@@ -5,10 +5,8 @@ import lombok.Getter;
 import java.util.UUID;
 
 @Getter
-public class CreateMatchServicioBody {
-    private UUID idServicio;
+public class CreateMatchServicioBody extends CreateFirstMatchServicioBody {
     private UUID idCliente;
     private int puntuacion;
     private double costo;
-    private String mensaje;
 }

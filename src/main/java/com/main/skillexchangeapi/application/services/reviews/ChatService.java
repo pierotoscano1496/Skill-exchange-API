@@ -51,8 +51,7 @@ public class ChatService implements IChatService {
     @Override
     public MensajeChat saveFirstMensaje(HttpServletRequest request, FirstMessageChatBody requestBody)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
-        String correo = tokenUtils.extractEmailFromRequest(request);
-        UUID idEmisor = usuarioRepository.obtenerByCorreo(correo).getId();
+        UUID idEmisor = tokenUtils.extractIdFromRequest(request);
 
         // Evaluar si hay una conversación previa con el receptor
         Optional<MensajeChat> previousConversation = repository.findByIdContacts(idEmisor, requestBody.getIdReceptor());
