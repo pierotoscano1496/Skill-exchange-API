@@ -252,8 +252,10 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                         .prepareCall("{CALL registrar_match_servicio (?, ?, ?, ?, ?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(match.getId()));
             statement.setTimestamp("p_fecha", Timestamp.valueOf(match.getFecha()));
-            statement.setTimestamp("p_fecha_inicio", Timestamp.valueOf(match.getFechaInicio()));
-            statement.setTimestamp("p_fecha_cierre", Timestamp.valueOf(match.getFechaCierre()));
+            statement.setTimestamp("p_fecha_inicio",
+                    match.getFechaInicio() != null ? Timestamp.valueOf(match.getFechaInicio()) : null);
+            statement.setTimestamp("p_fecha_cierre",
+                    match.getFechaCierre() != null ? Timestamp.valueOf(match.getFechaCierre()) : null);
             statement.setDouble("p_costo", match.getCosto());
             statement.setObject("p_id_servicio", UuidManager.UuidToBytes(match.getServicio().getId()));
             statement.setObject("p_id_cliente", UuidManager.UuidToBytes(match.getCliente().getId()));

@@ -449,6 +449,7 @@ public class UsuarioService implements IUsuarioService {
                         UUID idUsuario = tokenUtils.extractIdFromRequest(request);
                         MatchServicio matchServicioRegistered = matchServicioRepository
                                         .registrar(MatchServicio.builder()
+                                                        .id(UuidManager.randomUuid())
                                                         .servicio(Servicio.builder()
                                                                         .id(requestBody.getIdServicio())
                                                                         .build())

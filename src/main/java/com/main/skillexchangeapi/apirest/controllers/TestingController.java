@@ -67,7 +67,6 @@ public class TestingController {
         return testingModel;
     }
 
-
     // Validar HTTP Status lanzando excepción
     @PostMapping("mensajear")
     public String mensajear(@RequestBody String mensaje, HttpServletRequest request) {
@@ -86,10 +85,10 @@ public class TestingController {
     }
 
     /*
-    @GetMapping("{nombre}")
-    public String leer(@PathVariable String nombre) {
-        return "Hola " + nombre;
-    }
-
+     * @GetMapping("{nombre}")
+     * public String leer(@PathVariable String nombre) {
+     * return "Hola " + nombre;
+     * }
+     * 
      */
 }

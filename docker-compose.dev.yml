@@ -12,16 +12,19 @@ services:
     volumes:
       - ./:/workspace:cached
       - maven_repo:/root/.m2
-    ports:
-      - "9081:9081"
-      - "5005:5005"
+    ports: ["9081:9081", "5005:5005"]
     env_file:
       - .env.${ENV_STAGE:-dev}
     depends_on: [mysql-db, mongodb, localstack]
     networks: [se-network]
     restart: on-failure
 
-  # (mysql-db, mongodb, localstack) idénticos al base pero con .env.* dinámicos
+  mongodb:
+    volumes:
+      - mongo_data_${ENV_STAGE:-dev}:/data/db
+      - ./docker/mongo/init/001-create-app-user.js:/docker-entrypoint-initdb.d/001-create-app-user.js:ro
+    env_file:
+      - .env.mongo.${ENV_STAGE:-dev}
 
 volumes:
   maven_repo:
