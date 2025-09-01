@@ -13,7 +13,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatServi
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.messaging.Contact;
 import com.main.skillexchangeapi.domain.entities.messaging.Conversation;
-import com.main.skillexchangeapi.domain.entities.messaging.InboxItemDto;
+import com.main.skillexchangeapi.domain.entities.messaging.InboxItemFlatDto;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
@@ -160,11 +160,11 @@ public class ChatService implements IChatService {
             throws DatabaseNotWorkingException, ResourceNotFoundException {
         try {
             UUID idUsuarioLogged = tokenUtils.extractIdFromRequest(request);
-            List<InboxItemDto> inboxItems = repository.findInbox(idUsuarioLogged);
+            List<InboxItemFlatDto> inboxItems = repository.findInbox(idUsuarioLogged);
 
             return inboxItems.stream().map(i -> ChatWithLastMessageResponse.builder()
                     .conversationId(i.getId())
-                    .contact(i.getContact())
+                    .contact(new Contact(i.getContactId(), i.getContactFullName(), i.getContactEmail()))
                     .lastMessage(i.getLastMessage())
                     .build()).toList();
         } catch (Exception e) {

@@ -1,6 +1,6 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories.reviews;
 
-import com.main.skillexchangeapi.domain.entities.messaging.InboxItemDto;
+import com.main.skillexchangeapi.domain.entities.messaging.InboxItemFlatDto;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 
@@ -29,16 +29,22 @@ public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
 
     @Aggregation(pipeline = {
             "{ $match: { 'contacts.idContact': ?0 } }",
-            // Proyecta el otro contacto (distinto de ?0) y el último mensaje
-            "{ $project: { " +
-                    "  id: '$_id', " +
-                    "  counterpart: { $first: { $filter: { input: '$contacts', as: 'c', cond: { $ne: ['$$c.idContact', ?0] } } } }, "
+            "{ $set: { " +
+                    "    lastMessage: { $cond: [ { $gt: [ { $size: { $ifNull: ['$messages', []] } }, 0 ] }, { $arrayElemAt: ['$messages', -1] }, null ] } "
                     +
-                    "  lastMessage: { $arrayElemAt: ['$messages', -1] } " +
                     "} }",
-            // Campo derivado para ordenar fácilmente
-            "{ $set: { lastDate: '$lastMessage.fecha' } }",
-            "{ $sort: { lastDate: -1 } }"
+            "{ $set: { _counterpartArr: { $filter: { input: '$contacts', as: 'c', cond: { $ne: ['$$c.idContact', ?0] } } } } }",
+            "{ $set: { _counterpart: { $arrayElemAt: ['$_counterpartArr', 0] } } }",
+            "{ $project: { " +
+                    "    _id: 0, " +
+                    "    id: '$_id', " +
+                    "    contactId: '$_counterpart.idContact', " +
+                    "    contactFullName: '$_counterpart.fullName', " +
+                    "    contactEmail: '$_counterpart.email', " +
+                    "    lastMessage: 1, " +
+                    "    lastDate: '$lastMessage.fecha' " +
+                    "} }",
+            "{ $sort: { lastDate: -1, id: 1 } }"
     })
-    List<InboxItemDto> findInbox(UUID me);
+    List<InboxItemFlatDto> findInbox(UUID me);
 }

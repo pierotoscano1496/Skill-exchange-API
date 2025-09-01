@@ -10,9 +10,11 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class InboxItemDto {
+public class InboxItemFlatDto {
     private UUID id;
-    private Contact contact;
+    private UUID contactId;
+    private String contactFullName;
+    private String contactEmail;
     private Message lastMessage;
     private Date lastDate;
 }
