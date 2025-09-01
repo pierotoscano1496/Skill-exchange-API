@@ -22,7 +22,7 @@ services:
   mongodb:
     volumes:
       - mongo_data_${ENV_STAGE:-dev}:/data/db
-      - ./docker/mongo/init/001-create-app-user.js:/docker-entrypoint-initdb.d/001-create-app-user.js:ro
+      - ./docker/mongo/init:/docker-entrypoint-initdb.d:ro
     env_file:
       - .env.mongo.${ENV_STAGE:-dev}
 
