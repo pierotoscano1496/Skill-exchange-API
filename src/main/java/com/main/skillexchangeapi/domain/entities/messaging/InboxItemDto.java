@@ -1,18 +1,18 @@
 package com.main.skillexchangeapi.domain.entities.messaging;
 
+import java.util.Date;
+import java.util.UUID;
+
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Contact {
-    private UUID idContact;
-    private String fullName;
-    private String email;
+public class InboxItemDto {
+    private UUID id;
+    private Contact contact;
+    private Message lastMessage;
+    private Date lastDate;
 }

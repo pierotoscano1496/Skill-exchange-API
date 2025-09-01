@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories.reviews;
 
+import com.main.skillexchangeapi.domain.entities.messaging.InboxItemDto;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 
@@ -25,4 +26,19 @@ public interface IChatRepository extends MongoRepository<MensajeChat, UUID> {
             " { '$project': { 'id': '$_id', 'contacts': 1, 'lastMessage': { $arrayElemAt: ['$messages', -1] } } }"
     })
     List<MensajeChatProjection> findChatsWithLastMessage(UUID idContact);
+
+    @Aggregation(pipeline = {
+            "{ $match: { 'contacts.idContact': ?0 } }",
+            // Proyecta el otro contacto (distinto de ?0) y el último mensaje
+            "{ $project: { " +
+                    "  id: '$_id', " +
+                    "  counterpart: { $first: { $filter: { input: '$contacts', as: 'c', cond: { $ne: ['$$c.idContact', ?0] } } } }, "
+                    +
+                    "  lastMessage: { $arrayElemAt: ['$messages', -1] } " +
+                    "} }",
+            // Campo derivado para ordenar fácilmente
+            "{ $set: { lastDate: '$lastMessage.fecha' } }",
+            "{ $sort: { lastDate: -1 } }"
+    })
+    List<InboxItemDto> findInbox(UUID me);
 }

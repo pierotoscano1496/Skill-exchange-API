@@ -13,6 +13,7 @@ import com.main.skillexchangeapi.domain.abstractions.services.reviews.IChatServi
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.entities.messaging.Contact;
 import com.main.skillexchangeapi.domain.entities.messaging.Conversation;
+import com.main.skillexchangeapi.domain.entities.messaging.InboxItemDto;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChat;
 import com.main.skillexchangeapi.domain.entities.messaging.MensajeChatProjection;
 import com.main.skillexchangeapi.domain.entities.messaging.Message;
@@ -157,27 +158,17 @@ public class ChatService implements IChatService {
     @Override
     public List<ChatWithLastMessageResponse> obtenerChatsWithLasMessage(HttpServletRequest request)
             throws DatabaseNotWorkingException, ResourceNotFoundException {
-        String correo = tokenUtils.extractEmailFromRequest(request);
-        UUID idUsuarioLogged = usuarioRepository.obtenerByCorreo(correo).getId();
-        List<MensajeChatProjection> projections = repository.findChatsWithLastMessage(idUsuarioLogged);
-        List<ChatWithLastMessageResponse> response = new ArrayList<>();
+        try {
+            UUID idUsuarioLogged = tokenUtils.extractIdFromRequest(request);
+            List<InboxItemDto> inboxItems = repository.findInbox(idUsuarioLogged);
 
-        for (MensajeChatProjection projection : projections) {
-            Contact otherContact = null;
-            for (Contact contact : projection.getContacts()) {
-                if (!contact.getIdContact().equals(idUsuarioLogged)) {
-                    otherContact = contact;
-                    break;
-                }
-            }
-
-            response.add(
-                    ChatWithLastMessageResponse.builder()
-                            .conversationId(projection.getId())
-                            .contact(otherContact)
-                            .lastMessage(projection.getLastMessage())
-                            .build());
+            return inboxItems.stream().map(i -> ChatWithLastMessageResponse.builder()
+                    .conversationId(i.getId())
+                    .contact(i.getContact())
+                    .lastMessage(i.getLastMessage())
+                    .build()).toList();
+        } catch (Exception e) {
+            throw new DatabaseNotWorkingException("Error al obtener las conversaciones con el último mensaje");
         }
-        return response;
     }
 }
