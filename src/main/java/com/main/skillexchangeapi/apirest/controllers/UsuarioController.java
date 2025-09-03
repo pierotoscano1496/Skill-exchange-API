@@ -16,7 +16,9 @@ import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
+import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
+import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserMatchServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -191,16 +193,34 @@ public class UsuarioController {
         }
     }
 
-    // Gestión de matchs para usuario autenticado
-    @PostMapping("/own/match")
-    public MatchServicioResponse registrarMatch(@RequestBody CreateFirstMatchServicioBody requestBody,
-            HttpServletRequest request) {
-        try {
-            return service.registrarMatch(requestBody, request);
-        } catch (ResourceNotFoundException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
-        } catch (DatabaseNotWorkingException | NotCreatedException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+    @RestController
+    @RequestMapping(value = "usuario/own/match", produces = "application/json")
+    public static class UserActionMatchController {
+        @Autowired
+        private IUsuarioService service;
+
+        @Autowired
+        private IUserMatchServicioService userMatchServicioService;
+
+        @GetMapping("/available/{idServicio}")
+        public boolean checkAvailableMatchForServicio(HttpServletRequest request, @PathVariable UUID idServicio) {
+            try {
+                return userMatchServicioService.checkAvailableMatchForServicio(request, idServicio);
+            } catch (DatabaseNotWorkingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        }
+
+        @PostMapping
+        public MatchServicioResponse registrarMatch(@RequestBody CreateFirstMatchServicioBody requestBody,
+                HttpServletRequest request) {
+            try {
+                return service.registrarMatch(requestBody, request);
+            } catch (ResourceNotFoundException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            } catch (DatabaseNotWorkingException | NotCreatedException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
         }
     }
 

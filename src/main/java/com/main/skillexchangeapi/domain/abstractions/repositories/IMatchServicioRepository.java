@@ -22,6 +22,9 @@ public interface IMatchServicioRepository {
 
         MatchServicio obtener(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
+        List<MatchServicio> obtenerByServicioAndCliente(UUID idServicio, UUID idCliente)
+                        throws ResourceNotFoundException, DatabaseNotWorkingException;
+
         MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
 
         MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;

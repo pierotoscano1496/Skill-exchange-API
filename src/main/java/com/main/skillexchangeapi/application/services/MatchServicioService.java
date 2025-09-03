@@ -9,13 +9,18 @@ import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetail
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
+import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserMatchServicioService;
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.exceptions.*;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -260,5 +265,36 @@ public class MatchServicioService implements IMatchServicioService {
                                 .fechaInicio(matchServicioUpdated.getFechaInicio())
                                 .fechaCierre(matchServicioUpdated.getFechaCierre())
                                 .build();
+        }
+
+        @Service
+        public static class UserMatchServicioService implements IUserMatchServicioService {
+                @Autowired
+                private IMatchServicioService matchServicioService;
+
+                @Autowired
+                private IMatchServicioRepository repository;
+
+                @Autowired
+                private TokenUtils tokenUtils;
+
+                @Override
+                public boolean checkAvailableMatchForServicio(HttpServletRequest request, UUID idServicio)
+                                throws DatabaseNotWorkingException {
+                        UUID idUsuario = tokenUtils.extractIdFromRequest(request);
+
+                        try {
+                                List<MatchServicio> matches = repository
+                                                .obtenerByServicioAndCliente(idServicio, idUsuario);
+
+                                return matches.stream()
+                                                .anyMatch(m -> m.getServicio().getId().equals(idServicio)
+                                                                && (m.getEstado() == Estado.solicitado
+                                                                                || m.getEstado() == Estado.pendiente_pago
+                                                                                || m.getEstado() == Estado.ejecucion));
+                        } catch (ResourceNotFoundException e) {
+                                return false;
+                        }
+                }
         }
 }
