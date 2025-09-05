@@ -46,6 +46,10 @@ public class SecurityConfig {
         return Arrays.asList(environment.getActiveProfiles()).contains("dev");
     }
 
+    private boolean isProd() {
+        return Arrays.asList(environment.getActiveProfiles()).contains("prod");
+    }
+
     @Bean
     SecurityFilterChain filterChain(HttpSecurity httpSecurity,
             AuthenticationManager authenticationManager) throws Exception {
@@ -72,7 +76,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
 
                             // Check: Encontrar manera de establecerlo privado:
-                            .requestMatchers(HttpMethod.GET, "/messaging-socket/**").permitAll()
+                            .requestMatchers("/messaging-socket/**").permitAll()
                             .requestMatchers(HttpMethod.GET, "/servicio/details/preview/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/servicio/busqueda").permitAll()
                             .requestMatchers(HttpMethod.GET, "/servicios/review/**").permitAll()
@@ -103,20 +107,15 @@ public class SecurityConfig {
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        String[] activeProfiles = environment.getActiveProfiles();
-        boolean isProd = false;
-        for (String profile : activeProfiles) {
-            if ("prod".equals(profile)) {
-                isProd = true;
-                break;
-            }
-        }
-
-        if (isProd) {
-            configuration.setAllowedOrigins(Arrays.asList("http://tuchambita.com"));
+        if (isProd()) {
+            configuration.setAllowedOriginPatterns(Arrays.asList(
+                    "https://tuchambita.com"));
             configuration.setAllowCredentials(false);
-        } else {
-            configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));
+        } else if (isDev()) {
+            // Dev: admite cualquier puerto local (Next cambia puertos a veces)
+            configuration.setAllowedOriginPatterns(Arrays.asList(
+                    "http://localhost:*",
+                    "http://127.0.0.1:*"));
             configuration.setAllowCredentials(true);
         }
 
