@@ -109,6 +109,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 }
             }
         } catch (SQLException e) {
+            logger.error("Error obtenerDetailsFromCliente::", e);
             throw new DatabaseNotWorkingException("Error de búsqueda del match");
         }
     }
@@ -167,18 +168,18 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                             .build())
                                     .build())
                             .cliente(Usuario.builder()
-                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PROVEEDOR")))
-                                    .apellidos(resultSet.getString("APELLIDOS_PROVEEDOR"))
-                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_PROVEEDOR"))
-                                    .correo(resultSet.getString("CORREO_PROVEEDOR"))
-                                    .dni(resultSet.getString("DNI_PROVEEDOR"))
-                                    .nombres(resultSet.getString("NOMBRES_PROVEEDOR"))
-                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_PROVEEDOR"))
-                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_PROVEEDOR"))
-                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_PROVEEDOR"))
-                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_PROVEEDOR"))
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_CLIENTE")))
+                                    .apellidos(resultSet.getString("APELLIDOS_CLIENTE"))
+                                    .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA_CLIENTE"))
+                                    .correo(resultSet.getString("CORREO_CLIENTE"))
+                                    .dni(resultSet.getString("DNI_CLIENTE"))
+                                    .nombres(resultSet.getString("NOMBRES_CLIENTE"))
+                                    .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK_CLIENTE"))
+                                    .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM_CLIENTE"))
+                                    .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN_CLIENTE"))
+                                    .perfilTiktok(resultSet.getString("PERFIL_TIKTOK_CLIENTE"))
                                     .tipoDocumento(
-                                            TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO_PROVEEDOR")))
+                                            TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO_CLIENTE")))
                                     .build())
                             .build());
                 }
