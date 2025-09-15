@@ -7,6 +7,8 @@ import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +28,9 @@ public interface IMatchServicioRepository {
                         throws ResourceNotFoundException, DatabaseNotWorkingException;
 
         MatchServicio registrar(MatchServicio match) throws DatabaseNotWorkingException, NotCreatedException;
+
+        MatchServicio aceptar(UUID id, LocalDateTime fechaInicio)
+                        throws DatabaseNotWorkingException, NotUpdatedException;
 
         MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;
 

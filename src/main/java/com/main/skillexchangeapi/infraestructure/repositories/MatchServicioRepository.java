@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
 
-    Logger logger = LoggerFactory.getLogger(getClass());
+    Logger logger = LoggerFactory.getLogger(MatchServicioRepository.class);
 
     @Override
     public List<MatchServicio> obtenerDetailsFromCliente(UUID idCliente)
@@ -163,6 +165,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
                                     .precio(resultSet.getDouble("PRECIO_SERVICIO"))
                                     .titulo(resultSet.getString("TITULO_SERVICIO"))
+                                    .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO_SERVICIO")))
                                     .proveedor(Usuario.builder()
                                             .id(idProveedor)
                                             .build())
@@ -348,18 +351,25 @@ public class MatchServicioRepository implements IMatchServicioRepository {
     }
 
     @Override
+    public MatchServicio aceptar(UUID id, LocalDateTime fechaInicio)
+            throws DatabaseNotWorkingException, NotUpdatedException {
+        return actualizarProgreso(id, Estado.pendiente_pago, fechaInicio);
+    }
+
+    @Override
     public MatchServicio actualizarEstado(UUID id, Estado estado)
+            throws DatabaseNotWorkingException, NotUpdatedException {
+        return actualizarProgreso(id, estado, null);
+    }
+
+    private MatchServicio actualizarProgreso(UUID id, Estado estado, LocalDateTime fechaInicioValue)
             throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection
-                        .prepareCall("{CALL actualizar_match_servicio_estado (?, ?)}")) {
+                        .prepareCall("{CALL actualizar_match_servicio_estado (?, ?, ?, ?)}")) {
             statement.setObject("p_id", UuidManager.UuidToBytes(id));
             statement.setString("p_estado", estado.toString());
-
-            statement.setTimestamp("p_fecha_inicio", switch (estado) {
-                case ejecucion -> Timestamp.valueOf(LocalDateTime.now());
-                default -> null;
-            });
+            statement.setTimestamp("p_fecha_inicio", Timestamp.valueOf(fechaInicioValue));
             statement.setTimestamp("p_fecha_cierre", switch (estado) {
                 case finalizado, rechazado -> Timestamp.valueOf(LocalDateTime.now());
                 default -> null;
@@ -406,6 +416,7 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                 }
             }
         } catch (SQLException e) {
+            logger.error("No se actualizó el estado del match", e);
             throw new DatabaseNotWorkingException("No se actualizó el estado del match");
         }
     }

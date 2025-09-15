@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.domain.abstractions.services;
 
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.requests.matchservicio.AcceptMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
@@ -28,6 +29,10 @@ public interface IMatchServicioService {
 
         MatchServicioResponse registrar(CreateMatchServicioBody requestBody)
                         throws DatabaseNotWorkingException, NotCreatedException;
+
+        MatchServicioResponse aceptarMatch(UUID id, AcceptMatchServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException,
+                        BadRequestException;
 
         MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody)
                         throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException,

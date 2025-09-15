@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.azure.core.annotation.Get;
 import com.google.auto.value.AutoValue.Builder;
+import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.requests.SetPlanToUsuarioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateFirstMatchServicioBody;
@@ -9,6 +10,7 @@ import com.main.skillexchangeapi.app.requests.usuario.AsignacionSkillToUsuarioRe
 import com.main.skillexchangeapi.app.requests.usuario.CreateUsuarioBody;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillAsignadoResponse;
 import com.main.skillexchangeapi.app.responses.skill.SkillInfoResponse;
@@ -16,9 +18,11 @@ import com.main.skillexchangeapi.app.responses.usuario.PlanAsignado;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioRegisteredResponse;
 import com.main.skillexchangeapi.app.responses.usuario.UsuarioSkillsAsignadosResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
+import com.main.skillexchangeapi.application.services.MatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.IUsuarioService;
 import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserMatchServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserProveedorMatchServicioService;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
@@ -47,9 +51,19 @@ public class UsuarioController {
     private IUsuarioService service;
 
     @Autowired
+    private final IMatchServicioService matchServicioService;
+
+    @Autowired
+    private IUserMatchServicioService userMatchServicioService;
+
+    @Autowired
     private TokenUtils tokenUtils;
 
     Logger logger = LoggerFactory.getLogger(UsuarioController.class);
+
+    UsuarioController(MatchServicioService matchServicioService) {
+        this.matchServicioService = matchServicioService;
+    }
 
     @GetMapping("/auth")
     public ResponseEntity<UsuarioRegisteredResponse> obtener(HttpServletRequest request) {
@@ -219,6 +233,25 @@ public class UsuarioController {
             } catch (ResourceNotFoundException e) {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
             } catch (DatabaseNotWorkingException | NotCreatedException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        }
+    }
+
+    @RestController
+    @RequestMapping(value = "usuario/proveedor/match", produces = "application/json")
+    public static class UserProveedorMatchController {
+        @Autowired
+        private IUserProveedorMatchServicioService userProveedorMatchServicioService;
+
+        @GetMapping({ "", "/", "/{estado}" })
+        public List<MatchServicioDetailsResponse> obtener(HttpServletRequest request,
+                @PathVariable(required = false) Estado estado) {
+            try {
+                return userProveedorMatchServicioService.obtenerMatchsFromProveedor(request, estado);
+            } catch (ResourceNotFoundException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            } catch (DatabaseNotWorkingException e) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
             }
         }

@@ -2,6 +2,7 @@ package com.main.skillexchangeapi.apirest.controllers;
 
 import com.azure.core.annotation.Get;
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.requests.matchservicio.AcceptMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
@@ -80,6 +81,18 @@ public class MatchServicioController {
             return service.registrar(requestBody);
         } catch (DatabaseNotWorkingException | NotCreatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/accept/{id}")
+    public MatchServicioResponse aceptarMatch(@PathVariable UUID id,
+            @RequestBody AcceptMatchServicioBody requestBody) {
+        try {
+            return service.aceptarMatch(id, requestBody);
+        } catch (ResourceNotFoundException | DatabaseNotWorkingException | NotUpdatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (BadRequestException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 

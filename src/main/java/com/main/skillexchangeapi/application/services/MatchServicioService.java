@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.requests.matchservicio.AcceptMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
@@ -14,6 +15,7 @@ import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserMatchServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserProveedorMatchServicioService;
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Usuario;
@@ -30,9 +32,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-public class MatchServicioService implements IMatchServicioService {
+public class MatchServicioService
+                implements IMatchServicioService, IUserMatchServicioService, IUserProveedorMatchServicioService {
         @Autowired
         private IMatchServicioRepository repository;
+
+        @Autowired
+        private TokenUtils tokenUtils;
 
         @Override
         public List<MatchServicioProveedorDetailsResponse> obtenerDetailsFromCliente(UUID idCliente)
@@ -191,6 +197,21 @@ public class MatchServicioService implements IMatchServicioService {
         }
 
         @Override
+        public MatchServicioResponse aceptarMatch(UUID id, AcceptMatchServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException,
+                        BadRequestException {
+                final Estado[] estadoAvailableForAceptar = { Estado.solicitado };
+
+                // Verificar si el estado para aceptar sea el correcto
+                MatchServicio matchServicio = repository.obtener(id);
+                if (Arrays.asList(estadoAvailableForAceptar).contains(matchServicio.getEstado())) {
+                        return mapToResponse(repository.aceptar(id, requestBody.getFechaInicio()));
+                } else {
+                        throw new BadRequestException("El match está en estado que ya no se puede aceptar");
+                }
+        }
+
+        @Override
         public MatchServicioResponse actualizarEstado(UUID id, UpdateEstadoMatchServicioBody requestBody)
                         throws DatabaseNotWorkingException, NotUpdatedException, ResourceNotFoundException,
                         BadRequestException {
@@ -231,17 +252,7 @@ public class MatchServicioService implements IMatchServicioService {
                 if (estadoIsCorrect) {
                         MatchServicio matchServicioUpdated = repository.actualizarEstado(id, estado);
 
-                        return MatchServicioResponse.builder()
-                                        .id(matchServicioUpdated.getId())
-                                        .idServicio(matchServicioUpdated.getServicio().getId())
-                                        .idCliente(matchServicioUpdated.getCliente().getId())
-                                        .costo(matchServicioUpdated.getCosto())
-                                        .estado(matchServicioUpdated.getEstado())
-                                        .puntuacion(matchServicioUpdated.getPuntuacion())
-                                        .fecha(matchServicioUpdated.getFecha())
-                                        .fechaInicio(matchServicioUpdated.getFechaInicio())
-                                        .fechaCierre(matchServicioUpdated.getFechaCierre())
-                                        .build();
+                        return mapToResponse(matchServicioUpdated);
                 } else {
                         throw new BadRequestException(
                                         servicioClosedMessage != null ? servicioClosedMessage : "Estado incorrecto");
@@ -267,34 +278,82 @@ public class MatchServicioService implements IMatchServicioService {
                                 .build();
         }
 
-        @Service
-        public static class UserMatchServicioService implements IUserMatchServicioService {
-                @Autowired
-                private IMatchServicioService matchServicioService;
+        @Override
+        public boolean checkAvailableMatchForServicio(HttpServletRequest request, UUID idServicio)
+                        throws DatabaseNotWorkingException {
+                UUID idUsuario = tokenUtils.extractIdFromRequest(request);
 
-                @Autowired
-                private IMatchServicioRepository repository;
+                try {
+                        List<MatchServicio> matches = repository
+                                        .obtenerByServicioAndCliente(idServicio, idUsuario);
 
-                @Autowired
-                private TokenUtils tokenUtils;
-
-                @Override
-                public boolean checkAvailableMatchForServicio(HttpServletRequest request, UUID idServicio)
-                                throws DatabaseNotWorkingException {
-                        UUID idUsuario = tokenUtils.extractIdFromRequest(request);
-
-                        try {
-                                List<MatchServicio> matches = repository
-                                                .obtenerByServicioAndCliente(idServicio, idUsuario);
-
-                                return matches.stream()
-                                                .anyMatch(m -> m.getServicio().getId().equals(idServicio)
-                                                                && (m.getEstado() == Estado.solicitado
-                                                                                || m.getEstado() == Estado.pendiente_pago
-                                                                                || m.getEstado() == Estado.ejecucion));
-                        } catch (ResourceNotFoundException e) {
-                                return false;
-                        }
+                        return matches.stream()
+                                        .anyMatch(m -> m.getServicio().getId().equals(idServicio)
+                                                        && (m.getEstado() == Estado.solicitado
+                                                                        || m.getEstado() == Estado.pendiente_pago
+                                                                        || m.getEstado() == Estado.ejecucion));
+                } catch (ResourceNotFoundException e) {
+                        return false;
                 }
         }
+
+        @Override
+        public List<MatchServicioDetailsResponse> obtenerMatchsFromProveedor(HttpServletRequest request, Estado estado)
+                        throws ResourceNotFoundException, DatabaseNotWorkingException {
+                UUID idUsuario = tokenUtils.extractIdFromRequest(request);
+                return mapToDetails(repository.obtenerDetailsFromProveedorAndOptionalEstado(idUsuario, estado));
+        }
+
+        // Mappers
+        private static MatchServicioResponse mapToResponse(MatchServicio matchServicio) {
+                return MatchServicioResponse.builder()
+                                .id(matchServicio.getId())
+                                .idServicio(matchServicio.getServicio().getId())
+                                .idCliente(matchServicio.getCliente().getId())
+                                .costo(matchServicio.getCosto())
+                                .estado(matchServicio.getEstado())
+                                .puntuacion(matchServicio.getPuntuacion())
+                                .fecha(matchServicio.getFecha())
+                                .fechaInicio(matchServicio.getFechaInicio())
+                                .fechaCierre(matchServicio.getFechaCierre())
+                                .build();
+        }
+
+        private static List<MatchServicioDetailsResponse> mapToDetails(List<MatchServicio> matchServicios) {
+                return matchServicios
+                                .stream()
+                                .map(m -> MatchServicioDetailsResponse.builder()
+                                                .id(m.getId())
+                                                .cliente(UsuarioResponse.builder()
+                                                                .id(m.getCliente().getId())
+                                                                .dni(m.getCliente().getDni())
+                                                                .carnetExtranjeria(
+                                                                                m.getCliente().getCarnetExtranjeria())
+                                                                .correo(m.getCliente().getCorreo())
+                                                                .nombres(m.getCliente().getNombres())
+                                                                .apellidos(m.getCliente().getApellidos())
+                                                                .perfilFacebook(m.getCliente().getPerfilFacebook())
+                                                                .perfilInstagram(m.getCliente().getPerfilInstagram())
+                                                                .perfilLinkedin(m.getCliente().getPerfilLinkedin())
+                                                                .perfilTiktok(m.getCliente().getPerfilTiktok())
+                                                                .tipoDocumento(m.getCliente().getTipoDocumento())
+                                                                .build())
+                                                .fecha(m.getFecha())
+                                                .fechaInicio(m.getFechaInicio())
+                                                .fechaCierre(m.getFechaCierre())
+                                                .estado(m.getEstado())
+                                                .puntuacion(m.getPuntuacion())
+                                                .costo(m.getCosto())
+                                                .mensaje(m.getMensaje())
+                                                .servicio(ServicioResponse.builder()
+                                                                .id(m.getServicio().getId())
+                                                                .descripcion(m.getServicio().getDescripcion())
+                                                                .precio(m.getServicio().getPrecio())
+                                                                .titulo(m.getServicio().getTitulo())
+                                                                .tipoPrecio(m.getServicio().getTipoPrecio())
+                                                                .build())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
 }
