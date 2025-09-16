@@ -531,4 +531,23 @@ public class UsuarioService implements IUsuarioService {
                                 .perfilTiktok(usuario.getPerfilTiktok())
                                 .build();
         }
+
+        // Mappers
+        public static UsuarioResponse mapToUsuarioResponse(Usuario usuario) {
+                return UsuarioResponse.builder()
+                                .id(usuario.getId())
+                                .dni(usuario.getDni())
+                                .carnetExtranjeria(usuario.getCarnetExtranjeria())
+                                .tipoDocumento(usuario.getTipoDocumento())
+                                .nombres(usuario.getNombres())
+                                .apellidos(usuario.getApellidos())
+                                .correo(usuario.getCorreo())
+                                .fechaNacimiento(usuario.getFechaNacimiento())
+                                .introduccion(usuario.getIntroduccion())
+                                .perfilFacebook(usuario.getPerfilFacebook())
+                                .perfilInstagram(usuario.getPerfilInstagram())
+                                .perfilLinkedin(usuario.getPerfilLinkedin())
+                                .perfilTiktok(usuario.getPerfilTiktok())
+                                .build();
+        }
 }

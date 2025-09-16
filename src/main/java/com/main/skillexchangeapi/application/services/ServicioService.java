@@ -348,4 +348,20 @@ public class ServicioService implements IServicioService {
                                                 .toList())
                                 .build();
         }
+
+        // Mappers
+        public static ServicioResponse mapToServicioResponse(Servicio servicio) {
+                return ServicioResponse.builder()
+                                .id(servicio.getId())
+                                .titulo(servicio.getTitulo())
+                                .descripcion(servicio.getDescripcion())
+                                .precio(servicio.getPrecio())
+                                .precioMinimo(servicio.getPrecioMinimo())
+                                .precioMaximo(servicio.getPrecioMaximo())
+                                .tipoPrecio(servicio.getTipoPrecio())
+                                .ubicacion(servicio.getUbicacion())
+                                .modalidad(servicio.getModalidad())
+                                .aceptaTerminos(servicio.isAceptaTerminos())
+                                .build();
+        }
 }

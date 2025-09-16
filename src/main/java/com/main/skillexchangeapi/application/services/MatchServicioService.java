@@ -279,6 +279,13 @@ public class MatchServicioService
         }
 
         @Override
+        public List<MatchServicioDetailsResponse> obtenerMatchsFromCliente(HttpServletRequest request)
+                        throws ResourceNotFoundException, DatabaseNotWorkingException {
+                UUID idUsuario = tokenUtils.extractIdFromRequest(request);
+                return mapToDetails(repository.obtenerDetailsFromCliente(idUsuario));
+        }
+
+        @Override
         public boolean checkAvailableMatchForServicio(HttpServletRequest request, UUID idServicio)
                         throws DatabaseNotWorkingException {
                 UUID idUsuario = tokenUtils.extractIdFromRequest(request);
@@ -322,37 +329,40 @@ public class MatchServicioService
         private static List<MatchServicioDetailsResponse> mapToDetails(List<MatchServicio> matchServicios) {
                 return matchServicios
                                 .stream()
-                                .map(m -> MatchServicioDetailsResponse.builder()
-                                                .id(m.getId())
-                                                .cliente(UsuarioResponse.builder()
-                                                                .id(m.getCliente().getId())
-                                                                .dni(m.getCliente().getDni())
-                                                                .carnetExtranjeria(
-                                                                                m.getCliente().getCarnetExtranjeria())
-                                                                .correo(m.getCliente().getCorreo())
-                                                                .nombres(m.getCliente().getNombres())
-                                                                .apellidos(m.getCliente().getApellidos())
-                                                                .perfilFacebook(m.getCliente().getPerfilFacebook())
-                                                                .perfilInstagram(m.getCliente().getPerfilInstagram())
-                                                                .perfilLinkedin(m.getCliente().getPerfilLinkedin())
-                                                                .perfilTiktok(m.getCliente().getPerfilTiktok())
-                                                                .tipoDocumento(m.getCliente().getTipoDocumento())
-                                                                .build())
-                                                .fecha(m.getFecha())
-                                                .fechaInicio(m.getFechaInicio())
-                                                .fechaCierre(m.getFechaCierre())
-                                                .estado(m.getEstado())
-                                                .puntuacion(m.getPuntuacion())
-                                                .costo(m.getCosto())
-                                                .mensaje(m.getMensaje())
-                                                .servicio(ServicioResponse.builder()
-                                                                .id(m.getServicio().getId())
-                                                                .descripcion(m.getServicio().getDescripcion())
-                                                                .precio(m.getServicio().getPrecio())
-                                                                .titulo(m.getServicio().getTitulo())
-                                                                .tipoPrecio(m.getServicio().getTipoPrecio())
-                                                                .build())
-                                                .build())
+                                .map(m -> {
+                                        Usuario cliente = m.getCliente();
+                                        UsuarioResponse clienteResponse = null;
+                                        if (cliente != null) {
+                                                clienteResponse = UsuarioService.mapToUsuarioResponse(cliente);
+                                        }
+
+                                        Servicio servicio = m.getServicio();
+                                        ServicioResponse servicioResponse = null;
+                                        if (servicio != null) {
+                                                servicioResponse = ServicioService.mapToServicioResponse(servicio);
+
+                                                Usuario proveedor = servicio.getProveedor();
+                                                UsuarioResponse proveedorResponse = null;
+                                                if (proveedor != null) {
+                                                        proveedorResponse = UsuarioService
+                                                                        .mapToUsuarioResponse(proveedor);
+                                                        servicioResponse.setProveedor(proveedorResponse);
+                                                }
+                                        }
+
+                                        return MatchServicioDetailsResponse.builder()
+                                                        .id(m.getId())
+                                                        .cliente(clienteResponse)
+                                                        .fecha(m.getFecha())
+                                                        .fechaInicio(m.getFechaInicio())
+                                                        .fechaCierre(m.getFechaCierre())
+                                                        .estado(m.getEstado())
+                                                        .puntuacion(m.getPuntuacion())
+                                                        .costo(m.getCosto())
+                                                        .mensaje(m.getMensaje())
+                                                        .servicio(servicioResponse)
+                                                        .build();
+                                })
                                 .collect(Collectors.toList());
         }
 

@@ -84,7 +84,7 @@ public class MatchServicioController {
         }
     }
 
-    @PatchMapping("/accept/{id}")
+    @PatchMapping("accept/{id}")
     public MatchServicioResponse aceptarMatch(@PathVariable UUID id,
             @RequestBody AcceptMatchServicioBody requestBody) {
         try {

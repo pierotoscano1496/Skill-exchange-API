@@ -216,6 +216,17 @@ public class UsuarioController {
         @Autowired
         private IUserMatchServicioService userMatchServicioService;
 
+        @GetMapping
+        public List<MatchServicioDetailsResponse> obtener(HttpServletRequest request) {
+            try {
+                return userMatchServicioService.obtenerMatchsFromCliente(request);
+            } catch (ResourceNotFoundException e) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            } catch (DatabaseNotWorkingException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
+        }
+
         @GetMapping("/available/{idServicio}")
         public boolean checkAvailableMatchForServicio(HttpServletRequest request, @PathVariable UUID idServicio) {
             try {
