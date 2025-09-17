@@ -32,7 +32,8 @@ public interface IServicioService {
 
         ServicioResponse obtenerDetailsPreview(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException;
 
-        ServicioRegisteredResponse registrar(CreateServicioBody requestBody, List<MultipartFile> recursosMultimedia)
+        ServicioRegisteredResponse registrar(CreateServicioBody requestBody, List<MultipartFile> recursosMultimedia,
+                        MultipartFile yapeFile)
                         throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
                         FileNotUploadedException;
 

@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.model.ListObjectsV2Request;
 import com.amazonaws.services.s3.model.ListObjectsV2Result;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
 import com.main.skillexchangeapi.app.responses.servicio.MultimediaResourceUploadedResponse;
 import com.main.skillexchangeapi.app.utils.FileUitls;
 import com.main.skillexchangeapi.app.utils.UuidManager;
@@ -28,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
@@ -40,7 +42,7 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     @Value("${spring.profiles.active:prod}")
     private String profile;
 
-    @Value("${cloud.aws.s3.endpoint:}")
+    @Value("${cloud.aws.s3.endpoint}")
     private String s3Endpoint;
 
     @Autowired
@@ -91,7 +93,10 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                 Optional<String> fileExtension = FileUitls.getExtension(file.getOriginalFilename(),
                         ResourceSource.MULTIMEDIA);
                 if (fileExtension.isPresent()) {
-                    String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                    String uploadDate = LocalDateTime.now().format(formatter);
+
+                    String fileName = UuidManager.randomUuid() + "_" + uploadDate + "." + fileExtension.get();
                     String pathFile = idServicio.toString() + "/multimedia/" + fileName;
 
                     byte[] bytes = file.getBytes();
@@ -103,11 +108,7 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
 
                     s3Client.putObject(bucketName, pathFile, byteArrayInputStream, metadata);
 
-                    String url = "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
-                    if (profile.equals("dev")) {
-                        url = s3Endpoint + "/" + bucketName + "/" + pathFile;
-                        logger.info("Endpoint localstack S3: {}", url);
-                    }
+                    String url = getUrlResource(bucketName, pathFile);
 
                     resourcesUploaded.add(MultimediaResourceUploadedResponse.builder()
                             .url(url)
@@ -127,17 +128,17 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public String uploadModalidadPagoResource(UUID idServicio, PaymentMethod paymentMethod,
+    public String uploadModalidadPagoResource(UUID idServicio, ModalidadPagoConstants.Tipo paymentMethod,
             MultipartFile multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
         Optional<String> fileExtension = FileUitls.getExtension(multipartFiles.getOriginalFilename(),
                 ResourceSource.PAYMENT);
         try {
             if (fileExtension.isPresent()) {
                 String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
-                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName() + "/"
+                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.toString() + "/"
                         + fileName;
                 s3Client.putObject(bucketName, pathFile, multipartFiles.getInputStream(), null);
-                return "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
+                return getUrlResource(bucketName, pathFile);
             } else {
                 throw new InvalidFileException("Archivo no válido");
             }
@@ -146,6 +147,15 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
             throw new FileNotUploadedException("Error al subir archivo a S3");
         }
 
+    }
+
+    private String getUrlResource(String bucketName, String pathFile) {
+        if (profile.equals("dev")) {
+            String url = s3Endpoint + "/" + bucketName + "/" + pathFile;
+            logger.info("Endpoint localstack S3: {}", url);
+            return url;
+        }
+        return "https://" + bucketName + ".s3.amazonaws.com/" + pathFile;
     }
 
     @Override
@@ -169,9 +179,10 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     }
 
     @Override
-    public String getImageMetodoPagoPresignedUrl(UUID idServicio, PaymentMethod paymentMethod)
+    public String getImageMetodoPagoPresignedUrl(UUID idServicio,
+            ModalidadPagoConstants.Tipo paymentMethod)
             throws FileNotFoundException {
-        String pathFolder = idServicio.toString() + "/payments/" + paymentMethod.getDisplayName();
+        String pathFolder = idServicio.toString() + "/payments/" + paymentMethod.toString();
 
         ListObjectsV2Request request = new ListObjectsV2Request()
                 .withBucketName(bucketName)

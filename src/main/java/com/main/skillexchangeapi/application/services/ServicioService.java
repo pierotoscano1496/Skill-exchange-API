@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.application.services;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
 import com.main.skillexchangeapi.app.requests.servicio.*;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
@@ -15,6 +16,7 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepos
 import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
+import com.main.skillexchangeapi.domain.constants.PaymentMethod;
 import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
@@ -26,6 +28,9 @@ import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -59,6 +64,8 @@ public class ServicioService implements IServicioService {
 
         @Autowired
         private IAWSS3ServicioService storageService;
+
+        Logger logger = LoggerFactory.getLogger(ServicioService.class);
 
         @Override
         public List<ServicioResponse> obtenerByProveedor(UUID idProveedor)
@@ -195,13 +202,55 @@ public class ServicioService implements IServicioService {
 
         @Override
         public ServicioRegisteredResponse registrar(CreateServicioBody requestBody,
-                        List<MultipartFile> recursosMultimedia)
+                        List<MultipartFile> recursosMultimedia,
+                        MultipartFile yapeFile)
                         throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
                         FileNotUploadedException {
                 UUID idServicio = UuidManager.randomUuid();
+                logger.info("Recibiendo solicitud para registrar un servicio con los siguientes datos: {}",
+                                requestBody);
+
+                /*
+                 * Evaluar lista de recursos multimedia y filtrar los que no están vacíos
+                 */
+                if (recursosMultimedia != null && !recursosMultimedia.isEmpty()) {
+                        int numEmptyFiles = 0;
+                        for (MultipartFile multipartFile : recursosMultimedia) {
+                                if (multipartFile == null || multipartFile.isEmpty()) {
+                                        logger.warn("Archivo multimedia vacío recibido");
+                                        numEmptyFiles++;
+                                } else {
+                                        logger.info("Archivo multimedia recibido: {} ({} bytes)",
+                                                        multipartFile.getOriginalFilename(),
+                                                        multipartFile.getSize());
+                                }
+                        }
+
+                        if (numEmptyFiles > 0) {
+                                logger.warn("{} archivos multimedia vacíos fueron ignorados", numEmptyFiles);
+                        }
+
+                        recursosMultimedia = recursosMultimedia.stream()
+                                        .filter(file -> file != null && !file.isEmpty())
+                                        .collect(Collectors.toList());
+                }
+                logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
+
                 // Guardar las imágenes de previsualización en el bucket de S3
                 List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
                                 .uploadMultimediaServiceResources(idServicio, recursosMultimedia);
+
+                // Guardar las imágenes de Yape en el bucket de S3
+                String resourceYapeUploaded = storageService
+                                .uploadModalidadPagoResource(idServicio, ModalidadPagoConstants.Tipo.yape, yapeFile);
+
+                // Asignar la URL de Yape al requestBody
+                for (ModalidadPagoBody modalidadPagoBody : requestBody.getModalidadesPago()) {
+                        if (modalidadPagoBody.getTipo() == ModalidadPagoConstants.Tipo.yape) {
+                                modalidadPagoBody.setUrl(resourceYapeUploaded);
+                                break;
+                        }
+                }
 
                 Servicio servicioRegistered = repository.registrar(Servicio.builder()
                                 .id(idServicio)

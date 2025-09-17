@@ -1,5 +1,6 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParametersBody;
@@ -87,7 +88,8 @@ public class ServicioController {
 
     @GetMapping("/payment-method/image/{id}/{paymentMethod}")
     @Operation(summary = "Obtener imágenes del método de pago por ID del servicio y el tipo de método de pago", description = "Busca un método de pago desde el bucket que corresponde a un servicio y especificando un tipo")
-    public String obtenerImagenMetodoPago(@PathVariable UUID id, @PathVariable PaymentMethod paymentMethod) {
+    public String obtenerImagenMetodoPago(@PathVariable UUID id,
+            @PathVariable ModalidadPagoConstants.Tipo paymentMethod) {
         try {
             return storageService.getImageMetodoPagoPresignedUrl(id, paymentMethod);
         } catch (FileNotFoundException e) {
@@ -111,33 +113,12 @@ public class ServicioController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(summary = "Guarda un servicio con su metadata", description = "Guarda primero los archivos de los recursos multimedia de un servicio a S3: imágenes, videos cortos, etc. y la información del servicio adicionalmente con: habilidades, disponibilidades y modalidades de pago")
+    @Operation(summary = "Guarda un servicio con su metadata", description = "Guarda primero los archivos de los recursos multimedia de un servicio a S3: imágenes, videos cortos, métodos de pago, etc. y la información del servicio adicionalmente con: habilidades, disponibilidades y modalidades de pago")
     public ServicioRegisteredResponse registrar(@RequestPart("data") CreateServicioBody requestBody,
-            @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia) {
-        logger.info("Recibiendo solicitud para registrar un servicio con los siguientes datos: {}", requestBody);
-        if (recursosMultimedia == null || recursosMultimedia.isEmpty()) {
-            recursosMultimedia.forEach(file -> {
-                if (file == null || file.isEmpty()) {
-                    logger.warn("Archivo multimedia vacío recibido.");
-                } else {
-                    logger.info("Archivo multimedia recibido: {} ({} bytes)", file.getOriginalFilename(),
-                            file.getSize());
-                }
-            });
-            logger.warn("No se han proporcionado recursos multimedia para el servicio.");
-        } else {
-            recursosMultimedia = recursosMultimedia.stream()
-                    .filter(file -> file != null && !file.isEmpty())
-                    .collect(Collectors.toList());
-            if (recursosMultimedia.isEmpty()) {
-                logger.warn("Todos los archivos multimedia proporcionados están vacíos.");
-            } else {
-                logger.info("Recursos multimedia proporcionados: {}", recursosMultimedia.size());
-            }
-        }
-        logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
+            @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia,
+            @RequestPart(value = "yapeMultimedia", required = false) MultipartFile yapeFile) {
         try {
-            ServicioRegisteredResponse response = service.registrar(requestBody, recursosMultimedia);
+            ServicioRegisteredResponse response = service.registrar(requestBody, recursosMultimedia, yapeFile);
             logger.info("Registro de servicio exitoso. ID generado: {}", response.getId());
             return response;
         } catch (DatabaseNotWorkingException | NotCreatedException | IOException | InvalidFileException
@@ -181,7 +162,7 @@ public class ServicioController {
     @PatchMapping("/upload-metadata-modalidad-pago/{id}/{paymentMethod}")
     @Operation(summary = "Agrega archivos multimedia a una modalidad de pago de un servicio", description = "Agrega archivos a la modalidad de pago de un servicio de un servicio por su ID")
     public String uploadMetadataModalidadPagoToService(@PathVariable UUID id,
-            @PathVariable PaymentMethod paymentMethod, @RequestParam("file") MultipartFile file) {
+            @PathVariable ModalidadPagoConstants.Tipo paymentMethod, @RequestParam("file") MultipartFile file) {
         try {
             return storageService.uploadModalidadPagoResource(id, paymentMethod, file);
         } catch (IOException | InvalidFileException | FileNotUploadedException e) {
