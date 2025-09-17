@@ -9,14 +9,18 @@ import com.main.skillexchangeapi.app.responses.UsuarioResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
+import com.main.skillexchangeapi.app.responses.servicio.ModalidadPagoResponse;
 import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
 import com.main.skillexchangeapi.app.security.TokenUtils;
 import com.main.skillexchangeapi.app.utils.UuidManager;
 import com.main.skillexchangeapi.domain.abstractions.repositories.IMatchServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserMatchServicioService;
 import com.main.skillexchangeapi.domain.abstractions.services.useractions.IUserProveedorMatchServicioService;
 import com.main.skillexchangeapi.domain.entities.MatchServicio;
+import com.main.skillexchangeapi.domain.entities.ModalidadPago;
+import com.main.skillexchangeapi.domain.entities.RecursoMultimediaServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.entities.Usuario;
 import com.main.skillexchangeapi.domain.exceptions.*;
@@ -36,6 +40,9 @@ public class MatchServicioService
                 implements IMatchServicioService, IUserMatchServicioService, IUserProveedorMatchServicioService {
         @Autowired
         private IMatchServicioRepository repository;
+
+        @Autowired
+        private IModalidadPagoRepository modalidadPagoRepository;
 
         @Autowired
         private TokenUtils tokenUtils;
@@ -205,7 +212,7 @@ public class MatchServicioService
                 // Verificar si el estado para aceptar sea el correcto
                 MatchServicio matchServicio = repository.obtener(id);
                 if (Arrays.asList(estadoAvailableForAceptar).contains(matchServicio.getEstado())) {
-                        return mapToResponse(repository.aceptar(id, requestBody.getFechaInicio()));
+                        return MatchServicioResponse.fromEntity(repository.aceptar(id, requestBody.getFechaInicio()));
                 } else {
                         throw new BadRequestException("El match está en estado que ya no se puede aceptar");
                 }
@@ -252,7 +259,7 @@ public class MatchServicioService
                 if (estadoIsCorrect) {
                         MatchServicio matchServicioUpdated = repository.actualizarEstado(id, estado);
 
-                        return mapToResponse(matchServicioUpdated);
+                        return MatchServicioResponse.fromEntity(matchServicioUpdated);
                 } else {
                         throw new BadRequestException(
                                         servicioClosedMessage != null ? servicioClosedMessage : "Estado incorrecto");
@@ -282,7 +289,20 @@ public class MatchServicioService
         public List<MatchServicioDetailsResponse> obtenerMatchsFromCliente(HttpServletRequest request)
                         throws ResourceNotFoundException, DatabaseNotWorkingException {
                 UUID idUsuario = tokenUtils.extractIdFromRequest(request);
-                return mapToDetails(repository.obtenerDetailsFromCliente(idUsuario));
+
+                List<MatchServicio> matchs = repository.obtenerDetailsFromCliente(idUsuario);
+
+                for (MatchServicio match : matchs) {
+                        if (match.getEstado() == Estado.pendiente_pago) {
+                                List<ModalidadPago> modalidadesPago = modalidadPagoRepository
+                                                .obtenerByServicio(match.getServicio().getId());
+                                match.getServicio().setModalidadesPago(modalidadesPago);
+                        }
+                }
+
+                List<MatchServicioDetailsResponse> matchsResponse = MatchServicioDetailsResponse.fromEntity(matchs);
+
+                return matchsResponse;
         }
 
         @Override
@@ -308,62 +328,8 @@ public class MatchServicioService
         public List<MatchServicioDetailsResponse> obtenerMatchsFromProveedor(HttpServletRequest request, Estado estado)
                         throws ResourceNotFoundException, DatabaseNotWorkingException {
                 UUID idUsuario = tokenUtils.extractIdFromRequest(request);
-                return mapToDetails(repository.obtenerDetailsFromProveedorAndOptionalEstado(idUsuario, estado));
-        }
-
-        // Mappers
-        private static MatchServicioResponse mapToResponse(MatchServicio matchServicio) {
-                return MatchServicioResponse.builder()
-                                .id(matchServicio.getId())
-                                .idServicio(matchServicio.getServicio().getId())
-                                .idCliente(matchServicio.getCliente().getId())
-                                .costo(matchServicio.getCosto())
-                                .estado(matchServicio.getEstado())
-                                .puntuacion(matchServicio.getPuntuacion())
-                                .fecha(matchServicio.getFecha())
-                                .fechaInicio(matchServicio.getFechaInicio())
-                                .fechaCierre(matchServicio.getFechaCierre())
-                                .build();
-        }
-
-        private static List<MatchServicioDetailsResponse> mapToDetails(List<MatchServicio> matchServicios) {
-                return matchServicios
-                                .stream()
-                                .map(m -> {
-                                        Usuario cliente = m.getCliente();
-                                        UsuarioResponse clienteResponse = null;
-                                        if (cliente != null) {
-                                                clienteResponse = UsuarioService.mapToUsuarioResponse(cliente);
-                                        }
-
-                                        Servicio servicio = m.getServicio();
-                                        ServicioResponse servicioResponse = null;
-                                        if (servicio != null) {
-                                                servicioResponse = ServicioService.mapToServicioResponse(servicio);
-
-                                                Usuario proveedor = servicio.getProveedor();
-                                                UsuarioResponse proveedorResponse = null;
-                                                if (proveedor != null) {
-                                                        proveedorResponse = UsuarioService
-                                                                        .mapToUsuarioResponse(proveedor);
-                                                        servicioResponse.setProveedor(proveedorResponse);
-                                                }
-                                        }
-
-                                        return MatchServicioDetailsResponse.builder()
-                                                        .id(m.getId())
-                                                        .cliente(clienteResponse)
-                                                        .fecha(m.getFecha())
-                                                        .fechaInicio(m.getFechaInicio())
-                                                        .fechaCierre(m.getFechaCierre())
-                                                        .estado(m.getEstado())
-                                                        .puntuacion(m.getPuntuacion())
-                                                        .costo(m.getCosto())
-                                                        .mensaje(m.getMensaje())
-                                                        .servicio(servicioResponse)
-                                                        .build();
-                                })
-                                .collect(Collectors.toList());
+                return MatchServicioDetailsResponse
+                                .fromEntity(repository.obtenerDetailsFromProveedorAndOptionalEstado(idUsuario, estado));
         }
 
 }
