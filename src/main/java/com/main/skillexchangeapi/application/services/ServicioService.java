@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.application.services;
 
 import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
 import com.main.skillexchangeapi.app.requests.servicio.*;
 import com.main.skillexchangeapi.app.responses.SkillResponse;
 import com.main.skillexchangeapi.app.responses.UsuarioResponse;
@@ -23,10 +24,12 @@ import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
+import com.main.skillexchangeapi.domain.exceptions.BadRequestException;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 
 import org.slf4j.Logger;
@@ -342,6 +345,37 @@ public class ServicioService implements IServicioService {
         }
 
         @Override
+        public ServicioResponse actualizar(UUID id,
+                        UpdateServicioBody requestBody)
+                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException {
+                // validar entradas
+                if (requestBody.getTipoPrecio() == TipoPrecio.rango) {
+                        if (requestBody.getPrecioMinimo() <= 0 || requestBody.getPrecioMaximo() <= 0
+                                        || requestBody.getPrecioMinimo() >= requestBody.getPrecioMaximo()) {
+                                throw new BadRequestException("Rango de precios inválido");
+                        }
+                        requestBody.setPrecio(null);
+                } else {
+                        if (requestBody.getPrecio() <= 0) {
+                                throw new BadRequestException("Precio inválido");
+                        }
+                        requestBody.setPrecioMinimo(null);
+                        requestBody.setPrecioMaximo(null);
+                }
+
+                return ServicioResponse.fromEntity(repository.actualizar(Servicio.builder()
+                                .id(id)
+                                .titulo(requestBody.getTitulo())
+                                .descripcion(requestBody.getDescripcion())
+                                .precio(requestBody.getPrecio())
+                                .tipoPrecio(requestBody.getTipoPrecio())
+                                .precioMinimo(requestBody.getPrecioMinimo())
+                                .precioMaximo(requestBody.getPrecioMaximo())
+                                .build()));
+
+        }
+
+        @Override
         public ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id,
                         List<AsignacionModalidadPagoToServicioRequest> requestBody)
                         throws DatabaseNotWorkingException, NotCreatedException {
@@ -395,22 +429,6 @@ public class ServicioService implements IServicioService {
                                                                 .medio(r.getMedio())
                                                                 .build())
                                                 .toList())
-                                .build();
-        }
-
-        // Mappers
-        public static ServicioResponse mapToServicioResponse(Servicio servicio) {
-                return ServicioResponse.builder()
-                                .id(servicio.getId())
-                                .titulo(servicio.getTitulo())
-                                .descripcion(servicio.getDescripcion())
-                                .precio(servicio.getPrecio())
-                                .precioMinimo(servicio.getPrecioMinimo())
-                                .precioMaximo(servicio.getPrecioMaximo())
-                                .tipoPrecio(servicio.getTipoPrecio())
-                                .ubicacion(servicio.getUbicacion())
-                                .modalidad(servicio.getModalidad())
-                                .aceptaTerminos(servicio.isAceptaTerminos())
                                 .build();
         }
 }

@@ -14,6 +14,7 @@ import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -376,6 +377,76 @@ public class ServicioRepository implements IServicioRepository {
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se creó el servicio");
+        }
+    }
+
+    @Override
+    public Servicio actualizar(Servicio servicio) throws DatabaseNotWorkingException, NotUpdatedException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL actualizar_servicio(?, ?, ?, ?, ?, ?, ?)}")) {
+            statement.setBytes("p_id", UuidManager.UuidToBytes(servicio.getId()));
+            statement.setString("p_titulo", servicio.getTitulo());
+            statement.setString("p_descripcion", servicio.getDescripcion());
+            statement.setDouble("p_precio", servicio.getPrecio());
+            statement.setString("p_tipo_precio", servicio.getTipoPrecio().toString());
+            statement.setDouble("p_precio_minimo", servicio.getPrecioMinimo());
+            statement.setDouble("p_precio_maximo", servicio.getPrecioMaximo());
+
+            Servicio.ServicioBuilder servicioBuilder = Servicio.builder();
+            List<ModalidadPago> modalidadesPago = new ArrayList<>();
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    servicioBuilder
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .titulo(resultSet.getString("TITULO"))
+                            .descripcion(resultSet.getString("DESCRIPCION"))
+                            .precio(resultSet.getDouble("PRECIO"))
+                            .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO")))
+                            .precioMinimo(resultSet.getDouble("PRECIO_MINIMO"))
+                            .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO"))
+                            .ubicacion(resultSet.getString("UBICACION"))
+                            .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD")))
+                            .aceptaTerminos(resultSet.getBoolean("ACEPTA_TERMINOS"))
+                            .proveedor(servicio.getProveedor());
+                }
+            }
+
+            // Actualizar modalidades de pago
+            if (servicio.getModalidadesPago() != null) {
+                for (ModalidadPago modalidad : servicio.getModalidadesPago()) {
+                    try (CallableStatement mpStmt = connection
+                            .prepareCall("{CALL actualizar_modalidad_pago(?, ?, ?, ?)}")) {
+                        mpStmt.setBytes("p_id", UuidManager.UuidToBytes(modalidad.getId()));
+                        mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
+                        mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());
+                        mpStmt.setString("p_url", modalidad.getUrl());
+                        try (ResultSet rs = mpStmt.executeQuery()) {
+                            if (rs.next()) {
+                                modalidadesPago.add(ModalidadPago.builder()
+                                        .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
+                                        .tipo(Tipo.valueOf(rs.getString("TIPO")))
+                                        .cuentaBancaria(rs.getString("CUENTA_BANCARIA"))
+                                        .numeroCelular(rs.getString("NUMERO_CELULAR"))
+                                        .url(rs.getString("URL"))
+                                        .build());
+                            }
+                        }
+                    }
+                }
+            }
+
+            servicioBuilder.modalidadesPago(modalidadesPago);
+
+            Servicio servicioUpdated = servicioBuilder.build();
+            if (servicioUpdated != null) {
+                return servicioUpdated;
+            } else {
+                throw new NotUpdatedException("No se actualizó el servicio");
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("No se actualizó el servicio");
         }
     }
 }

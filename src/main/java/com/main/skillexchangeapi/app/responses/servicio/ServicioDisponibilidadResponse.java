@@ -4,6 +4,7 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 import com.main.skillexchangeapi.app.constants.ServicioConstants.Dia;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 
 import lombok.Builder;
 import lombok.Data;
@@ -16,4 +17,15 @@ public class ServicioDisponibilidadResponse {
     private Dia dia;
     private LocalTime horaInicio;
     private LocalTime horaFin;
+
+    public static ServicioDisponibilidadResponse fromEntity(ServicioDisponibilidad disponibilidad) {
+        return ServicioDisponibilidadResponse.builder()
+                .id(disponibilidad.getId())
+                .idServicio(
+                        disponibilidad.getServicio().getId())
+                .dia(disponibilidad.getDia())
+                .horaInicio(disponibilidad.getHoraInicio())
+                .horaFin(disponibilidad.getHoraFin())
+                .build();
+    }
 }

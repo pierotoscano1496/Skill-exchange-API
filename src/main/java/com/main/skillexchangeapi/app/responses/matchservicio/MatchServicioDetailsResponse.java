@@ -46,7 +46,7 @@ public class MatchServicioDetailsResponse {
                     Servicio servicio = m.getServicio();
                     ServicioResponse servicioResponse = null;
                     if (servicio != null) {
-                        servicioResponse = ServicioService.mapToServicioResponse(servicio);
+                        servicioResponse = ServicioResponse.fromEntity(servicio);
 
                         Usuario proveedor = servicio.getProveedor();
                         UsuarioResponse proveedorResponse = null;

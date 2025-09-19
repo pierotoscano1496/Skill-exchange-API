@@ -4,6 +4,7 @@ import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionModalidadPagoToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.AsignacionRecursoMultimediaToServicioRequest;
 import com.main.skillexchangeapi.app.requests.servicio.SearchServiciosParametersBody;
+import com.main.skillexchangeapi.app.requests.servicio.UpdateServicioBody;
 import com.main.skillexchangeapi.app.requests.servicio.CreateServicioBody;
 import com.main.skillexchangeapi.app.responses.servicio.*;
 import com.main.skillexchangeapi.app.security.TokenUtils;
@@ -130,6 +131,20 @@ public class ServicioController {
                 logger.error("Respuesta de error del servicio: {}", e.getMessage(), e);
             }
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Actualiza un servicio por su ID", description = "Actualiza la información de un servicio en específico: título, descripción, tipo de precio, precio, métodos de pago.")
+    public ServicioResponse actualizar(@PathVariable UUID id, @RequestPart("data") UpdateServicioBody requestBody,
+            @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia,
+            @RequestPart(value = "yapeMultimedia", required = false) MultipartFile yapeFile) {
+        try {
+            return service.actualizar(id, requestBody);
+        } catch (DatabaseNotWorkingException | NotUpdatedException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        } catch (BadRequestException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
     }
 
