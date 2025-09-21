@@ -20,5 +20,5 @@ public class ServicioDetailsPreviewResponse {
     private UsuarioResponse proveedor;
     private List<SkillResponse> skills;
     private List<MedioPagoResponse> modalidadesPago;
-    private List<RecursoMultimediaResponse> recursosMultimedia;
+    private List<RecursoMultimediaServicioResponse> recursosMultimedia;
 }

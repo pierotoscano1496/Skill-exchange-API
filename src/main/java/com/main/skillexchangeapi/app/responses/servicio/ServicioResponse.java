@@ -31,6 +31,7 @@ public class ServicioResponse {
         private List<ServicioDisponibilidadResponse> disponibilidades;
         private List<ServicioSkillResponse> skills;
         private List<ModalidadPagoResponse> modalidadesPago;
+        private List<RecursoMultimediaServicioResponse> recursosMultimedia;
         private String urlImagePreview;
 
         public static ServicioResponse fromEntity(Servicio servicio) {
@@ -52,7 +53,13 @@ public class ServicioResponse {
                                         .toList();
                 }
 
-                List<RecursoMultimediaServicio> recursosMultimedia = servicio.getRecursosMultimediaServicio();
+                List<RecursoMultimediaServicioResponse> recursosMultimedia = null;
+                if (servicio.getRecursosMultimediaServicio() != null
+                                && !servicio.getRecursosMultimediaServicio().isEmpty()) {
+                        recursosMultimedia = servicio.getRecursosMultimediaServicio().stream()
+                                        .map(RecursoMultimediaServicioResponse::fromEntity)
+                                        .toList();
+                }
                 String urlImagePreview = null;
                 if (recursosMultimedia != null && !recursosMultimedia.isEmpty()) {
                         urlImagePreview = recursosMultimedia.get(0).getUrl();
@@ -78,6 +85,7 @@ public class ServicioResponse {
                                                                 .toList()
                                                 : null)
                                 .urlImagePreview(urlImagePreview)
+                                .recursosMultimedia(recursosMultimedia)
                                 .build();
         }
 }
