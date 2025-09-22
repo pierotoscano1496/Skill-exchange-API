@@ -21,9 +21,9 @@ public class ServicioResponse {
         private UsuarioResponse proveedor;
         private String titulo;
         private String descripcion;
-        private double precio;
-        private double precioMaximo;
-        private double precioMinimo;
+        private Double precio;
+        private Double precioMaximo;
+        private Double precioMinimo;
         private TipoPrecio tipoPrecio;
         private String ubicacion;
         private Modalidad modalidad;

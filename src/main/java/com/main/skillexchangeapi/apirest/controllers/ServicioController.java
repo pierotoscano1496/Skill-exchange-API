@@ -140,8 +140,9 @@ public class ServicioController {
             @RequestPart(value = "multimedia", required = false) List<MultipartFile> recursosMultimedia,
             @RequestPart(value = "yapeMultimedia", required = false) MultipartFile yapeFile) {
         try {
-            return service.actualizar(id, requestBody);
-        } catch (DatabaseNotWorkingException | NotUpdatedException e) {
+            return service.actualizar(id, requestBody, recursosMultimedia, yapeFile);
+        } catch (DatabaseNotWorkingException | NotUpdatedException | IOException | InvalidFileException
+                | FileNotUploadedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (BadRequestException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

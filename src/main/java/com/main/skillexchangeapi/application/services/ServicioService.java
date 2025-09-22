@@ -277,29 +277,68 @@ public class ServicioService implements IServicioService {
 
         @Override
         public ServicioResponse actualizar(UUID id,
-                        UpdateServicioBody requestBody)
-                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException {
-                // validar entradas
+                        UpdateServicioBody requestBody, List<MultipartFile> recursosMultimedia, MultipartFile yapeFile)
+                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException,
+                        IOException, InvalidFileException, FileNotUploadedException {
+                /*
+                 * Evaluar lista de recursos multimedia y filtrar los que no están vacíos
+                 */
+                if (recursosMultimedia != null && !recursosMultimedia.isEmpty()) {
+                        int numEmptyFiles = 0;
+                        for (MultipartFile multipartFile : recursosMultimedia) {
+                                if (multipartFile == null || multipartFile.isEmpty()) {
+                                        logger.warn("Archivo multimedia vacío recibido");
+                                        numEmptyFiles++;
+                                } else {
+                                        logger.info("Archivo multimedia recibido: {} ({} bytes)",
+                                                        multipartFile.getOriginalFilename(),
+                                                        multipartFile.getSize());
+                                }
+                        }
+
+                        if (numEmptyFiles > 0) {
+                                logger.warn("{} archivos multimedia vacíos fueron ignorados", numEmptyFiles);
+                        }
+
+                        recursosMultimedia = recursosMultimedia.stream()
+                                        .filter(file -> file != null && !file.isEmpty())
+                                        .collect(Collectors.toList());
+                }
+                logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
+
+                // Guardar las imágenes de previsualización en el bucket de S3
+                List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
+                                .uploadMultimediaServiceResources(id, recursosMultimedia);
+
+                // Guardar las imágenes de Yape en el bucket de S3
+                String resourceYapeUploaded = storageService
+                                .uploadModalidadPagoResource(id, ModalidadPagoConstants.Tipo.yape, yapeFile);
+
+                // Asignar la URL de Yape al requestBody
+                for (ModalidadPagoBody modalidadPagoBody : requestBody.getModalidadesPago()) {
+                        if (modalidadPagoBody.getTipo() == ModalidadPagoConstants.Tipo.yape) {
+                                modalidadPagoBody.setUrl(resourceYapeUploaded);
+                                break;
+                        }
+                }
+
                 if (requestBody.getTipoPrecio() == TipoPrecio.rango) {
                         if (requestBody.getPrecioMinimo() <= 0 || requestBody.getPrecioMaximo() <= 0
                                         || requestBody.getPrecioMinimo() >= requestBody.getPrecioMaximo()) {
                                 throw new BadRequestException("Rango de precios inválido");
                         }
-                        requestBody.setPrecio(null);
                 } else {
                         if (requestBody.getPrecio() <= 0) {
                                 throw new BadRequestException("Precio inválido");
                         }
-                        requestBody.setPrecioMinimo(null);
-                        requestBody.setPrecioMaximo(null);
                 }
 
                 return ServicioResponse.fromEntity(repository.actualizar(Servicio.builder()
                                 .id(id)
                                 .titulo(requestBody.getTitulo())
                                 .descripcion(requestBody.getDescripcion())
-                                .precio(requestBody.getPrecio())
                                 .tipoPrecio(requestBody.getTipoPrecio())
+                                .precio(requestBody.getPrecio())
                                 .precioMinimo(requestBody.getPrecioMinimo())
                                 .precioMaximo(requestBody.getPrecioMaximo())
                                 .build()));

@@ -40,8 +40,10 @@ public interface IServicioService {
                         throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
                         FileNotUploadedException;
 
-        ServicioResponse actualizar(UUID id, UpdateServicioBody requestBody)
-                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException;
+        ServicioResponse actualizar(UUID id, UpdateServicioBody requestBody, List<MultipartFile> recursosMultimedia,
+                        MultipartFile yapeFile)
+                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException,
+                        IOException, InvalidFileException, FileNotUploadedException;
 
         ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id,
                         List<AsignacionModalidadPagoToServicioRequest> requestBody)

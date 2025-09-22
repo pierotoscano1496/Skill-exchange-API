@@ -3,6 +3,7 @@ package com.main.skillexchangeapi.app.requests.servicio;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.main.skillexchangeapi.app.constants.ServicioConstants;
 
 import lombok.Getter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateServicioBody {
     private String titulo;
     private String descripcion;
