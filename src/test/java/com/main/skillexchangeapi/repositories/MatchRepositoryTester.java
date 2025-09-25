@@ -738,7 +738,7 @@ public class MatchRepositoryTester extends MySQLContainer<MatchRepositoryTester>
                 Servicio servicioBackend = Servicio.builder()
                                 .titulo("Creación de APIs para conectar con bases de datos")
                                 .descripcion("Te ayudo a crear una API para que tus usuarios puedan interactuar con tu base de datos para el sistema que estás creando")
-                                .precio(1500)
+                                .precio(1500.0)
                                 .build();
 
                 // Recursos multimedia

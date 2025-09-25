@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.UUID;
 
 public interface IModalidadPagoRepository {
-    List<ModalidadPago> obtenerByServicio(UUID idServicio) throws ResourceNotFoundException, DatabaseNotWorkingException;
+    List<ModalidadPago> obtenerByServicio(UUID idServicio)
+            throws ResourceNotFoundException, DatabaseNotWorkingException;
+
+    ModalidadPago obtener(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException;
 
     ModalidadPago registrar(ModalidadPago modalidadPago) throws DatabaseNotWorkingException, NotCreatedException;
 
-    List<ModalidadPago> registrarMultiple(List<ModalidadPago> modalidadesPago) throws DatabaseNotWorkingException, NotCreatedException;
+    List<ModalidadPago> registrarMultiple(List<ModalidadPago> modalidadesPago)
+            throws DatabaseNotWorkingException, NotCreatedException;
 }

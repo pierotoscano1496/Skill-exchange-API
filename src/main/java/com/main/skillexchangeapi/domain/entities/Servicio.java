@@ -6,12 +6,13 @@ import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
 import lombok.Builder;
 import lombok.Data;
+import lombok.experimental.SuperBuilder;
 
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@Builder
+@SuperBuilder
 public class Servicio {
     private final UUID id;
     private Usuario proveedor;

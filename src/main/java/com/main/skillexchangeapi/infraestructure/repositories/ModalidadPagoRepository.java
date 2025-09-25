@@ -58,6 +58,42 @@ public class ModalidadPagoRepository implements IModalidadPagoRepository {
     }
 
     @Override
+    public ModalidadPago obtener(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL obtener_modalidad_pago(?)}")) {
+            statement.setObject("p_id", UuidManager.UuidToBytes(id));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                ModalidadPago modalidadPago = null;
+
+                while (resultSet.next()) {
+                    modalidadPago = ModalidadPago.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .tipo(Tipo.valueOf(resultSet.getString("TIPO")))
+                            .cuentaBancaria(resultSet.getString("CUENTA_BANCARIA"))
+                            .numeroCelular(resultSet.getString("NUMERO_CELULAR"))
+                            .url(resultSet.getString("URL"))
+                            .servicio(Servicio.builder()
+                                    .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
+                                    .build())
+                            .build();
+
+                    break;
+                }
+
+                if (modalidadPago != null) {
+                    return modalidadPago;
+                } else {
+                    throw new ResourceNotFoundException("No existe la modalidad de pago");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error durante la búsqueda de la modalidad de pago");
+        }
+    }
+
+    @Override
     public ModalidadPago registrar(ModalidadPago modalidadPago)
             throws DatabaseNotWorkingException, NotCreatedException {
         try (Connection connection = databaseConnection.getConnection();

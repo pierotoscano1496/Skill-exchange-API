@@ -7,8 +7,12 @@ import com.main.skillexchangeapi.domain.entities.RecursoMultimediaServicio;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotDeletedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -24,6 +28,8 @@ import java.util.UUID;
 public class RecursoMultimediaServicioRepository implements IRecursoMultimediaServicioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public List<RecursoMultimediaServicio> obtenerByServicio(UUID idServicio)
@@ -108,6 +114,43 @@ public class RecursoMultimediaServicioRepository implements IRecursoMultimediaSe
             }
         } catch (SQLException e) {
             throw new DatabaseNotWorkingException("No se crearon los recursos multimedia");
+        }
+    }
+
+    @Override
+    public List<UUID> eliminarMultiple(List<UUID> idsRecursosMultimediaServicio)
+            throws DatabaseNotWorkingException, ResourceNotFoundException, NotDeletedException {
+        List<UUID> deletedIds = new ArrayList<>();
+        for (UUID idRecursoMultimediaServicio : idsRecursosMultimediaServicio) {
+            if (eliminar(idRecursoMultimediaServicio)) {
+                deletedIds.add(idRecursoMultimediaServicio);
+            }
+        }
+        if (deletedIds.size() == idsRecursosMultimediaServicio.size()) {
+            return deletedIds;
+        } else {
+            throw new NotDeletedException("No se eliminaron todos los recursos multimedia");
+        }
+    }
+
+    public boolean eliminar(UUID id)
+            throws DatabaseNotWorkingException, ResourceNotFoundException, NotDeletedException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL eliminar_recurso_multimedia_servicio(?)}");) {
+            if (id == null) {
+                throw new NotDeletedException("El ID del recurso multimedia no puede ser nulo");
+            }
+            statement.setBytes("p_id", UuidManager.UuidToBytes(id));
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected > 0) {
+                return true;
+            } else {
+                throw new NotDeletedException("No se eliminó el recurso multimedia");
+            }
+        } catch (SQLException e) {
+            logger.error("Error al eliminar recurso {}", id, e);
+            throw new DatabaseNotWorkingException("No se eliminó el recurso multimedia");
         }
     }
 }

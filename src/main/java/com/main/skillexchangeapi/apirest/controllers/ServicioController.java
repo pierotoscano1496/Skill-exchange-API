@@ -142,7 +142,8 @@ public class ServicioController {
         try {
             return service.actualizar(id, requestBody, recursosMultimedia, yapeFile);
         } catch (DatabaseNotWorkingException | NotUpdatedException | IOException | InvalidFileException
-                | FileNotUploadedException e) {
+                | FileNotUploadedException | FileNotFoundException | ResourceNotFoundException
+                | NotDeletedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
         } catch (BadRequestException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());

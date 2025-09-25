@@ -13,9 +13,11 @@ import com.main.skillexchangeapi.app.responses.servicio.ServicioResponse;
 import com.main.skillexchangeapi.domain.entities.Servicio;
 import com.main.skillexchangeapi.domain.exceptions.BadRequestException;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.FileNotFoundException;
 import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
 import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotDeletedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 
@@ -43,7 +45,9 @@ public interface IServicioService {
         ServicioResponse actualizar(UUID id, UpdateServicioBody requestBody, List<MultipartFile> recursosMultimedia,
                         MultipartFile yapeFile)
                         throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException,
-                        IOException, InvalidFileException, FileNotUploadedException;
+                        IOException, InvalidFileException, FileNotUploadedException, FileNotFoundException,
+                        ResourceNotFoundException,
+                        NotDeletedException;
 
         ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id,
                         List<AsignacionModalidadPagoToServicioRequest> requestBody)

@@ -21,6 +21,7 @@ public class UpdateServicioBody {
     private ServicioConstants.TipoPrecio tipoPrecio;
     private Double precioMinimo;
     private Double precioMaximo;
-    private List<String> urlRecursosMultimediaToDelete;
+    private List<UUID> idRecursosMultimediaToDelete;
+    private List<UUID> idModalidadesPagoToDelete;
     private List<ModalidadPagoBody> modalidadesPago;
 }

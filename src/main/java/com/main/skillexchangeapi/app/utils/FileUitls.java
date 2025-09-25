@@ -29,12 +29,20 @@ public class FileUitls {
         String extension = fileName.substring(fileName.lastIndexOf(".") + 1);
         ResourceSource source = resourceSource != null ? resourceSource : ResourceSource.CHAT;
 
-        boolean admitExtension = switch (source) {
-            case CHAT -> Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
-            case MULTIMEDIA ->
-                Arrays.stream(ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
-            case PAYMENT -> Arrays.stream(ACCEPTED_METADATA_MODALIDAD_PAGO).anyMatch(extension::equalsIgnoreCase);
-        };
+        boolean admitExtension = false;
+
+        switch (source) {
+            case CHAT:
+                admitExtension = Arrays.stream(ACCEPTED_CHAT_FILES_EXTENSIONS).anyMatch(extension::equalsIgnoreCase);
+                break;
+            case MULTIMEDIA:
+                admitExtension = Arrays.stream(ACCEPTED_MULTIMEDIA_RESOURCES_EXTENSIONS)
+                        .anyMatch(extension::equalsIgnoreCase);
+                break;
+            case PAYMENT:
+                admitExtension = Arrays.stream(ACCEPTED_METADATA_MODALIDAD_PAGO).anyMatch(extension::equalsIgnoreCase);
+                break;
+        }
 
         return admitExtension ? Optional.of(extension) : Optional.empty();
     }
@@ -44,15 +52,33 @@ public class FileUitls {
         if (estensionFile.isPresent()) {
             String extension = estensionFile.get();
 
-            return switch (resourceType) {
-                case IMAGE -> Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_IMAGES).anyMatch(extension::equalsIgnoreCase);
-                case VIDEO -> Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_VIDEOS).anyMatch(extension::equalsIgnoreCase);
-                case DOCUMENT ->
-                    Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS).anyMatch(extension::equalsIgnoreCase);
-            };
+            boolean isChecked = false;
+            switch (resourceType) {
+                case IMAGE:
+                    isChecked = Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_IMAGES)
+                            .anyMatch(extension::equalsIgnoreCase);
+                    break;
+                case VIDEO:
+                    isChecked = Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_VIDEOS)
+                            .anyMatch(extension::equalsIgnoreCase);
+                    break;
+                case DOCUMENT:
+                    isChecked = Arrays.stream(ACCEPTED_RESOURCES_EXTENSIONS_DOCUMENTS)
+                            .anyMatch(extension::equalsIgnoreCase);
+                    break;
+            }
+
+            return isChecked;
         } else {
             return false;
         }
+    }
+
+    public static String getFileNameWithoutExtension(String fileName) {
+        if (fileName == null || !fileName.contains(".")) {
+            return fileName;
+        }
+        return fileName.substring(0, fileName.lastIndexOf("."));
     }
 
     /* Checkout: refactorizar método para aplicar una sola lógica */

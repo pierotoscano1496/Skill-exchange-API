@@ -11,12 +11,16 @@ import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepos
 import com.main.skillexchangeapi.domain.entities.*;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
 import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
+import com.main.skillexchangeapi.domain.entities.restructure.ServicioUpdate;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
 import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
 import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
 import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
 import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -32,6 +36,8 @@ import java.util.UUID;
 public class ServicioRepository implements IServicioRepository {
     @Autowired
     private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Override
     public Servicio obtenerDetails(UUID id) throws ResourceNotFoundException, DatabaseNotWorkingException {
@@ -381,7 +387,7 @@ public class ServicioRepository implements IServicioRepository {
     }
 
     @Override
-    public Servicio actualizar(Servicio servicio) throws DatabaseNotWorkingException, NotUpdatedException {
+    public Servicio actualizar(ServicioUpdate servicio) throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();
                 CallableStatement statement = connection
                         .prepareCall("{CALL actualizar_servicio(?, ?, ?, ?, ?, ?, ?)}")) {
@@ -394,6 +400,7 @@ public class ServicioRepository implements IServicioRepository {
             statement.setDouble("p_precio_maximo", servicio.getPrecioMaximo());
 
             Servicio.ServicioBuilder servicioBuilder = Servicio.builder();
+            List<RecursoMultimediaServicio> recursosMultimediaServicio = new ArrayList<>();
             List<ModalidadPago> modalidadesPago = new ArrayList<>();
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -413,31 +420,109 @@ public class ServicioRepository implements IServicioRepository {
                 }
             }
 
-            // Actualizar modalidades de pago
-            if (servicio.getModalidadesPago() != null) {
-                for (ModalidadPago modalidad : servicio.getModalidadesPago()) {
-                    try (CallableStatement mpStmt = connection
-                            .prepareCall("{CALL actualizar_modalidad_pago(?, ?, ?, ?)}")) {
-                        mpStmt.setBytes("p_id", UuidManager.UuidToBytes(modalidad.getId()));
-                        mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
-                        mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());
-                        mpStmt.setString("p_url", modalidad.getUrl());
-                        try (ResultSet rs = mpStmt.executeQuery()) {
+            // Agregar recursos multimedia
+            if (servicio.getRecursosMultimediaServicio() != null
+                    && !servicio.getRecursosMultimediaServicio().isEmpty()) {
+                for (RecursoMultimediaServicio recurso : servicio.getRecursosMultimediaServicio()) {
+                    try (CallableStatement rmStmt = connection
+                            .prepareCall("{CALL registrar_recurso_multimedia_servicio(?, ?, ?, ?)}")) {
+                        rmStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
+                        rmStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
+                        rmStmt.setString("p_url", recurso.getUrl());
+                        rmStmt.setString("p_medio", recurso.getMedio().toString());
+
+                        try (ResultSet rs = rmStmt.executeQuery()) {
                             if (rs.next()) {
-                                modalidadesPago.add(ModalidadPago.builder()
+                                recursosMultimediaServicio.add(RecursoMultimediaServicio.builder()
                                         .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
-                                        .tipo(Tipo.valueOf(rs.getString("TIPO")))
-                                        .cuentaBancaria(rs.getString("CUENTA_BANCARIA"))
-                                        .numeroCelular(rs.getString("NUMERO_CELULAR"))
+                                        .medio(Medio.valueOf(rs.getString("MEDIO")))
                                         .url(rs.getString("URL"))
                                         .build());
                             }
                         }
                     }
                 }
+                servicioBuilder.recursosMultimediaServicio(recursosMultimediaServicio);
             }
 
-            servicioBuilder.modalidadesPago(modalidadesPago);
+            // Agregar / actualizar modalidades de pago
+            if (servicio.getModalidadesPago() != null) {
+                for (ModalidadPago modalidad : servicio.getModalidadesPago()) {
+                    if (modalidad.getId() != null) {
+                        try (CallableStatement mpStmt = connection
+                                .prepareCall("{CALL actualizar_modalidad_pago(?, ?, ?, ?)}")) {
+                            mpStmt.setBytes("p_id", UuidManager.UuidToBytes(modalidad.getId()));
+                            mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
+                            mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());
+                            mpStmt.setString("p_url", modalidad.getUrl());
+                            try (ResultSet rs = mpStmt.executeQuery()) {
+                                if (rs.next()) {
+                                    modalidadesPago.add(ModalidadPago.builder()
+                                            .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
+                                            .tipo(Tipo.valueOf(rs.getString("TIPO")))
+                                            .cuentaBancaria(rs.getString("CUENTA_BANCARIA"))
+                                            .numeroCelular(rs.getString("NUMERO_CELULAR"))
+                                            .url(rs.getString("URL"))
+                                            .build());
+                                }
+                            }
+                        }
+                    } else {
+                        try (CallableStatement mpStmt = connection
+                                .prepareCall("{CALL registrar_modalidad_pago(?, ?, ?, ?, ?, ?)}")) {
+                            mpStmt.setBytes("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
+                            mpStmt.setBytes("p_id_servicio", UuidManager.UuidToBytes(servicio.getId()));
+                            mpStmt.setString("p_tipo", modalidad.getTipo().toString());
+                            mpStmt.setString("p_cuenta_bancaria", modalidad.getCuentaBancaria());
+                            mpStmt.setString("p_numero_celular", modalidad.getNumeroCelular());
+                            mpStmt.setString("p_url", modalidad.getUrl());
+                            try (ResultSet rs = mpStmt.executeQuery()) {
+                                if (rs.next()) {
+                                    modalidadesPago.add(ModalidadPago.builder()
+                                            .id(UuidManager.bytesToUuid(rs.getBytes("ID")))
+                                            .tipo(Tipo.valueOf(rs.getString("TIPO")))
+                                            .cuentaBancaria(rs.getString("CUENTA_BANCARIA"))
+                                            .numeroCelular(rs.getString("NUMERO_CELULAR"))
+                                            .url(rs.getString("URL"))
+                                            .build());
+                                }
+                            }
+                        }
+                    }
+                }
+                servicioBuilder.modalidadesPago(modalidadesPago);
+            }
+
+            // Eliminar recursos multimedia
+            if (servicio.getRecursosMultimediaServicioToDelete() != null
+                    && !servicio.getRecursosMultimediaServicioToDelete().isEmpty()) {
+                for (RecursoMultimediaServicio recursoMultimediaServicio : servicio
+                        .getRecursosMultimediaServicioToDelete()) {
+                    try (CallableStatement rmStmt = connection
+                            .prepareCall("{CALL eliminar_recurso_multimedia_servicio(?)}")) {
+                        rmStmt.setBytes("p_id", UuidManager.UuidToBytes(recursoMultimediaServicio.getId()));
+                        int rowsAffected = rmStmt.executeUpdate();
+                        if (rowsAffected > 0) {
+                            logger.info("Recurso multimedia eliminado: " + recursoMultimediaServicio.getId());
+                        }
+                    }
+                }
+            }
+
+            // Eliminar modalidades de pago
+            if (servicio.getModalidadesPagoToDelete() != null
+                    && !servicio.getModalidadesPagoToDelete().isEmpty()) {
+                for (ModalidadPago modalidadPago : servicio.getModalidadesPagoToDelete()) {
+                    try (CallableStatement mpStmt = connection
+                            .prepareCall("{CALL eliminar_modalidad_pago(?)}")) {
+                        mpStmt.setBytes("p_id", UuidManager.UuidToBytes(modalidadPago.getId()));
+                        int rowsAffected = mpStmt.executeUpdate();
+                        if (rowsAffected > 0) {
+                            logger.info("Modalidad de pago eliminada: " + modalidadPago.getId());
+                        }
+                    }
+                }
+            }
 
             Servicio servicioUpdated = servicioBuilder.build();
             if (servicioUpdated != null) {
@@ -449,4 +534,5 @@ public class ServicioRepository implements IServicioRepository {
             throw new DatabaseNotWorkingException("No se actualizó el servicio");
         }
     }
+
 }

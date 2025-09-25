@@ -88,15 +88,18 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
             List<MultipartFile> multipartFiles) throws IOException, InvalidFileException, FileNotUploadedException {
         List<MultimediaResourceUploadedResponse> resourcesUploaded = new ArrayList<>();
 
-        try {
+        if (multipartFiles != null && multipartFiles.size() > 0) {
             for (MultipartFile file : multipartFiles) {
                 Optional<String> fileExtension = FileUitls.getExtension(file.getOriginalFilename(),
                         ResourceSource.MULTIMEDIA);
                 if (fileExtension.isPresent()) {
-                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-                    String uploadDate = LocalDateTime.now().format(formatter);
+                    /*
+                     * DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                     * String uploadDate = LocalDateTime.now().format(formatter);
+                     */
 
-                    String fileName = UuidManager.randomUuid() + "_" + uploadDate + "." + fileExtension.get();
+                    UUID idRecurso = UuidManager.randomUuid();
+                    String fileName = idRecurso + "." + fileExtension.get();
                     String pathFile = idServicio.toString() + "/multimedia/" + fileName;
 
                     byte[] bytes = file.getBytes();
@@ -111,6 +114,7 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                     String url = getUrlResource(bucketName, pathFile);
 
                     resourcesUploaded.add(MultimediaResourceUploadedResponse.builder()
+                            .idRecurso(idRecurso)
                             .url(url)
                             .medio(FileUitls.getMedioFromMultimediaResource(pathFile).get())
                             .build());
@@ -118,13 +122,9 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                     throw new InvalidFileException("Archivo no válido");
                 }
             }
-
-            return resourcesUploaded;
-        } catch (Exception ex) {
-            logger.error(ex.getMessage());
-            throw new FileNotUploadedException("Error al subir archivo a S3");
         }
 
+        return resourcesUploaded;
     }
 
     @Override
@@ -134,9 +134,29 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
                 ResourceSource.PAYMENT);
         try {
             if (fileExtension.isPresent()) {
-                String fileName = UuidManager.randomUuid() + "_" + LocalDateTime.now() + "." + fileExtension.get();
-                String pathFile = idServicio.toString() + "/payments/" + paymentMethod.toString() + "/"
-                        + fileName;
+                String pathFolder = idServicio.toString() + "/payments/" + paymentMethod.toString();
+
+                // Evaluar si ya existe un archivo en el bucket de yape y eliminarlo
+                if (paymentMethod == ModalidadPagoConstants.Tipo.yape) {
+                    ListObjectsV2Request request = new ListObjectsV2Request()
+                            .withBucketName(bucketName)
+                            .withPrefix(pathFolder);
+
+                    ListObjectsV2Result result = s3Client.listObjectsV2(request);
+                    List<S3ObjectSummary> objects = result.getObjectSummaries();
+
+                    if (!objects.isEmpty()) {
+                        for (S3ObjectSummary object : objects) {
+                            s3Client.deleteObject(bucketName, object.getKey());
+                        }
+                    }
+                }
+
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                String uploadDate = LocalDateTime.now().format(formatter);
+
+                String fileName = UuidManager.randomUuid() + "_" + uploadDate + "." + fileExtension.get();
+                String pathFile = pathFolder + "/" + fileName;
                 s3Client.putObject(bucketName, pathFile, multipartFiles.getInputStream(), null);
                 return getUrlResource(bucketName, pathFile);
             } else {
@@ -151,7 +171,7 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
 
     private String getUrlResource(String bucketName, String pathFile) {
         if (profile.equals("dev")) {
-            String url = s3Endpoint + "/" + bucketName + "/" + pathFile;
+            String url = "http://localhost:4566/" + bucketName + "/" + pathFile;
             logger.info("Endpoint localstack S3: {}", url);
             return url;
         }
@@ -200,5 +220,54 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
         }
 
         return generatePresignedUrl(firstImage.get().getKey());
+    }
+
+    @Override
+    public void deleteRecursoMultimediaServicio(UUID idServicio, List<UUID> listIdRecursos)
+            throws FileNotFoundException {
+        if (listIdRecursos == null || listIdRecursos.isEmpty()) {
+            return;
+        }
+
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(bucketName)
+                .withPrefix(idServicio.toString() + "/multimedia/");
+        ListObjectsV2Result result = s3Client.listObjectsV2(request);
+        List<S3ObjectSummary> objects = result.getObjectSummaries();
+        Map<UUID, String> recursoMap = new HashMap<>();
+
+        for (S3ObjectSummary object : objects) {
+            String idRecursoStr = FileUitls.getFileNameWithoutExtension(object.getKey());
+            UUID idRecurso = UUID.fromString(idRecursoStr);
+            recursoMap.put(idRecurso, object.getKey());
+        }
+
+        for (UUID idRecurso : listIdRecursos) {
+            if (recursoMap.containsKey(idRecurso)) {
+                String objectKey = recursoMap.get(idRecurso);
+                s3Client.deleteObject(bucketName, objectKey);
+            } else {
+                throw new FileNotFoundException("Recurso multimedia con ID " + idRecurso + " no encontrado en S3");
+            }
+        }
+
+    }
+
+    @Override
+    public void deleteModalidadPagoYapeResource(UUID idServicio) throws FileNotFoundException {
+        String pathFolder = idServicio.toString() + "/payments/" + ModalidadPagoConstants.Tipo.yape.toString();
+
+        ListObjectsV2Request request = new ListObjectsV2Request()
+                .withBucketName(bucketName)
+                .withPrefix(pathFolder);
+
+        ListObjectsV2Result result = s3Client.listObjectsV2(request);
+        List<S3ObjectSummary> objects = result.getObjectSummaries();
+
+        if (!objects.isEmpty()) {
+            for (S3ObjectSummary object : objects) {
+                s3Client.deleteObject(bucketName, object.getKey());
+            }
+        }
     }
 }

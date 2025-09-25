@@ -25,4 +25,9 @@ public interface IAWSS3ServicioService {
 
         String getImageMetodoPagoPresignedUrl(UUID idServicio,
                         ModalidadPagoConstants.Tipo paymentMethod) throws FileNotFoundException;
+
+        void deleteRecursoMultimediaServicio(UUID idServicio, List<UUID> idsRecurso)
+                        throws FileNotFoundException;
+
+        void deleteModalidadPagoYapeResource(UUID idServicio) throws FileNotFoundException;
 }

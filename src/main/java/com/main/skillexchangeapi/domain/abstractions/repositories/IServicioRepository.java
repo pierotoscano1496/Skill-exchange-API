@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.domain.abstractions.repositories;
 
 import com.main.skillexchangeapi.domain.entities.Servicio;
+import com.main.skillexchangeapi.domain.entities.restructure.ServicioUpdate;
 import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
 import com.main.skillexchangeapi.domain.exceptions.BadRequestException;
 import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
@@ -25,6 +26,6 @@ public interface IServicioRepository {
 
         Servicio registrar(Servicio servicio) throws DatabaseNotWorkingException, NotCreatedException;
 
-        Servicio actualizar(Servicio servicio)
+        Servicio actualizar(ServicioUpdate servicio)
                         throws DatabaseNotWorkingException, NotUpdatedException;
 }
