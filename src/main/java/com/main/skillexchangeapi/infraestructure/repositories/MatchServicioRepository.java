@@ -1,6 +1,7 @@
 package com.main.skillexchangeapi.infraestructure.repositories;
 
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
 import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
 import com.main.skillexchangeapi.app.utils.UuidManager;
@@ -164,8 +165,12 @@ public class MatchServicioRepository implements IMatchServicioRepository {
                                     .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_SERVICIO")))
                                     .descripcion(resultSet.getString("DESCRIPCION_SERVICIO"))
                                     .precio(resultSet.getDouble("PRECIO_SERVICIO"))
+                                    .precioMaximo(resultSet.getDouble("PRECIO_MAXIMO_SERVICIO"))
+                                    .precioMinimo(resultSet.getDouble("PRECIO_MINIMO_SERVICIO"))
+                                    .modalidad(Modalidad.valueOf(resultSet.getString("MODALIDAD_SERVICIO")))
                                     .titulo(resultSet.getString("TITULO_SERVICIO"))
                                     .tipoPrecio(TipoPrecio.valueOf(resultSet.getString("TIPO_PRECIO_SERVICIO")))
+                                    .ubicacion(resultSet.getString("UBICACION_SERVICIO"))
                                     .proveedor(Usuario.builder()
                                             .id(idProveedor)
                                             .build())
