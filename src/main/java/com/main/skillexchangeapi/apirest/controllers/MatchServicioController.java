@@ -1,15 +1,17 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
-import com.azure.core.annotation.Get;
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.requests.matchservicio.AcceptMatchServicioBody;
+import com.main.skillexchangeapi.app.requests.matchservicio.ConfirmacionRecepcionPagoBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.CreateMatchServicioBody;
 import com.main.skillexchangeapi.app.requests.matchservicio.PuntajeServicioRequest;
 import com.main.skillexchangeapi.app.requests.matchservicio.UpdateEstadoMatchServicioBody;
+import com.main.skillexchangeapi.app.responses.matchservicio.ConfirmacionRecepcionPagoResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioProveedorDetailsResponse;
 import com.main.skillexchangeapi.app.responses.matchservicio.MatchServicioResponse;
 import com.main.skillexchangeapi.domain.abstractions.services.IMatchServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.matchactions.IConfirmacionRecepcionPagoService;
 import com.main.skillexchangeapi.domain.exceptions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(value = "match", produces = "application/json")
@@ -114,6 +118,23 @@ public class MatchServicioController {
             return service.puntuarServicio(id, request);
         } catch (DatabaseNotWorkingException | NotUpdatedException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+        }
+    }
+
+    @RestController
+    @RequestMapping(value = "match/confirmacion-recepcion-pago", produces = "application/json")
+    public static class ConfirmacionRecepcionPagoController {
+        @Autowired
+        private IConfirmacionRecepcionPagoService service;
+
+        @PostMapping
+        public ConfirmacionRecepcionPagoResponse registrar(
+                @RequestBody ConfirmacionRecepcionPagoBody requestBody) {
+            try {
+                return service.registrar(requestBody);
+            } catch (DatabaseNotWorkingException | NotCreatedException e) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage());
+            }
         }
     }
 }
