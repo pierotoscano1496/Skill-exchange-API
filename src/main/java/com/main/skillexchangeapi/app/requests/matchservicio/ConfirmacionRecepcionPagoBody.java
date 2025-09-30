@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class ConfirmacionRecepcionPagoBody {
     private UUID id;
-    private UUID IdMatchServicio;
+    private UUID idMatchServicio;
     private boolean pagoCompletoAcordado;
     private boolean metodoPagoAcordado;
     private boolean comprobanteRecibido;

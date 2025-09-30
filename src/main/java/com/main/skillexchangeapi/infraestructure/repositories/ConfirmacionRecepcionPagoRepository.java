@@ -34,7 +34,8 @@ public class ConfirmacionRecepcionPagoRepository implements IConfirmacionRecepci
                         "{CALL registrar_confirmacion_recepcion_pago_match_servicio(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}")) {
             logger.info("Id de match {}", confirmacion.getMatchServicio().getId());
             statement.setObject("p_id", UuidManager.UuidToBytes(UuidManager.randomUuid()));
-            statement.setObject("p_id_match_servicio", confirmacion.getMatchServicio().getId());
+            statement.setObject("p_id_match_servicio", UuidManager.UuidToBytes(
+                    confirmacion.getMatchServicio().getId()));
             statement.setBoolean("p_pago_completo_acordado", confirmacion.isPagoCompletoAcordado());
             statement.setBoolean("p_metodo_pago_acordado", confirmacion.isMetodoPagoAcordado());
             statement.setBoolean("p_comprobante_recibido", confirmacion.isComprobanteRecibido());
