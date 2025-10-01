@@ -1,0 +1,47 @@
+name: skillexchange
+
+services:
+  localstack:
+    image: localstack/localstack:3
+    ports: ["4566:4566"]
+    environment:
+      - SERVICES=s3
+      - DEFAULT_REGION=us-east-1
+      - PERSISTENCE=1
+      - LOCALSTACK_PERSISTENCE=1
+    volumes:
+      - ./localstack-data:/var/lib/localstack
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    networks: [se-network]
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql_skillexchange
+    env_file:
+      - .env.db.${ENV_STAGE:-qa}
+    ports: ["3306:3306"]
+    networks: [se-network]
+    volumes:
+      - mysql_data_${ENV_STAGE:-qa}:/var/lib/mysql
+
+  mongodb:
+    image: mongodb/mongodb-community-server:5.0-ubuntu2004
+    container_name: mongodb_skillexchange
+    env_file:
+      - .env.mongo.${ENV_STAGE:-qa}
+    ports: ["27017:27017"]
+    volumes:
+      - mongo_data_${ENV_STAGE:-qa}:/data/db
+    networks: [se-network]
+
+networks:
+  se-network: { driver: bridge }
+
+volumes:
+  mysql_data_dev:
+  mysql_data_qa:
+  mysql_data_prod:
+  mongo_data_dev:
+  mongo_data_qa:
+  mongo_data_prod:
+  localstack-data:

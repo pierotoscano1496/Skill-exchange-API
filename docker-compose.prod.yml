@@ -1,0 +1,20 @@
+name: skillexchange
+
+services:
+  backend:
+    build: .
+    container_name: skillexchange_api
+    ports: ["9081:9081"]
+    env_file:
+      - .env.${ENV_STAGE:-prod}
+    depends_on: [mysql-db, mongodb, localstack]
+    networks: [se-network]
+    restart: always
+
+  mongodb:
+    image: skillexchange/mongo:5.0-appuser
+    env_file:
+      - .env.mongo.${ENV_STAGE:-prod}
+    volumes:
+      - mongo_data_${ENV_STAGE:-prod}:/data/db
+    networks: [se-network]

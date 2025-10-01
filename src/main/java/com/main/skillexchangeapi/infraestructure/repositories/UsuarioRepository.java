@@ -1,0 +1,470 @@
+package com.main.skillexchangeapi.infraestructure.repositories;
+
+import com.main.skillexchangeapi.app.utils.UuidManager;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IUsuarioRepository;
+import com.main.skillexchangeapi.domain.entities.Plan;
+import com.main.skillexchangeapi.domain.entities.Usuario;
+import com.main.skillexchangeapi.domain.entities.detail.PlanUsuario;
+import com.amazonaws.services.kms.model.NotFoundException;
+import com.main.skillexchangeapi.apirest.controllers.CategoriaController;
+import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
+import com.main.skillexchangeapi.app.security.entities.UsuarioPersonalInfo;
+import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.EncryptionAlghorithmException;
+import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+import com.main.skillexchangeapi.domain.logical.UsuarioCredenciales;
+import com.main.skillexchangeapi.infraestructure.database.DatabaseConnection;
+
+import org.checkerframework.checker.units.qual.s;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@Repository
+public class UsuarioRepository implements IUsuarioRepository {
+    @Autowired
+    private DatabaseConnection databaseConnection;
+
+    Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
+
+    @Override
+    public Usuario login(UsuarioCredenciales credenciales)
+            throws DatabaseNotWorkingException, ResourceNotFoundException, EncryptionAlghorithmException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL login(?, ?)}");) {
+            statement.setString("p_correo", credenciales.getEmail());
+            statement.setString("p_clave", credenciales.getClave());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .dni(resultSet.getString("DNI"))
+                            .correo(resultSet.getString("CORREO"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario obtenerById(UUID id) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_id(?)}");) {
+            statement.setObject("p_id", UuidManager.UuidToBytes(id));
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario obtenerByCorreo(String correo) throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usuario_by_correo(?)}");) {
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuario != null) {
+                    return usuario;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario validarExistenciaByDni(String dni, String correo) throws DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_usuario_by_dni(?, ?)}");) {
+            statement.setString("p_dni", dni);
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                return usuario;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario validarExistenciaByCarnetExtranjeria(String carnetExtranjeria, String correo)
+            throws DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_by_carnet_extranjeria(?, ?)}");) {
+            statement.setString("p_carnet_extranjeria", carnetExtranjeria);
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                Usuario usuario = null;
+
+                while (resultSet.next()) {
+                    usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+
+                    break;
+                }
+
+                return usuario;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public UsuarioPersonalInfo getUserCred(String correo)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL get_usercred_by_correo(?)}");) {
+            statement.setString("p_correo", correo);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                UsuarioPersonalInfo usuarioPersonalInfo = null;
+
+                while (resultSet.next()) {
+                    usuarioPersonalInfo = UsuarioPersonalInfo.builder()
+                            .correo(resultSet.getString("CORREO"))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .clave(resultSet.getNString("CLAVE"))
+                            .build();
+
+                    break;
+                }
+
+                if (usuarioPersonalInfo != null) {
+                    return usuarioPersonalInfo;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public Usuario registrar(Usuario usuario)
+            throws DatabaseNotWorkingException, NotCreatedException, EncryptionAlghorithmException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL registrar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");) {
+            byte[] idUsuarioToBytes = UuidManager.randomUuidToBytes();
+            statement.setObject("p_id", idUsuarioToBytes);
+            statement.setString("p_dni", usuario.getDni());
+            statement.setString("p_carnet_extranjeria", usuario.getCarnetExtranjeria());
+            statement.setString("p_tipo_documento", usuario.getTipoDocumento().toString());
+            statement.setString("p_introduccion", usuario.getIntroduccion());
+            statement.setString("p_correo", usuario.getCorreo());
+            statement.setString("p_nombres", usuario.getNombres());
+            statement.setString("p_apellidos", usuario.getApellidos());
+            statement.setDate("p_fecha_nacimiento", java.sql.Date.valueOf(usuario.getFechaNacimiento()));
+            statement.setString("p_perfil_linkedin", usuario.getPerfilLinkedin());
+            statement.setString("p_perfil_facebook", usuario.getPerfilFacebook());
+            statement.setString("p_perfil_instagram", usuario.getPerfilInstagram());
+            statement.setString("p_perfil_tiktok", usuario.getPerfilTiktok());
+            statement.setString("p_clave", usuario.getClave());
+            statement.registerOutParameter("status_message", Types.VARCHAR);
+
+            statement.execute();
+
+            try (ResultSet resultSet = statement.getResultSet()) {
+                String statusMessage = statement.getString("status_message");
+                if (statusMessage.equals("Usuario registrado")) {
+                    Usuario usuarioRegistered = null;
+                    while (resultSet.next()) {
+                        UUID uuid = UuidManager.bytesToUuid(resultSet.getBytes("ID"));
+
+                        usuarioRegistered = Usuario.builder()
+                                .id(uuid)
+                                .dni(resultSet.getString("DNI"))
+                                .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                                .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                                .introduccion(resultSet.getString("INTRODUCCION"))
+                                .correo(resultSet.getString("CORREO"))
+                                .nombres(resultSet.getString("NOMBRES"))
+                                .apellidos(resultSet.getString("APELLIDOS"))
+                                .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                                .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                                .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                                .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                                .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                                .build();
+                        break;
+                    }
+
+                    return usuarioRegistered;
+                } else {
+                    throw new NotCreatedException(statusMessage);
+                }
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("No se creó el usuario");
+        }
+    }
+
+    @Override
+    public PlanUsuario asignarPlan(PlanUsuario planUsuario) throws DatabaseNotWorkingException, NotCreatedException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection.prepareCall("{CALL registrar_plan_usuario(?, ?, ?, ?, ?)}")) {
+            statement.setBytes("p_id_plan", UuidManager.UuidToBytes(planUsuario.getPlan().getId()));
+            statement.setBytes("p_id_usuario", UuidManager.UuidToBytes(planUsuario.getUsuario().getId()));
+            statement.setBoolean("p_is_active", planUsuario.isActive());
+            statement.setDouble("p_monto", planUsuario.getMonto());
+            statement.setString("p_moneda", planUsuario.getMoneda());
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    Plan plan = Plan.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID_PLAN")))
+                            .build();
+
+                    PlanUsuario planUsuarioRegistered = PlanUsuario.builder()
+                            .plan(plan)
+                            .isActive(resultSet.getBoolean("IS_ACTIVE"))
+                            .moneda(resultSet.getString("MONEDA"))
+                            .monto(resultSet.getDouble("MONTO"))
+                            .build();
+
+                    return planUsuarioRegistered;
+                } else {
+                    throw new NotCreatedException("Error durante la asignación del plan");
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int deleteAll() throws DatabaseNotWorkingException {
+        try (Connection connection = databaseConnection.getConnection();
+                Statement statement = connection.createStatement()) {
+            return statement.executeUpdate("DELETE FROM USUARIO");
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al eliminar los usuarios");
+        }
+    }
+
+    @Override
+    public boolean existsByParams(Map<String, String> params)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                CallableStatement statement = connection
+                        .prepareCall("{CALL validar_existencia_usuario(?, ?, ?)}");) {
+            params.entrySet().forEach(paramSet -> {
+                try {
+                    if (paramSet.getValue() != null) {
+                        statement.setString(paramSet.getKey(), paramSet.getValue());
+                    } else {
+                        statement.setNull(paramSet.getKey(), Types.VARCHAR);
+                    }
+                } catch (SQLException e) {
+                    logger.error("Error en parámetro {}", e.getMessage());
+                }
+            });
+            /*
+             * switch (tipoCredencial) {
+             * case correo:
+             * statement.setString("p_correo", pa);
+             * break;
+             * 
+             * default:
+             * break;
+             * }
+             */
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                UUID idUsuario = null;
+                while (resultSet.next()) {
+                    idUsuario = UuidManager.bytesToUuid(resultSet.getBytes("ID"));
+                    break;
+                }
+
+                if (idUsuario != null) {
+                    return true;
+                } else {
+                    throw new ResourceNotFoundException("Usuario no existe");
+                }
+            }
+        } catch (SQLException e) {
+            logger.error("Error al verificar la existencia del usuario: {}", e.getMessage());
+            throw new DatabaseNotWorkingException("Error de búsqueda del usuario");
+        }
+    }
+
+    @Override
+    public List<Usuario> obtenerTodos() throws DatabaseNotWorkingException {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM USUARIO");
+                    ResultSet resultSet = statement.executeQuery()) {
+                List<Usuario> usuarios = new ArrayList<>();
+                while (resultSet.next()) {
+                    Usuario usuario = Usuario.builder()
+                            .id(UuidManager.bytesToUuid(resultSet.getBytes("ID")))
+                            .nombres(resultSet.getNString("NOMBRES"))
+                            .apellidos(resultSet.getNString("APELLIDOS"))
+                            .dni(resultSet.getString("DNI"))
+                            .carnetExtranjeria(resultSet.getString("CARNET_EXTRANJERIA"))
+                            .tipoDocumento(TipoDocumento.valueOf(resultSet.getString("TIPO_DOCUMENTO")))
+                            .correo(resultSet.getString("CORREO"))
+                            .fechaNacimiento(resultSet.getDate("FECHA_NACIMIENTO").toLocalDate())
+                            .introduccion(resultSet.getString("INTRODUCCION"))
+                            .perfilFacebook(resultSet.getString("PERFIL_FACEBOOK"))
+                            .perfilInstagram(resultSet.getString("PERFIL_INSTAGRAM"))
+                            .perfilLinkedin(resultSet.getString("PERFIL_LINKEDIN"))
+                            .perfilTiktok(resultSet.getString("PERFIL_TIKTOK"))
+                            .build();
+                    usuarios.add(usuario);
+                }
+                return usuarios;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al obtener todos los usuarios");
+        }
+    }
+
+    @Override
+    public Usuario updatePassword(UUID id, String password)
+            throws DatabaseNotWorkingException, ResourceNotFoundException {
+        try (Connection connection = databaseConnection.getConnection();
+                PreparedStatement statement = connection.prepareStatement(
+                        "UPDATE USUARIO SET CLAVE = ? WHERE ID = ?")) {
+            statement.setString(1, password);
+            statement.setBytes(2, UuidManager.UuidToBytes(id));
+            int rows = statement.executeUpdate();
+
+            if (rows == 0) {
+                throw new ResourceNotFoundException("Usuario no existe");
+            }
+            // Devuelve el usuario actualizado
+            return obtenerById(id);
+        } catch (SQLException e) {
+            throw new DatabaseNotWorkingException("Error al actualizar la contraseña");
+        }
+    }
+}

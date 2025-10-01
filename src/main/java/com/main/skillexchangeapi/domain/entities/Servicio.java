@@ -1,0 +1,32 @@
+package com.main.skillexchangeapi.domain.entities;
+
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.SuperBuilder;
+
+import java.util.List;
+import java.util.UUID;
+
+@Data
+@SuperBuilder
+public class Servicio {
+    private final UUID id;
+    private Usuario proveedor;
+    private String titulo;
+    private String descripcion;
+    private Double precio;
+    private Double precioMaximo;
+    private Double precioMinimo;
+    private TipoPrecio tipoPrecio;
+    private String ubicacion;
+    private Modalidad modalidad;
+    private boolean aceptaTerminos;
+    private List<ModalidadPago> modalidadesPago;
+    private List<RecursoMultimediaServicio> recursosMultimediaServicio;
+    private List<ServicioDisponibilidad> disponibilidades;
+    private List<ServicioSkill> servicioSkills;
+}

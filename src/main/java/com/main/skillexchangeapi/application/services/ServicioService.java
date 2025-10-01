@@ -1,0 +1,479 @@
+package com.main.skillexchangeapi.application.services;
+
+import com.main.skillexchangeapi.app.constants.ModalidadPagoConstants;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.Modalidad;
+import com.main.skillexchangeapi.app.constants.ServicioConstants.TipoPrecio;
+import com.main.skillexchangeapi.app.requests.servicio.*;
+import com.main.skillexchangeapi.app.responses.SkillResponse;
+import com.main.skillexchangeapi.app.responses.UsuarioResponse;
+import com.main.skillexchangeapi.app.responses.servicio.*;
+import com.main.skillexchangeapi.app.responses.usuario.CategoriaResponse;
+import com.main.skillexchangeapi.app.responses.usuario.SubCategoriaResponse;
+import com.main.skillexchangeapi.app.utils.UuidManager;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IModalidadPagoRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IRecursoMultimediaServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioDisponibilidadRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioImagenRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioRepository;
+import com.main.skillexchangeapi.domain.abstractions.repositories.IServicioSkillRepository;
+import com.main.skillexchangeapi.domain.abstractions.services.IServicioService;
+import com.main.skillexchangeapi.domain.abstractions.services.storage.IAWSS3ServicioService;
+import com.main.skillexchangeapi.domain.constants.PaymentMethod;
+import com.main.skillexchangeapi.domain.entities.*;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioDisponibilidad;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioImagen;
+import com.main.skillexchangeapi.domain.entities.detail.ServicioSkill;
+import com.main.skillexchangeapi.domain.entities.detail.SkillUsuario;
+import com.main.skillexchangeapi.domain.entities.restructure.ServicioUpdate;
+import com.main.skillexchangeapi.domain.entities.searchparameters.SearchServicioParams;
+import com.main.skillexchangeapi.domain.exceptions.BadRequestException;
+import com.main.skillexchangeapi.domain.exceptions.DatabaseNotWorkingException;
+import com.main.skillexchangeapi.domain.exceptions.FileNotFoundException;
+import com.main.skillexchangeapi.domain.exceptions.FileNotUploadedException;
+import com.main.skillexchangeapi.domain.exceptions.InvalidFileException;
+import com.main.skillexchangeapi.domain.exceptions.NotCreatedException;
+import com.main.skillexchangeapi.domain.exceptions.NotDeletedException;
+import com.main.skillexchangeapi.domain.exceptions.NotUpdatedException;
+import com.main.skillexchangeapi.domain.exceptions.ResourceNotFoundException;
+
+import org.checkerframework.checker.units.qual.s;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+
+@Service
+public class ServicioService implements IServicioService {
+        @Autowired
+        private IServicioRepository repository;
+
+        @Autowired
+        private IModalidadPagoRepository modalidadPagoRepository;
+
+        @Autowired
+        private IRecursoMultimediaServicioRepository recursoMultimediaServicioRepository;
+
+        @Autowired
+        private IServicioSkillRepository servicioSkillRepository;
+
+        @Autowired
+        private IServicioDisponibilidadRepository servicioDisponibilidadRepository;
+
+        @Autowired
+        private IServicioImagenRepository servicioImagenRepository;
+
+        @Autowired
+        private IAWSS3ServicioService storageService;
+
+        Logger logger = LoggerFactory.getLogger(ServicioService.class);
+
+        @Override
+        public List<ServicioResponse> obtenerByProveedor(UUID idProveedor)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.obtenerByProveedor(idProveedor).stream().map(s -> ServicioResponse.builder()
+                                .id(s.getId())
+                                .descripcion(s.getDescripcion())
+                                .precio(s.getPrecio())
+                                .precioMinimo(s.getPrecioMinimo())
+                                .precioMaximo(s.getPrecioMaximo())
+                                .titulo(s.getTitulo())
+                                .tipoPrecio(s.getTipoPrecio())
+                                .ubicacion(s.getUbicacion())
+                                .modalidad(s.getModalidad())
+                                .aceptaTerminos(s.isAceptaTerminos())
+                                .build()).collect(Collectors.toList());
+        }
+
+        @Override
+        public List<ServicioResponse> searchByParameters(SearchServiciosParametersBody requestBody)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                return repository.searchByParams(SearchServicioParams.builder()
+                                .keyWord(requestBody.getKeyWord())
+                                .idSkill(requestBody.getIdSkill())
+                                .idSubcategoria(requestBody.getIdSubcategoria())
+                                .idCategoria(requestBody.getIdCategoria())
+                                .build())
+                                .stream().map(s -> ServicioResponse.builder()
+                                                .id(s.getId())
+                                                .descripcion(s.getDescripcion())
+                                                .precio(s.getPrecio())
+                                                .tipoPrecio(s.getTipoPrecio())
+                                                .precioMinimo(s.getPrecioMinimo())
+                                                .precioMaximo(s.getPrecioMaximo())
+                                                .titulo(s.getTitulo())
+                                                .ubicacion(s.getUbicacion())
+                                                .modalidad(s.getModalidad())
+                                                .aceptaTerminos(s.isAceptaTerminos())
+                                                .proveedor(UsuarioResponse.builder()
+                                                                .id(s.getProveedor().getId())
+                                                                .nombres(s.getProveedor().getNombres())
+                                                                .apellidos(s.getProveedor().getApellidos())
+                                                                .build())
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        public ServicioResponse obtenerDetailsPreview(UUID id)
+                        throws DatabaseNotWorkingException, ResourceNotFoundException {
+                Servicio servicio = repository.obtenerDetails(id);
+                List<RecursoMultimediaServicio> recursosMultimediaServicio;
+                try {
+                        recursosMultimediaServicio = recursoMultimediaServicioRepository.obtenerByServicio(id);
+                } catch (ResourceNotFoundException e) {
+                        recursosMultimediaServicio = new ArrayList<>();
+                }
+
+                List<ModalidadPago> modalidadesPago = modalidadPagoRepository.obtenerByServicio(id);
+                servicio.setModalidadesPago(modalidadesPago);
+                servicio.setRecursosMultimediaServicio(recursosMultimediaServicio);
+
+                return ServicioResponse.fromEntity(servicio);
+        }
+
+        @Override
+        public ServicioRegisteredResponse registrar(CreateServicioBody requestBody,
+                        List<MultipartFile> recursosMultimedia,
+                        MultipartFile yapeFile)
+                        throws DatabaseNotWorkingException, NotCreatedException, IOException, InvalidFileException,
+                        FileNotUploadedException {
+                UUID idServicio = UuidManager.randomUuid();
+                logger.info("Recibiendo solicitud para registrar un servicio con los siguientes datos: {}",
+                                requestBody);
+
+                /*
+                 * Evaluar lista de recursos multimedia y filtrar los que no están vacíos
+                 */
+                if (recursosMultimedia != null && !recursosMultimedia.isEmpty()) {
+                        int numEmptyFiles = 0;
+                        for (MultipartFile multipartFile : recursosMultimedia) {
+                                if (multipartFile == null || multipartFile.isEmpty()) {
+                                        logger.warn("Archivo multimedia vacío recibido");
+                                        numEmptyFiles++;
+                                } else {
+                                        logger.info("Archivo multimedia recibido: {} ({} bytes)",
+                                                        multipartFile.getOriginalFilename(),
+                                                        multipartFile.getSize());
+                                }
+                        }
+
+                        if (numEmptyFiles > 0) {
+                                logger.warn("{} archivos multimedia vacíos fueron ignorados", numEmptyFiles);
+                        }
+
+                        recursosMultimedia = recursosMultimedia.stream()
+                                        .filter(file -> file != null && !file.isEmpty())
+                                        .collect(Collectors.toList());
+                }
+                logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
+
+                // Guardar las imágenes de previsualización en el bucket de S3
+                List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
+                                .uploadMultimediaServiceResources(idServicio, recursosMultimedia);
+
+                // Guardar las imágenes de Yape en el bucket de S3
+                String resourceYapeUploaded = storageService
+                                .uploadModalidadPagoResource(idServicio, ModalidadPagoConstants.Tipo.yape, yapeFile);
+
+                // Asignar la URL de Yape al requestBody
+                for (ModalidadPagoBody modalidadPagoBody : requestBody.getModalidadesPago()) {
+                        if (modalidadPagoBody.getTipo() == ModalidadPagoConstants.Tipo.yape) {
+                                modalidadPagoBody.setUrl(resourceYapeUploaded);
+                                break;
+                        }
+                }
+
+                Servicio servicioRegistered = repository.registrar(Servicio.builder()
+                                .id(idServicio)
+                                .proveedor(Usuario.builder()
+                                                .id(requestBody.getIdProveedor())
+                                                .build())
+                                .titulo(requestBody.getTitulo())
+                                .descripcion(requestBody.getDescripcion())
+                                .precio(requestBody.getPrecio())
+                                .precioMaximo(requestBody.getPrecioMaximo())
+                                .precioMinimo(requestBody.getPrecioMinimo())
+                                .tipoPrecio(requestBody.getTipoPrecio())
+                                .ubicacion(requestBody.getUbicacion())
+                                .modalidad(requestBody.getModalidad())
+                                .aceptaTerminos(requestBody.isAceptaTerminos())
+                                .servicioSkills(requestBody.getSkills()
+                                                .stream()
+                                                .map(s -> ServicioSkill.builder()
+                                                                .skill(Skill.builder()
+                                                                                .id(s.getIdSkill())
+                                                                                .build())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(requestBody.getModalidadesPago()
+                                                .stream()
+                                                .map(m -> ModalidadPago.builder()
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .recursosMultimediaServicio(resourceUploaded
+                                                .stream()
+                                                .map(r -> RecursoMultimediaServicio.builder()
+                                                                .id(UuidManager.randomUuid())
+                                                                .medio(r.getMedio())
+                                                                .url(r.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .disponibilidades(requestBody.getDisponibilidades()
+                                                .stream()
+                                                .map(d -> ServicioDisponibilidad.builder()
+                                                                .dia(d.getDia())
+                                                                .horaInicio(d.getHoraInicio())
+                                                                .horaFin(d.getHoraFin())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build());
+
+                return ServicioRegisteredResponse.builder()
+                                .id(servicioRegistered.getId())
+                                .idProveedor(servicioRegistered.getProveedor().getId())
+                                .titulo(servicioRegistered.getTitulo())
+                                .descripcion(servicioRegistered.getDescripcion())
+                                .precio(servicioRegistered.getPrecio())
+                                .precioMinimo(servicioRegistered.getPrecioMinimo())
+                                .precioMaximo(servicioRegistered.getPrecioMaximo())
+                                .ubicacion(servicioRegistered.getUbicacion())
+                                .modalidad(servicioRegistered.getModalidad())
+                                .aceptaTerminos(servicioRegistered.isAceptaTerminos())
+                                .skills(servicioRegistered.getServicioSkills().stream()
+                                                .map(s -> ServicioSkillResponse.builder()
+                                                                .idSkill(s.getSkill().getId())
+                                                                .idServicio(servicioRegistered.getId())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .disponibilidades(servicioRegistered.getDisponibilidades()
+                                                .stream()
+                                                .map(s -> ServicioDisponibilidadResponse.builder()
+                                                                .id(s.getId())
+                                                                .dia(s.getDia())
+                                                                .horaInicio(s.getHoraInicio())
+                                                                .horaFin(s.getHoraFin())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(servicioRegistered.getModalidadesPago()
+                                                .stream()
+                                                .map(m -> ModalidadPagoResponse.builder()
+                                                                .id(m.getId())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .build();
+
+        }
+
+        @Override
+        public ServicioResponse actualizar(UUID id,
+                        UpdateServicioBody requestBody, List<MultipartFile> recursosMultimedia, MultipartFile yapeFile)
+                        throws DatabaseNotWorkingException, NotUpdatedException, BadRequestException,
+                        IOException, InvalidFileException, FileNotUploadedException,
+                        FileNotFoundException, ResourceNotFoundException,
+                        NotDeletedException {
+
+                logger.info("Recibiendo solicitud para actualizar el servicio con ID: {}", id);
+
+                /**
+                 * Validaciones previas
+                 */
+                if (requestBody.getTipoPrecio() == TipoPrecio.rango) {
+                        if (requestBody.getPrecioMinimo() <= 0 || requestBody.getPrecioMaximo() <= 0
+                                        || requestBody.getPrecioMinimo() >= requestBody.getPrecioMaximo()) {
+                                throw new BadRequestException("Rango de precios inválido");
+                        }
+                } else {
+                        if (requestBody.getPrecio() <= 0) {
+                                throw new BadRequestException("Precio inválido");
+                        }
+                }
+
+                /*
+                 * Evaluar lista de nuevos recursos multimedia y filtrar los que no están vacíos
+                 */
+                if (recursosMultimedia != null && !recursosMultimedia.isEmpty()) {
+                        int numEmptyFiles = 0;
+                        for (MultipartFile multipartFile : recursosMultimedia) {
+                                if (multipartFile == null || multipartFile.isEmpty()) {
+                                        logger.warn("Archivo multimedia vacío recibido");
+                                        numEmptyFiles++;
+                                } else {
+                                        logger.info("Archivo multimedia recibido: {} ({} bytes)",
+                                                        multipartFile.getOriginalFilename(),
+                                                        multipartFile.getSize());
+                                }
+                        }
+
+                        if (numEmptyFiles > 0) {
+                                logger.warn("{} archivos multimedia vacíos fueron ignorados", numEmptyFiles);
+                        }
+
+                        recursosMultimedia = recursosMultimedia.stream()
+                                        .filter(file -> file != null && !file.isEmpty())
+                                        .collect(Collectors.toList());
+                }
+                logger.info("Iniciando registro de servicio. Datos recibidos: {}", requestBody);
+
+                /**
+                 * Eliminar recursos multimedia si se ha enviado una lista de IDs a eliminar
+                 * (bucket)
+                 */
+                List<UUID> idsRecursosToDelete = requestBody.getIdRecursosMultimediaToDelete();
+
+                if (idsRecursosToDelete != null && !idsRecursosToDelete.isEmpty()) {
+                        storageService.deleteRecursoMultimediaServicio(id, idsRecursosToDelete);
+                }
+
+                /**
+                 * Eliminar modalidad de pago (solo yape) del servicio (bucket) si se indicó
+                 */
+                List<UUID> idsModalidadesPagoToDelete = requestBody.getIdModalidadesPagoToDelete();
+                List<ModalidadPago> modalidadesPagoToDelete = new ArrayList<>();
+                if (idsModalidadesPagoToDelete != null && !idsModalidadesPagoToDelete.isEmpty()) {
+                        for (UUID idModalidadPago : idsModalidadesPagoToDelete) {
+                                // Obtener modalidad de pago para verificar si es Yape
+                                ModalidadPago modalidadPago = modalidadPagoRepository.obtener(idModalidadPago);
+                                modalidadesPagoToDelete.add(modalidadPago);
+                                // Si es Yape, eliminar recurso del bucket
+                                if (modalidadPago.getTipo() == ModalidadPagoConstants.Tipo.yape) {
+                                        storageService.deleteModalidadPagoYapeResource(id);
+                                        logger.info("Recurso de Yape eliminado del servicio con ID: {} y modalidad de pago ID: {}",
+                                                        id, idModalidadPago);
+                                }
+                        }
+                }
+
+                /**
+                 * Guardar los archivos de recursos multimedia en el bucket de S3
+                 */
+                List<MultimediaResourceUploadedResponse> resourceUploaded = storageService
+                                .uploadMultimediaServiceResources(id, recursosMultimedia);
+
+                /**
+                 * Guardar las imágenes de Yape en el bucket de S3 (aplica para sustituir la
+                 * existente o subir una nueva si no existía previamente)
+                 */
+                if (yapeFile != null && !yapeFile.isEmpty()) {
+                        String resourceYapeUploaded = storageService
+                                        .uploadModalidadPagoResource(id, ModalidadPagoConstants.Tipo.yape, yapeFile);
+                        // Asignar la URL de Yape al requestBody
+                        for (ModalidadPagoBody modalidadPagoBody : requestBody.getModalidadesPago()) {
+                                if (modalidadPagoBody.getTipo() == ModalidadPagoConstants.Tipo.yape) {
+                                        modalidadPagoBody.setUrl(resourceYapeUploaded);
+                                        break;
+                                }
+                        }
+                } else {
+                        logger.info("No se ha recibido un archivo para Yape, por lo que no se actualizará la imagen.");
+                }
+
+                // Finalmente actualizar datos del servicio
+                return ServicioResponse.fromEntity(repository.actualizar(ServicioUpdate.builder()
+                                .id(id)
+                                .titulo(requestBody.getTitulo())
+                                .descripcion(requestBody.getDescripcion())
+                                .tipoPrecio(requestBody.getTipoPrecio())
+                                .precio(requestBody.getPrecio())
+                                .precioMinimo(requestBody.getPrecioMinimo())
+                                .precioMaximo(requestBody.getPrecioMaximo())
+                                .recursosMultimediaServicio(resourceUploaded.stream()
+                                                .map(r -> RecursoMultimediaServicio.builder()
+                                                                .id(UuidManager.randomUuid())
+                                                                .medio(r.getMedio())
+                                                                .url(r.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPago(requestBody.getModalidadesPago()
+                                                .stream()
+                                                .map(m -> ModalidadPago.builder()
+                                                                .id(m.getId())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .recursosMultimediaServicioToDelete(requestBody.getIdRecursosMultimediaToDelete()
+                                                .stream()
+                                                .map(idRecursoMultimedia -> RecursoMultimediaServicio.builder()
+                                                                .id(idRecursoMultimedia)
+                                                                .build())
+                                                .collect(Collectors.toList()))
+                                .modalidadesPagoToDelete(modalidadesPagoToDelete)
+                                .build()));
+
+        }
+
+        @Override
+        public ServicioModalidadesPagoAsignadosResponse asignarModalidadesPago(UUID id,
+                        List<AsignacionModalidadPagoToServicioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                List<ModalidadPago> modalidadesPago = requestBody.stream().map(m -> ModalidadPago.builder()
+                                .id(UuidManager.randomUuid())
+                                .tipo(m.getTipo())
+                                .servicio(Servicio.builder()
+                                                .id(id).build())
+                                .cuentaBancaria(m.getCuentaBancaria())
+                                .numeroCelular(m.getNumeroCelular())
+                                .url(m.getUrl())
+                                .build())
+                                .collect(Collectors.toList());
+
+                return ServicioModalidadesPagoAsignadosResponse.builder()
+                                .id(id)
+                                .modalidadesPagoAsignado(modalidadPagoRepository.registrarMultiple(modalidadesPago)
+                                                .stream().map(m -> ModalidadPagoAsignado.builder()
+                                                                .id(m.getId())
+                                                                .tipo(m.getTipo())
+                                                                .cuentaBancaria(m.getCuentaBancaria())
+                                                                .numeroCelular(m.getNumeroCelular())
+                                                                .url(m.getUrl())
+                                                                .build())
+                                                .toList())
+                                .build();
+        }
+
+        @Override
+        public ServicioRecursosMultimediaAsignadosResponse asignarRecursosMultimedia(UUID id,
+                        List<AsignacionRecursoMultimediaToServicioRequest> requestBody)
+                        throws DatabaseNotWorkingException, NotCreatedException {
+                List<RecursoMultimediaServicio> recursosMultimediaServicio = requestBody
+                                .stream().map(r -> RecursoMultimediaServicio.builder()
+                                                .id(UuidManager.randomUuid())
+                                                .medio(r.getMedio())
+                                                .servicio(Servicio.builder()
+                                                                .id(id)
+                                                                .build())
+                                                .url(r.getUrl())
+                                                .build())
+                                .collect(Collectors.toList());
+
+                return ServicioRecursosMultimediaAsignadosResponse.builder()
+                                .id(id)
+                                .recursosMultimediaAsignados(recursoMultimediaServicioRepository
+                                                .registrarMultiple(recursosMultimediaServicio).stream()
+                                                .map(r -> RecursoMultimediaAsignado.builder()
+                                                                .id(r.getId())
+                                                                .url(r.getUrl())
+                                                                .medio(r.getMedio())
+                                                                .build())
+                                                .toList())
+                                .build();
+        }
+}
