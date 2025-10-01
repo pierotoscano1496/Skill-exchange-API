@@ -34,5 +34,8 @@ public interface IMatchServicioRepository {
 
         MatchServicio actualizarEstado(UUID id, Estado estado) throws DatabaseNotWorkingException, NotUpdatedException;
 
+        MatchServicio actualizarEstado(UUID id, Estado estado, LocalDateTime fechaInicioValue)
+                        throws DatabaseNotWorkingException, NotUpdatedException;
+
         MatchServicio puntuarServicio(UUID id, int puntuacion) throws DatabaseNotWorkingException, NotUpdatedException;
 }

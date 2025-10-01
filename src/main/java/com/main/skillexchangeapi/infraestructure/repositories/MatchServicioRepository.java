@@ -367,6 +367,12 @@ public class MatchServicioRepository implements IMatchServicioRepository {
         return actualizarProgreso(id, estado, null);
     }
 
+    @Override
+    public MatchServicio actualizarEstado(UUID id, Estado estado, LocalDateTime fechaInicioValue)
+            throws DatabaseNotWorkingException, NotUpdatedException {
+        return actualizarProgreso(id, estado, fechaInicioValue);
+    }
+
     private MatchServicio actualizarProgreso(UUID id, Estado estado, LocalDateTime fechaInicioValue)
             throws DatabaseNotWorkingException, NotUpdatedException {
         try (Connection connection = databaseConnection.getConnection();

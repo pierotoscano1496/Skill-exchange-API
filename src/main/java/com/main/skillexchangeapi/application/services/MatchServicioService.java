@@ -30,6 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -231,6 +232,7 @@ public class MatchServicioService
                 Estado estado = requestBody.getEstado();
 
                 String servicioClosedMessage = null;
+                boolean updateEstadoForPendientePago = false;
 
                 switch (matchServicio.getEstado()) {
                         case solicitado:
@@ -241,6 +243,7 @@ public class MatchServicioService
                         case pendiente_pago:
                                 if (estado.equals(estadoReadyForPendientePago)) {
                                         estadoIsCorrect = true;
+                                        updateEstadoForPendientePago = true;
                                 }
                                 break;
                         case ejecucion:
@@ -257,7 +260,12 @@ public class MatchServicioService
                 }
 
                 if (estadoIsCorrect) {
-                        MatchServicio matchServicioUpdated = repository.actualizarEstado(id, estado);
+                        MatchServicio matchServicioUpdated = null;
+                        if (updateEstadoForPendientePago) {
+                                repository.actualizarEstado(id, estado, LocalDateTime.now());
+                        } else {
+                                repository.actualizarEstado(id, estado);
+                        }
 
                         return MatchServicioResponse.fromEntity(matchServicioUpdated);
                 } else {
