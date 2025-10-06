@@ -20,7 +20,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     @Value("${aws.credentials.servicio-bucket-name}")
     private String bucketName;
 
-    @Value("${aws.credentials.region:us-east-1}")
+    @Value("${aws.credentials.region:sa-east-1}")
     private String region;
 
     @Autowired
@@ -30,7 +30,7 @@ public class CommandLineAppStartupRunner implements CommandLineRunner {
     public void run(String... args) throws Exception {
         try {
             if (!s3Client.doesBucketExistV2(bucketName)) {
-                if (region.equals("us-east-1")) {
+                if (region.equals("sa-east-1")) {
                     s3Client.createBucket(bucketName);
                 } else {
                     s3Client.createBucket(new CreateBucketRequest(bucketName, region));

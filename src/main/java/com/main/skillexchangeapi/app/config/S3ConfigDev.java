@@ -26,7 +26,7 @@ public class S3ConfigDev {
     @Value("${cloud.aws.s3.endpoint}")
     private String endpoint;
 
-    @Value("${aws.credentials.region:us-east-1}")
+    @Value("${aws.credentials.region:sa-east-1}")
     private String region;
 
     @Bean
