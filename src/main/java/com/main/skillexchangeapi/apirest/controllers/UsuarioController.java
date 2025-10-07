@@ -1,6 +1,5 @@
 package com.main.skillexchangeapi.apirest.controllers;
 
-import com.azure.core.annotation.Get;
 import com.google.auto.value.AutoValue.Builder;
 import com.main.skillexchangeapi.app.constants.MatchServicioConstants.Estado;
 import com.main.skillexchangeapi.app.constants.UsuarioConstants.TipoDocumento;
