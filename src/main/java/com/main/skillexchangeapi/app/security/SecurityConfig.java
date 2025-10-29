@@ -74,6 +74,7 @@ public class SecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/skill/info").permitAll()
                             .requestMatchers(HttpMethod.PATCH, "/usuario/skills/*").permitAll()
                             .requestMatchers(HttpMethod.PATCH, "/usuario/plan/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/health").permitAll()
 
                             // Check: Encontrar manera de establecerlo privado:
                             .requestMatchers("/messaging-socket/**").permitAll()

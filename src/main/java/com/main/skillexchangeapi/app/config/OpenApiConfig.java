@@ -13,7 +13,7 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .info(new Info()
                         .title("Skill Exchange API REST")
-                        .version("1.0")
+                        .version("1.1.1")
                         .description("Documentación de la API REST de Skill Exchange"));
     }
 }

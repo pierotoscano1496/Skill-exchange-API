@@ -42,9 +42,6 @@ public class AWSS3ServicioService implements IAWSS3ServicioService {
     @Value("${spring.profiles.active:prod}")
     private String profile;
 
-    @Value("${cloud.aws.s3.endpoint}")
-    private String s3Endpoint;
-
     @Autowired
     private AmazonS3 s3Client;
 
